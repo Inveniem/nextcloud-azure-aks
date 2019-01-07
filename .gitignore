@@ -1,2 +1,5 @@
 .idea/
-azure-nextcloud-aci/config.env
+*.iml
+
+config.env
+
