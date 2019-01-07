@@ -1,0 +1,51 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: claim-nextcloud-config
+spec:
+  storageClassName: ""
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 100Mi
+  volumeName: vol-blob-nextcloud-config
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: claim-nextcloud-themes
+spec:
+  storageClassName: ""
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 2Gi
+  volumeName: vol-blob-nextcloud-themes
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: claim-nextcloud-apps
+spec:
+  storageClassName: ""
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 5Gi
+  volumeName: vol-blob-nextcloud-apps
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: claim-nextcloud-data
+spec:
+  storageClassName: ""
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 100Gi
+  volumeName: vol-blob-nextcloud-data

@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nextcloud-config
+  namespace: default
+data:
+  trusted_domains: "${NEXTCLOUD_TRUSTED_DOMAINS}"

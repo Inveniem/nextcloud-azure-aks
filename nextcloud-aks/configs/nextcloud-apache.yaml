@@ -1,0 +1,114 @@
+##
+# Kubernetes deployment configuration for running Nextcloud on Apache with
+# `mod_php`.
+#
+# @author Guy Elsmore-Paddock (guy@inveniem.com)
+# @copyright Copyright (c) 2019, Inveniem
+# @license GNU AGPL version 3 or any later version
+#
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nextcloud
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend-nextcloud
+  template:
+    metadata:
+      labels:
+        app: backend-nextcloud
+    spec:
+      containers:
+        # Container: The Apache-based Nextcloud backend
+        - name: backend-nextcloud-apache
+          image: "${REGISTRY_HOST}/inveniem/nextcloud-apache:latest"
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 1500m
+              memory: 512Mi
+          volumeMounts:
+            - name: volume-nextcloud-app
+              mountPath: /var/www/html
+            - name: volume-nextcloud-config
+              mountPath: /var/www/html/config
+            - name: volume-nextcloud-apps
+              mountPath: /var/www/html/custom_apps
+            - name: volume-nextcloud-themes
+              mountPath: /var/www/html/themes
+            - name: volume-nextcloud-data
+              mountPath: /var/www/html/data
+          env:
+            - name: NEXTCLOUD_TRUSTED_DOMAINS
+              valueFrom:
+                configMapKeyRef:
+                  name: nextcloud-config
+                  key: trusted_domains
+            - name: NEXTCLOUD_ADMIN_USER
+              valueFrom:
+                secretKeyRef:
+                  name: nextcloud-admin-creds
+                  key: username
+            - name: NEXTCLOUD_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: nextcloud-admin-creds
+                  key: password
+            - name: MYSQL_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: nextcloud-mysql-connection-creds
+                  key: hostname
+            - name: MYSQL_DATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: nextcloud-mysql-connection-creds
+                  key: database
+            - name: MYSQL_USER
+              valueFrom:
+                secretKeyRef:
+                  name: nextcloud-mysql-connection-creds
+                  key: username
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: nextcloud-mysql-connection-creds
+                  key: password
+      imagePullSecrets:
+        # NOTE: This secret is added by `setup_aks_acr_service_principal.sh`.
+        - name: "${ACR_DOCKER_CREDS_SECRET}"
+      volumes:
+        # Ephemeral volume that contains the loaded Nextcloud software
+        - name: volume-nextcloud-app
+          emptyDir: {}
+        # Remaining volumes are handled through Persistent Volume Claims
+        - name: volume-nextcloud-config
+          persistentVolumeClaim:
+            claimName: claim-nextcloud-config
+        - name: volume-nextcloud-apps
+          persistentVolumeClaim:
+            claimName: claim-nextcloud-apps
+        - name: volume-nextcloud-themes
+          persistentVolumeClaim:
+            claimName: claim-nextcloud-themes
+        - name: volume-nextcloud-data
+          persistentVolumeClaim:
+            claimName: claim-nextcloud-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-nextcloud-lb
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 80
+  selector:
+    app: backend-nextcloud

@@ -6,6 +6,8 @@ platform.
 ## What's Inside
 - `nextcloud-aci` contains a (failed) approach for deploying Nextcloud on Azure 
   Container Instances.
+- `nextcloud-aks` contains everything necessary to deploy Nextcloud on Azure
+  Kubernetes Service (AKS).
 
 ## More Information
 See the `README.md` file within each respective folder for more information.
