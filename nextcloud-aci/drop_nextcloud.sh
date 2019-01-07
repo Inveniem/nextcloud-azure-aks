@@ -31,4 +31,5 @@ mysql \
     --password="${MYSQL_PASSWORD}" \
     --database="${MYSQL_DATABASE}" \
     --execute="DROP DATABASE IF EXISTS ${MYSQL_DATABASE}; CREATE DATABASE ${MYSQL_DATABASE}"
+    --verbose
 echo ""
