@@ -9,6 +9,8 @@ run Nextcloud on Azure Container Instances.
 ### Dependencies
 You will need:
 - An AKS cluster with at least one node (F2s v2 instances are recommended).
+- BlobFUSE must be installed on the AKS cluster (see [step 2 of the BlobFUSE
+  FlexVolume driver documentation](https://github.com/Azure/kubernetes-volume-drivers/tree/master/flexvolume/blobfuse)).
 - An Azure Container Registry (ACR) setup.
 - CLI interfaces for each of the following installed locally:
     - Azure (`az`)
