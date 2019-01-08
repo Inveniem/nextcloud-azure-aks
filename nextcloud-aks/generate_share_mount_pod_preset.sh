@@ -6,7 +6,7 @@
 # configuration.
 #
 # This frees users from having to edit shares directly in
-# `nextcloud-apache.yaml` or `nextcloud-fpm-nginx.yaml`.
+# `nextcloud-apache.template.yaml` or `nextcloud-fpm-nginx.template.yaml`.
 #
 # @author Guy Elsmore-Paddock (guy@inveniem.com)
 # @copyright Copyright (c) 2019, Inveniem

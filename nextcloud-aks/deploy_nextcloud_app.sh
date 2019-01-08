@@ -23,14 +23,14 @@ source './config.env'
 #echo ""
 
 FILES=(
-    'configmap.yaml'
-    'secrets.yaml'
+    'configmap.template.yaml'
+    'secrets.template.yaml'
 )
 
 if [[ "${POD_TYPE:-apache}" = "php-fpm" ]]; then
-    FILES+=('nextcloud-fpm-nginx.yaml')
+    FILES+=('nextcloud-fpm-nginx.template.yaml')
 else
-    FILES+=('nextcloud-apache.yaml')
+    FILES+=('nextcloud-apache.template.yaml')
 fi
 
 

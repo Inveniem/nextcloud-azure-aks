@@ -15,8 +15,8 @@ set -u
 source './config.env'
 
 FILES=(
-    'blob-volumes.yaml'
-    'blob-claims.yaml'
+    'blob-volumes.template.yaml'
+    'blob-claims.template.yaml'
 )
 
 echo "Setting up Nextcloud persisted volumes for Azure Blob Storage..."

@@ -15,14 +15,14 @@ set -u
 source './config.env'
 
 if [[ "${POD_TYPE:-apache}" = "php-fpm" ]]; then
-    FILES=('nextcloud-fpm-nginx.yaml')
+    FILES=('nextcloud-fpm-nginx.template.yaml')
 else
-    FILES=('nextcloud-apache.yaml')
+    FILES=('nextcloud-apache.template.yaml')
 fi
 
 FILES+=(
-    'secrets.yaml'
-    'configmap.yaml'
+    'secrets.template.yaml'
+    'configmap.template.yaml'
 )
 
 # HACK: Until AKS supports pod presets, we have to kludge the dynamic mounts in

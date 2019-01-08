@@ -3,7 +3,7 @@
 # Nextcloud to store its configuration, apps, and themes on Azure Blob
 # storage.
 #
-# These must exactly match the claims in `blob-claims.yaml`. Claims are
+# These must exactly match the claims in `blob-claims.template.yaml`. Claims are
 # being used to allow storage to be portable across pods.
 #
 # @author Guy Elsmore-Paddock (guy@inveniem.com)
