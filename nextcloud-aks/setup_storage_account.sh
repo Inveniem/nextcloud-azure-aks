@@ -18,6 +18,7 @@ echo "Creating resource group '${STORAGE_RESOURCE_GROUP}'..."
 az group create \
   --name "${STORAGE_RESOURCE_GROUP}" \
   --location "${LOCATION}"
+echo "Done."
 echo ""
 
 echo "Creating standard storage account '${STORAGE_ACCOUNT_NAME}'..."
@@ -27,6 +28,7 @@ az storage account create \
   --kind "StorageV2" \
   --sku "Standard_LRS" \
   --location "${LOCATION}"
+echo "Done."
 echo ""
 
 export AZURE_STORAGE_CONNECTION_STRING=$( \
@@ -37,12 +39,18 @@ export AZURE_STORAGE_CONNECTION_STRING=$( \
 )
 
 echo "Creating blob containers..."
-
 for blob_container_name in "${STORAGE_BLOB_CONTAINERS[@]}"; do
-    echo "Creating blob container '${blob_container_name}'."
+    echo "- '${blob_container_name}'."
     az storage container create --name "${blob_container_name}"
 done
+echo "Done."
+echo ""
 
+echo "Creating file shares..."
+for file_share_name in "${STORAGE_FILE_SHARES[@]}"; do
+    echo "- '${file_share_name}'."
+    az storage share create --name "${file_share_name}"
+done
 echo "Done."
 echo ""
 
@@ -53,9 +61,24 @@ STORAGE_ACCOUNT_KEY=$( \
     --output=tsv
 )
 
-echo "Creating BlobFUSE Kubernetes Secret for '${KUBE_STORAGE_ACCOUNT_SECRET}'..."
+echo "Creating BlobFUSE Kubernetes Secret for '${KUBE_BLOB_STORAGE_ACCOUNT_SECRET}'..."
 kubectl create secret generic \
-    "${KUBE_STORAGE_ACCOUNT_SECRET}" \
+    "${KUBE_BLOB_STORAGE_ACCOUNT_SECRET}" \
     --from-literal accountname="${STORAGE_ACCOUNT_NAME}" \
     --from-literal accountkey="${STORAGE_ACCOUNT_KEY}" \
     --type="azure/blobfuse"
+echo "Done."
+echo ""
+
+echo "Creating Azure Files Kubernetes Secret for '${KUBE_FILES_STORAGE_ACCOUNT_SECRET}'..."
+kubectl create secret generic \
+    "${KUBE_FILES_STORAGE_ACCOUNT_SECRET}" \
+    --from-literal azurestorageaccountname="${STORAGE_ACCOUNT_NAME}" \
+    --from-literal azurestorageaccountkey="${STORAGE_ACCOUNT_KEY}"
+echo "Done."
+echo ""
+
+echo "Setting up data file shares as Kubernetes volumes..."
+./generate_azure_file_volume_configs.sh | kubectl apply -f -
+echo "Done."
+echo ""

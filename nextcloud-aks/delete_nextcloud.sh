@@ -14,5 +14,5 @@ set -u
 
 ./delete_nextcloud_app.sh
 ./delete_nextcloud_volumes.sh
-./delete_blob_storage.sh
+./delete_storage_account.sh
 ./recreate_nextcloud_db.sh

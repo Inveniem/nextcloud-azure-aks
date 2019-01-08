@@ -19,6 +19,7 @@ spec:
     metadata:
       labels:
         app: backend-nextcloud
+        role: nextcloud-backend
     spec:
       containers:
         # Container: The Apache-based Nextcloud backend
@@ -43,8 +44,6 @@ spec:
               mountPath: /var/www/html/custom_apps
             - name: volume-nextcloud-themes
               mountPath: /var/www/html/themes
-            - name: volume-nextcloud-data
-              mountPath: /var/www/html/data
           env:
             - name: NEXTCLOUD_TRUSTED_DOMAINS
               valueFrom:
@@ -98,9 +97,6 @@ spec:
         - name: volume-nextcloud-themes
           persistentVolumeClaim:
             claimName: claim-nextcloud-themes
-        - name: volume-nextcloud-data
-          persistentVolumeClaim:
-            claimName: claim-nextcloud-data
 ---
 apiVersion: v1
 kind: Service

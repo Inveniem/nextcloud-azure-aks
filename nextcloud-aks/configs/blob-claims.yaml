@@ -1,3 +1,15 @@
+##
+# Kubernetes configuration for setting up all of the persistent volume claims
+# for Nextcloud to store its configuration, apps, and themes on Azure Blob
+# storage.
+#
+# These must exactly match the claims in `blob-volumes.yaml`. Claims are
+# being used to allow storage to be portable across pods.
+#
+# @author Guy Elsmore-Paddock (guy@inveniem.com)
+# @copyright Copyright (c) 2019, Inveniem
+# @license GNU AGPL version 3 or any later version
+#
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -9,7 +21,7 @@ spec:
   resources:
     requests:
       storage: 100Mi
-  volumeName: vol-blob-nextcloud-config
+  volumeName: vol-nextcloud-blob-config
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -22,7 +34,7 @@ spec:
   resources:
     requests:
       storage: 2Gi
-  volumeName: vol-blob-nextcloud-themes
+  volumeName: vol-nextcloud-blob-themes
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -35,17 +47,4 @@ spec:
   resources:
     requests:
       storage: 5Gi
-  volumeName: vol-blob-nextcloud-apps
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: claim-nextcloud-data
-spec:
-  storageClassName: ""
-  accessModes:
-    - ReadWriteMany
-  resources:
-    requests:
-      storage: 100Gi
-  volumeName: vol-blob-nextcloud-data
+  volumeName: vol-nextcloud-blob-apps

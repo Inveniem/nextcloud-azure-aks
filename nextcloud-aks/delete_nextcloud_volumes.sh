@@ -1,13 +1,10 @@
 #!/usr/bin/env bash
 
 ##
-# This script removes persistent volumes and persistent volume claims from
-# Kubernetes.
+# This script removes Azure-Blob-storage-backed Nextcloud persisted volume
+# claims and persisted volumes from Kubernetes.
 #
-# This does not necessarily remove the underlying storage, especially storage
-# that was not deployed via Kubernetes Dynamic Volumes. File storage provisioned
-# elsewhere on Azure typically has to be removed with other scripts, such as
-# `delete_blob_storage.sh`.
+# This does not remove file shares provisioned on Azure files.
 #
 # @author Guy Elsmore-Paddock (guy@inveniem.com)
 # @copyright Copyright (c) 2019, Inveniem
@@ -18,10 +15,11 @@ set -e
 set -u
 
 FILES=(
-    'persistence-volumes.yaml'
-    'persistence-claims.yaml'
+    'blob-volumes.yaml'
+    'blob-claims.yaml'
 )
 
+echo "Removing Nextcloud persisted volumes for Azure Blob Storage..."
 for file in "${FILES[@]}"; do
     ./preprocess_config.sh "configs/${file}" | kubectl delete -f -
 done

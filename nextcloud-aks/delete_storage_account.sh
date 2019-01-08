@@ -15,9 +15,22 @@ set -u
 
 source './config.env'
 
-echo "Deleting resource group '${STORAGE_RESOURCE_GROUP}'..."
-az group delete --name "${STORAGE_RESOURCE_GROUP}" --yes
+echo "Removing data file share volumes from Kubernetes..."
+./generate_azure_file_volume_configs.sh | kubectl delete -f -
+echo "Done."
 echo ""
 
-echo "Removing BlobFUSE Kubernetes Secret for '${KUBE_STORAGE_ACCOUNT_SECRET}'..."
-kubectl delete secret "${KUBE_STORAGE_ACCOUNT_SECRET}"
+echo "Removing Azure Files Kubernetes Secret for '${KUBE_FILES_STORAGE_ACCOUNT_SECRET}'..."
+kubectl delete secret "${KUBE_FILES_STORAGE_ACCOUNT_SECRET}"
+echo "Done."
+echo ""
+
+echo "Removing BlobFUSE Kubernetes Secret for '${KUBE_BLOB_STORAGE_ACCOUNT_SECRET}'..."
+kubectl delete secret "${KUBE_BLOB_STORAGE_ACCOUNT_SECRET}"
+echo "Done."
+echo ""
+
+echo "Deleting resource group '${STORAGE_RESOURCE_GROUP}'..."
+az group delete --name "${STORAGE_RESOURCE_GROUP}" --yes
+echo "Done."
+echo ""

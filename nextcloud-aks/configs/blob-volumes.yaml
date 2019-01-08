@@ -1,7 +1,19 @@
+##
+# Kubernetes configuration for setting up all of the persistent volumes for
+# Nextcloud to store its configuration, apps, and themes on Azure Blob
+# storage.
+#
+# These must exactly match the claims in `blob-claims.yaml`. Claims are
+# being used to allow storage to be portable across pods.
+#
+# @author Guy Elsmore-Paddock (guy@inveniem.com)
+# @copyright Copyright (c) 2019, Inveniem
+# @license GNU AGPL version 3 or any later version
+#
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: vol-blob-nextcloud-config
+  name: vol-nextcloud-blob-config
 spec:
   capacity:
     storage: 100Mi
@@ -11,7 +23,7 @@ spec:
   flexVolume:
     driver: "azure/blobfuse"
     secretRef:
-      name: "${KUBE_STORAGE_ACCOUNT_SECRET}"
+      name: "${KUBE_BLOB_STORAGE_ACCOUNT_SECRET}"
     options:
       container: nextcloud-config
       tmppath: /mnt/blobfusetmp/nextcloud-config
@@ -20,7 +32,7 @@ spec:
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: vol-blob-nextcloud-themes
+  name: vol-nextcloud-blob-themes
 spec:
   capacity:
     storage: 2Gi
@@ -30,7 +42,7 @@ spec:
   flexVolume:
     driver: "azure/blobfuse"
     secretRef:
-      name: "${KUBE_STORAGE_ACCOUNT_SECRET}"
+      name: "${KUBE_BLOB_STORAGE_ACCOUNT_SECRET}"
     options:
       container: nextcloud-themes
       tmppath: /mnt/blobfusetmp/nextcloud-themes
@@ -39,7 +51,7 @@ spec:
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: vol-blob-nextcloud-apps
+  name: vol-nextcloud-blob-apps
 spec:
   capacity:
     storage: 5Gi
@@ -49,27 +61,8 @@ spec:
   flexVolume:
     driver: "azure/blobfuse"
     secretRef:
-      name: "${KUBE_STORAGE_ACCOUNT_SECRET}"
+      name: "${KUBE_BLOB_STORAGE_ACCOUNT_SECRET}"
     options:
       container: nextcloud-apps
       tmppath: /mnt/blobfusetmp/nextcloud-apps
-      mountoptions: "-o uid=33 -o gid=33 -o allow_other -o umask=007 --file-cache-timeout-in-seconds=120"
----
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: vol-blob-nextcloud-data
-spec:
-  capacity:
-    storage: 100Gi
-  accessModes:
-    - ReadWriteMany
-  persistentVolumeReclaimPolicy: Retain
-  flexVolume:
-    driver: "azure/blobfuse"
-    secretRef:
-      name: "${KUBE_STORAGE_ACCOUNT_SECRET}"
-    options:
-      container: nextcloud-data
-      tmppath: /mnt/blobfusetmp/nextcloud-data
       mountoptions: "-o uid=33 -o gid=33 -o allow_other -o umask=007 --file-cache-timeout-in-seconds=120"

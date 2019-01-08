@@ -25,6 +25,15 @@ FILES+=(
     'configmap.yaml'
 )
 
+echo "Un-deploying Nextcloud core application..."
 for file in "${FILES[@]}"; do
     ./preprocess_config.sh "configs/${file}" | kubectl delete -f -
 done
+echo "Done."
+echo ""
+
+echo "Removing pod preset for dynamic file shares..."
+./generate_share_mount_pod_preset.sh | kubectl delete -f -
+echo "Done."
+echo ""
+
