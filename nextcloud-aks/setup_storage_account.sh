@@ -77,8 +77,3 @@ kubectl create secret generic \
     --from-literal azurestorageaccountkey="${STORAGE_ACCOUNT_KEY}"
 echo "Done."
 echo ""
-
-echo "Setting up data file shares as Kubernetes volumes..."
-./generate_azure_file_volume_configs.sh | kubectl apply -f -
-echo "Done."
-echo ""

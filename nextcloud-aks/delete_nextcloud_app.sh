@@ -44,4 +44,3 @@ echo ""
 #./generate_share_mount_pod_preset.sh | kubectl delete -f -
 #echo "Done."
 #echo ""
-

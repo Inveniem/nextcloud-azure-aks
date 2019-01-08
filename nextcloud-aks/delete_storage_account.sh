@@ -15,11 +15,6 @@ set -u
 
 source './config.env'
 
-echo "Removing data file share volumes from Kubernetes..."
-./generate_azure_file_volume_configs.sh | kubectl delete -f -
-echo "Done."
-echo ""
-
 echo "Removing Azure Files Kubernetes Secret for '${KUBE_FILES_STORAGE_ACCOUNT_SECRET}'..."
 kubectl delete secret "${KUBE_FILES_STORAGE_ACCOUNT_SECRET}"
 echo "Done."

@@ -19,9 +19,14 @@ FILES=(
     'blob-claims.yaml'
 )
 
-echo "Setting up Nextcloud persisted volumes on Azure Blob Storage..."
+echo "Setting up Nextcloud persisted volumes for Azure Blob Storage..."
 for file in "${FILES[@]}"; do
     ./preprocess_config.sh "configs/${file}" | kubectl apply -f -
 done
+echo "Done."
+echo ""
+
+echo "Setting up Nextcloud persisted volumes for Azure Files..."
+./generate_azure_file_volume_configs.sh | kubectl apply -f -
 echo "Done."
 echo ""

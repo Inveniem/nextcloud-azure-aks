@@ -23,3 +23,10 @@ echo "Removing Nextcloud persisted volumes for Azure Blob Storage..."
 for file in "${FILES[@]}"; do
     ./preprocess_config.sh "configs/${file}" | kubectl delete -f -
 done
+echo "Done."
+echo ""
+
+echo "Removing Nextcloud persisted volumes for Azure Files..."
+./generate_azure_file_volume_configs.sh | kubectl delete -f -
+echo "Done."
+echo ""
