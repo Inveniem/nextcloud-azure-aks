@@ -26,6 +26,7 @@ echo "Done."
 echo ""
 
 echo "Deleting resource group '${STORAGE_RESOURCE_GROUP}'..."
-az group delete --name "${STORAGE_RESOURCE_GROUP}" --yes
-echo "Done."
+echo ""
+echo "WARNING: This will delete ALL files Nextcloud has stored on Azure."
+az group delete --name "${STORAGE_RESOURCE_GROUP}" && echo "Done." || echo "Skipped."
 echo ""
