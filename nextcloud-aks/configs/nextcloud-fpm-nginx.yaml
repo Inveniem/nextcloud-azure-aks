@@ -42,6 +42,13 @@ spec:
               mountPath: /var/www/html/custom_apps
             - name: volume-nextcloud-themes
               mountPath: /var/www/html/themes
+            # HACK: Until AKS supports pod presets, we have to kludge the dynamic
+            # mounts in via a variable expansion. Do not modify the last line of
+            # this comment; it gets expanded and replaced automatically when this
+            # file is pre-processed. Remove this entire comment when switching over
+            # to using pod presets.
+            #
+            # ${FILE_SHARE_VOLUME_MOUNT_LINES}
           env:
             - name: NEXTCLOUD_TRUSTED_DOMAINS
               valueFrom:
@@ -107,6 +114,13 @@ spec:
         - name: volume-nextcloud-themes
           persistentVolumeClaim:
             claimName: claim-nextcloud-themes
+        # HACK: Until AKS supports pod presets, we have to kludge the dynamic
+        # mounts in via a variable expansion. Do not modify the last line of
+        # this comment; it gets expanded and replaced automatically when this
+        # file is pre-processed. Remove this entire comment when switching over
+        # to using pod presets.
+        #
+        # ${FILE_SHARE_VOLUME_LINES}
 ---
 apiVersion: v1
 kind: Service

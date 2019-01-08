@@ -25,6 +25,10 @@ FILES+=(
     'configmap.yaml'
 )
 
+# HACK: Until AKS supports pod presets, we have to kludge the dynamic mounts in
+# via a variable expansions.
+source ./generate_backend_share_mount_lines.sh
+
 echo "Un-deploying Nextcloud core application..."
 for file in "${FILES[@]}"; do
     ./preprocess_config.sh "configs/${file}" | kubectl delete -f -
@@ -32,8 +36,12 @@ done
 echo "Done."
 echo ""
 
-echo "Removing pod preset for dynamic file shares..."
-./generate_share_mount_pod_preset.sh | kubectl delete -f -
-echo "Done."
-echo ""
+# NOTE: This is commented out for now because we can't yet use pod presets on
+# AKS. Vote for the feature here:
+# https://feedback.azure.com/forums/914020-azure-kubernetes-service-aks/suggestions/35054089-support-podpreset-alpha-feature
+
+#echo "Removing pod preset for dynamic file shares..."
+#./generate_share_mount_pod_preset.sh | kubectl delete -f -
+#echo "Done."
+#echo ""
 
