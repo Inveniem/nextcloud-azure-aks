@@ -23,7 +23,7 @@ spec:
     spec:
       containers:
         # Container: The PHP-FPM-based Nextcloud backend
-        - name: backend-nextcloud-apache
+        - name: backend-nextcloud-fpm
           image: "${REGISTRY_HOST}/inveniem/nextcloud-fpm:latest"
           imagePullPolicy: Always
           resources:
