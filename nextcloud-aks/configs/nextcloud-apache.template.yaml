@@ -83,6 +83,25 @@ spec:
                 secretKeyRef:
                   name: nextcloud-mysql-connection-creds
                   key: password
+        # Container: ClamAV
+        - name: backend-clamav
+          image: "mkodockx/docker-clamav:latest"
+          imagePullPolicy: Always
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 1000m
+              memory: 2048Mi
+          volumeMounts:
+            # HACK: Until AKS supports pod presets, we have to kludge the dynamic
+            # mounts in via a variable expansion. Do not modify the last line of
+            # this comment; it gets expanded and replaced automatically when this
+            # file is pre-processed. Remove this entire comment when switching over
+            # to using pod presets.
+            #
+            # ${FILE_SHARE_VOLUME_MOUNT_LINES}
       imagePullSecrets:
         # NOTE: This secret is added by `setup_aks_acr_service_principal.sh`.
         - name: "${ACR_DOCKER_CREDS_SECRET}"
