@@ -27,7 +27,7 @@ FILES=(
     'secrets.template.yaml'
 )
 
-if [[ "${POD_TYPE:-apache}" = "php-fpm" ]]; then
+if [[ "${POD_TYPE:-apache}" = "fpm-nginx" ]]; then
     FILES+=('nextcloud-fpm-nginx.template.yaml')
 else
     FILES+=('nextcloud-apache.template.yaml')
