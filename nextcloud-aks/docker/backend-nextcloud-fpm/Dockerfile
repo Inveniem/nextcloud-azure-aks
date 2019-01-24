@@ -10,6 +10,10 @@
 #
 FROM nextcloud:15-fpm
 
+# Supply all custom apps via Docker image; disable app store
+COPY nextcloud-common/custom_apps/. /usr/src/nextcloud/custom_apps/
+COPY nextcloud-common/config/* /usr/src/nextcloud/config/
+
 COPY nextcloud-common/entrypoint.sh /
 
 ENTRYPOINT ["/entrypoint.sh"]

@@ -73,6 +73,9 @@ deploy_nextcloud_release() {
 
     rsync $rsync_options --delete --exclude-from=/upgrade.exclude /usr/src/nextcloud/ /var/www/html/
 
+    # Explicitly sync 'custom_apps' in this Docker image
+    rsync $rsync_options --delete /usr/src/nextcloud/custom_apps/ /var/www/html/custom_apps/
+
     echo "Deployment finished."
     echo ""
 }
@@ -86,7 +89,7 @@ capture_existing_app_list() {
 }
 
 populate_instance_dirs() {
-    for dir in config data custom_apps themes; do
+    for dir in config data themes; do
         if [ ! -d "/var/www/html/$dir" ] || directory_empty "/var/www/html/$dir"; then
             rsync $rsync_options --include "/$dir/" --exclude '/*' /usr/src/nextcloud/ /var/www/html/
         fi

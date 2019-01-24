@@ -18,6 +18,8 @@ DIRS=(
     'middle-nextcloud-nginx'
 )
 
+./nextcloud-common/download_apps.sh
+
 for dir in "${DIRS[@]}"; do
     "${dir}/publish.sh"
 done

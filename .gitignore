@@ -3,3 +3,4 @@
 
 config.env
 
+nextcloud-aks/docker/nextcloud-common/custom_apps

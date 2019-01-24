@@ -40,10 +40,6 @@ spec:
               mountPath: /var/www/html
             - name: volume-nextcloud-config
               mountPath: /var/www/html/config
-            - name: volume-nextcloud-apps
-              mountPath: /var/www/html/custom_apps
-            - name: volume-nextcloud-themes
-              mountPath: /var/www/html/themes
             # HACK: Until AKS supports pod presets, we have to kludge the dynamic
             # mounts in via a variable expansion. Do not modify the last line of
             # this comment; it gets expanded and replaced automatically when this
@@ -98,12 +94,6 @@ spec:
         - name: volume-nextcloud-config
           persistentVolumeClaim:
             claimName: claim-nextcloud-config
-        - name: volume-nextcloud-apps
-          persistentVolumeClaim:
-            claimName: claim-nextcloud-apps
-        - name: volume-nextcloud-themes
-          persistentVolumeClaim:
-            claimName: claim-nextcloud-themes
         # HACK: Until AKS supports pod presets, we have to kludge the dynamic
         # mounts in via a variable expansion. Do not modify the last line of
         # this comment; it gets expanded and replaced automatically when this

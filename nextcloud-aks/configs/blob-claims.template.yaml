@@ -22,29 +22,3 @@ spec:
     requests:
       storage: 100Mi
   volumeName: vol-nextcloud-blob-config
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: claim-nextcloud-themes
-spec:
-  storageClassName: ""
-  accessModes:
-    - ReadWriteMany
-  resources:
-    requests:
-      storage: 2Gi
-  volumeName: vol-nextcloud-blob-themes
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: claim-nextcloud-apps
-spec:
-  storageClassName: ""
-  accessModes:
-    - ReadWriteMany
-  resources:
-    requests:
-      storage: 5Gi
-  volumeName: vol-nextcloud-blob-apps
