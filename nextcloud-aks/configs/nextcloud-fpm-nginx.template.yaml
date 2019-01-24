@@ -106,7 +106,13 @@ spec:
           imagePullPolicy: Always
           ports:
             - containerPort: 80
-          resources: {}
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 1500m
+              memory: 256Mi
           volumeMounts:
             - name: volume-nextcloud-app
               mountPath: /var/www/html
