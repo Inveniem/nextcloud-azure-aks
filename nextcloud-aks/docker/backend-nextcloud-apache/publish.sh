@@ -12,9 +12,12 @@
 set -e
 set -u
 
-source '../../config.env'
-
 CONTAINER_NAME="inveniem/nextcloud-apache:latest"
+
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+cd "${SCRIPT_DIR}"
+
+source '../../config.env'
 
 docker build -t "${CONTAINER_NAME}" .
 docker tag "${CONTAINER_NAME}" "${REGISTRY_HOST}/${CONTAINER_NAME}"

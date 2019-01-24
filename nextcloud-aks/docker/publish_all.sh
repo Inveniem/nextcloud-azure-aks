@@ -19,7 +19,5 @@ DIRS=(
 )
 
 for dir in "${DIRS[@]}"; do
-    cd "./${dir}"
-    ./publish.sh
-    cd "../"
+    "${dir}/publish.sh"
 done
