@@ -10,6 +10,10 @@
 #
 FROM nextcloud:15-fpm
 
+# Setup New Relic (if configured)
+COPY nextcloud-common/generated/setup_newrelic.sh /
+RUN /setup_newrelic.sh && rm /setup_newrelic.sh
+
 # Supply all custom apps via Docker image; disable app store
 COPY nextcloud-common/custom_apps/. /usr/src/nextcloud/custom_apps/
 COPY nextcloud-common/config/* /usr/src/nextcloud/config/

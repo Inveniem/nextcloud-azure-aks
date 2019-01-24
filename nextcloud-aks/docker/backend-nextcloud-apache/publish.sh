@@ -19,6 +19,8 @@ cd "${SCRIPT_DIR}"
 
 source '../../config.env'
 
+../nextcloud-common/generate_nr_setup_command.sh
+
 docker build -t "${CONTAINER_NAME}" -f Dockerfile ..
 docker tag "${CONTAINER_NAME}" "${REGISTRY_HOST}/${CONTAINER_NAME}"
 
