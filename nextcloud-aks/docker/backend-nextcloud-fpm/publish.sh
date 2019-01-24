@@ -19,7 +19,7 @@ cd "${SCRIPT_DIR}"
 
 source '../../config.env'
 
-docker build -t "${CONTAINER_NAME}" .
+docker build -t "${CONTAINER_NAME}" -f Dockerfile ..
 docker tag "${CONTAINER_NAME}" "${REGISTRY_HOST}/${CONTAINER_NAME}"
 
 az acr login --name "${REGISTRY_NAME}"
