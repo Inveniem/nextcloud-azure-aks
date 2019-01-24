@@ -10,15 +10,15 @@
 #
 FROM nextcloud:15-apache
 
+COPY nextcloud-common/entrypoint.sh /
+COPY nextcloud-common/config/* /usr/src/nextcloud/config/
+
 # Setup New Relic (if configured)
 COPY nextcloud-common/generated/setup_newrelic.sh /
 RUN /setup_newrelic.sh && rm /setup_newrelic.sh
 
-# Supply all custom apps via Docker image; disable app store
+# Supply all custom apps via Docker image; app store is disabled
 COPY nextcloud-common/custom_apps/. /usr/src/nextcloud/custom_apps/
-COPY nextcloud-common/config/* /usr/src/nextcloud/config/
-
-COPY nextcloud-common/entrypoint.sh /
 
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["apache2-foreground"]
