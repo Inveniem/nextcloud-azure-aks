@@ -12,6 +12,7 @@ metadata:
   name: nextcloud
 spec:
   replicas: 1
+  revisionHistoryLimit: 2
   selector:
     matchLabels:
       app: backend-nextcloud
