@@ -44,3 +44,16 @@ for file in "${FILES[@]}"; do
 done
 echo "Done."
 echo ""
+
+if [[ "${1:-}" == "--cycle-pods" ]]; then
+    if [[ "${POD_TYPE:-apache}" = "fpm-nginx" ]]; then
+        export POD_SUFFIX="fpm"
+    else
+        export POD_SUFFIX="apache"
+    fi
+
+    export LAST_RESTART=$(date +%s)
+
+    REDEPLOY_PATCH=$(./preprocess_config.sh "configs/redeploy-pods.template.yaml")
+    kubectl patch deployment "nextcloud" -p "${REDEPLOY_PATCH}"
+fi
