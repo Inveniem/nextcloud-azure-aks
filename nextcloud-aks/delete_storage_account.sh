@@ -1,9 +1,8 @@
 #!/usr/bin/env bash
 
 ##
-# This script first removes the resource group that's created to hold the
-# storage account for Nextcloud, and then purges the secret for that account
-# from Kubernetes.
+# This script removes secrets for the Nextcloud storage account from Kubernetes,
+# then deletes the storage account (pending user confirmation).
 #
 # @author Guy Elsmore-Paddock (guy@inveniem.com)
 # @copyright Copyright (c) 2019, Inveniem
@@ -25,8 +24,11 @@ kubectl delete secret "${KUBE_BLOB_STORAGE_ACCOUNT_SECRET}"
 echo "Done."
 echo ""
 
-echo "Deleting resource group '${STORAGE_RESOURCE_GROUP}'..."
+echo "Removing Storage Account '${STORAGE_ACCOUNT_NAME}'..."
 echo ""
 echo "WARNING: This will delete ALL files Nextcloud has stored on Azure."
-az group delete --name "${STORAGE_RESOURCE_GROUP}" && echo "Done." || echo "Skipped."
+az group delete \
+    --name "${STORAGE_ACCOUNT_NAME}" \
+    --resource-group "${STORAGE_RESOURCE_GROUP}" \
+    && echo "Done." || echo "Skipped."
 echo ""
