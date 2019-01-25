@@ -7,22 +7,27 @@ run Nextcloud on Azure Container Instances.
 
 ## Deploying Nextcloud to AKS
 ### Dependencies
-You will need:
-- An AKS cluster with at least one node (F2s v2 instances are recommended).
-- BlobFUSE must be installed on the AKS cluster (see [step 2 of the BlobFUSE
+You will need to do the following before you can use this resource kit:
+- Create an AKS cluster with at least one node 
+  (F2s v2 instances are recommended).
+- Install BlobFUSE on the AKS cluster (see [step 2 of the BlobFUSE
   FlexVolume driver documentation](https://github.com/Azure/kubernetes-volume-drivers/tree/master/flexvolume/blobfuse)).
-- An Azure Container Registry (ACR) setup.
-- CLI interfaces for each of the following installed locally:
+- Setup an Azure Container Registry (ACR).
+- Setup a MySQL server instance on Azure.
+- Create an empty database and its corresponding user account on the MySQL 
+  database instance.
+- Install CLI interfaces for each of the following on the machine from which 
+  you will be deploying to Azure:
     - Azure (`az`)
     - MySQL (`mysql`)
     - Docker (`docker`)
-- The Azure CLI must be 
-  [signed-in to your Azure account](https://docs.microsoft.com/en-us/cli/azure/authenticate-azure-cli).
-- For best results, you should have 
+- Install the Azure CLI on the machine from which you are deploying and
+  [sign-in to your Azure account](https://docs.microsoft.com/en-us/cli/azure/authenticate-azure-cli).
+- Ensure that your account has the
   [the "Global administrator" role](https://docs.microsoft.com/en-us/azure/active-directory/users-groups-roles/directory-assign-admin-roles) 
-  within your Azure AD tenant.
-- Credentials and settings should be specified in the `config.env` file (see 
-  next section).
+  within your Azure AD tenant, for best results.
+- Specify credentials and all preferences for deployment in the `config.env`
+  file (see next section).
 
 ### Choosing the Pod Type
 The configurations in this repository support two different Kubernetes pod 
@@ -37,6 +42,12 @@ deployment models:
    through Nginx, and Nginx handling static file hosting. This deployment 
    consists of pods with two containers -- `backend-nextcloud-fpm` and 
    `middle-nextcloud-nginx`.
+   
+Both pods are also accompanied by a ClamAV container running in daemon mode, to
+support antivirus scans through the 
+[Nextcloud Antivirus app](https://docs.nextcloud.com/server/15/admin_manual/configuration_server/antivirus_configuration.html).
+You will need to enable the app and configure antivirus settings after 
+Nextcloud is installed for the first time.
 
 Set this via the `POD_TYPE` setting in `config.env`.
 
@@ -63,12 +74,34 @@ script once, even if you have removed Nextcloud from your Azure deployment with
 Run `./deploy_nextcloud.sh` to create storage accounts and deploy Nextcloud to 
 AKS.
 
-Alternatively, open the `./deploy_nextcloud.sh` script in a text editor to 
-review each of the other scripts that top-level script invokes to do its work, 
-and then invoke them piecewise to deploy only the portions you'd like to deploy.
-Please note that scripts are listed in dependency order; Nextcloud requires
-storage accounts to be in place and registered with Kubernetes as persistent
-volumes in order for deployment of Nextcloud pods to proceed.
+#### About Storage Accounts
+This resource kit is designed to create a storage account into which all of the
+persistent data that Nextcloud requires can be stored. The account is created by 
+`./setup_storage_account.sh` as part of the top-level `./deploy_nextcloud.sh` 
+script.
+
+Nextcloud stores data in this storage account as follows:
+- Configuration files are stored in a low-cost Azure Blob container that is
+  mounted with the BlobFUSE driver.
+- All other data (including per-user data and additional per-client shares) are 
+  stored on Azure Files shares that the script creates.
+
+#### About the Redis Cache
+To support clustered deployment (i.e. multiple Nextcloud pods behind a load
+balancer), this resource kit is designed to create a Redis cache instance that
+is used to persist file locks and PHP sessions. The cache is automatically 
+created by `./setup_redis_cache.sh` as part of running the top-level 
+`./deploy_nextcloud.sh` script.
+
+#### Running the Deployment as Individual Pieces
+For greater control -- as an alternative to running the top-level script -- you 
+may open the `./deploy_nextcloud.sh` script in a text editor to review each of 
+the scripts that top-level script invokes to do its work, and then invoke them 
+piecewise to deploy only the portions you'd like to deploy. Please note that 
+scripts are listed in dependency order; Nextcloud requires both a Redis cache 
+to be in place, as well as storage accounts to be created and registered with 
+Kubernetes as persistent volumes in order for deployment of Nextcloud pods to 
+proceed.
 
 ## Removing Nextcloud from AKS
 Run `./delete_nextcloud.sh` to fully remove Nextcloud and its storage accounts

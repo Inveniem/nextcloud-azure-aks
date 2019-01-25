@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
 ##
-# This is a top-level script to deploy Nextcloud and its storage dependencies to
-# Azure and AKS.
+# This is a top-level script to deploy Nextcloud and its dependencies to Azure
+# and AKS.
 #
 # @author Guy Elsmore-Paddock (guy@inveniem.com)
 # @copyright Copyright (c) 2019, Inveniem
@@ -13,5 +13,6 @@ set -e
 set -u
 
 ./setup_storage_account.sh
+./setup_redis_cache.sh
 ./deploy_nextcloud_volumes.sh
 ./deploy_nextcloud_app.sh

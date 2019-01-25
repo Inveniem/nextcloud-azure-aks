@@ -10,6 +10,9 @@
 #
 FROM nextcloud:15-apache
 
+# Eliminate default APCu configuration (we're using Redis)
+RUN rm /usr/src/nextcloud/config/apcu.config.php
+
 COPY nextcloud-common/entrypoint.sh /
 COPY nextcloud-common/config/* /usr/src/nextcloud/config/
 

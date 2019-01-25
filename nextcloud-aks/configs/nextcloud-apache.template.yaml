@@ -88,6 +88,21 @@ spec:
                 secretKeyRef:
                   name: "${KUBE_NEXTCLOUD_MYSQL_CREDS_SECRET}"
                   key: password
+            - name: REDIS_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: "${KUBE_REDIS_KEY_SECRET}"
+                  key: hostname
+            - name: REDIS_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: "${KUBE_REDIS_KEY_SECRET}"
+                  key: port
+            - name: REDIS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: "${KUBE_REDIS_KEY_SECRET}"
+                  key: key
         # Container: ClamAV
         - name: backend-clamav
           image: "mkodockx/docker-clamav:latest"

@@ -34,6 +34,7 @@ initialize_container() {
         ensure_compatible_image "${installed_version}" "${image_version}"
         deploy_nextcloud_release
         restore_instance_state
+        setup_redis
 
         if version_greater "$image_version" "$installed_version"; then
             capture_existing_app_list "$installed_version"
@@ -59,6 +60,25 @@ ensure_compatible_image() {
         echo "which is higher than the docker image version ($image_version) and downgrading is not supported." >&2
         echo "Are you sure you have pulled the newest image version?" >&2
         exit 1
+    fi
+}
+
+setup_redis() {
+    if [ "${REDIS_HOST:-}" != "" ] && [ "${REDIS_PORT:-}" != "" ] && \
+       [ "${REDIS_KEY:-}" != "" ]; then
+        # We have to escape special characters like equals signs and plus signs
+        # that Azure customarily includes in auth keys.
+        URL_SAFE_REDIS_KEY=$(uri_encode "${REDIS_KEY:-}")
+
+        echo "Configuring Nextcloud to use Redis-based session storage."
+        {
+            echo 'session.save_handler = redis'
+            echo "session.save_path = \"tcp://${REDIS_HOST}:${REDIS_PORT}?auth=${URL_SAFE_REDIS_KEY}\""
+            echo ''
+            echo 'redis.session.locking_enabled = 1'
+            echo 'redis.session.lock_wait_time = 25000'
+            echo 'redis.session.lock_retries = 4000'
+        } > /usr/local/etc/php/conf.d/redis-sessions.ini
     fi
 }
 
@@ -253,6 +273,10 @@ directory_empty() {
     )
 
     [ -z "${dir_contents}" ]
+}
+
+uri_encode() {
+  php -r "echo urlencode('${1}');"
 }
 
 run_as() {
