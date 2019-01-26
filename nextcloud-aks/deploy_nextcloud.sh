@@ -14,5 +14,6 @@ set -u
 
 ./setup_storage_account.sh
 ./setup_redis_cache.sh
+./deploy_clamav.sh
 ./deploy_nextcloud_volumes.sh
 ./deploy_nextcloud_app.sh
