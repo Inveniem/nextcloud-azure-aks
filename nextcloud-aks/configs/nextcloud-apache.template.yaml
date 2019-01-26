@@ -84,21 +84,10 @@ spec:
                 secretKeyRef:
                   name: "${KUBE_NEXTCLOUD_MYSQL_CREDS_SECRET}"
                   key: password
-            - name: MYSQL_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: "${KUBE_NEXTCLOUD_MYSQL_CREDS_SECRET}"
-                  key: password
             - name: REDIS_HOST
-              valueFrom:
-                secretKeyRef:
-                  name: "${KUBE_REDIS_KEY_SECRET}"
-                  key: hostname
+              value: "localhost"
             - name: REDIS_PORT
-              valueFrom:
-                secretKeyRef:
-                  name: "${KUBE_REDIS_KEY_SECRET}"
-                  key: port
+              value: "6379"
             - name: REDIS_KEY
               valueFrom:
                 secretKeyRef:
@@ -123,6 +112,40 @@ spec:
             # to using pod presets.
             #
             # ${FILE_SHARE_VOLUME_MOUNT_LINES}
+        # Container: Secure Tunnel Middleware
+        - name: middle-stunnel
+          image: "guyelsmorepaddock/stunnel:latest"
+          imagePullPolicy: Always
+          resources:
+            requests:
+              cpu: 100m
+              memory: 50Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
+          env:
+            - name: REDIS_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: "${KUBE_REDIS_KEY_SECRET}"
+                  key: hostname
+            - name: REDIS_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: "${KUBE_REDIS_KEY_SECRET}"
+                  key: port
+            - name: STUNNEL_SERVICE
+              value: "redis"
+            - name: STUNNEL_CLIENT
+              value: "yes"
+            - name: STUNNEL_ACCEPT
+              value: "6379"
+            - name: STUNNEL_CONNECT
+              value: "$(REDIS_HOST):$(REDIS_PORT)"
+            - name: STUNNEL_VERIFY_CHAIN
+              value: "yes"
+            - name: STUNNEL_CHECK_HOST
+              value: "$(REDIS_HOST)"
       imagePullSecrets:
         # NOTE: This secret is added by `setup_aks_acr_service_principal.sh`.
         - name: "${ACR_DOCKER_CREDS_SECRET}"

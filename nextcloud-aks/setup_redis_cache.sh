@@ -13,15 +13,13 @@ set -e
 
 source './config.env'
 
-# Sadly, PHP Redis is not compatible with TLS/SSL on the Redis connection
 echo "Creating Redis Cache '${REDIS_CACHE_NAME}'..."
 az redis create \
     --name "${REDIS_CACHE_NAME}" \
     --location "${LOCATION}" \
     --resource-group "${REDIS_RESOURCE_GROUP}" \
     --sku "${REDIS_SKU}" \
-    --vm-size "${REDIS_SIZE}" \
-    --enable-non-ssl-port
+    --vm-size "${REDIS_SIZE}"
 echo "Done."
 echo ""
 
@@ -40,10 +38,11 @@ REDIS_HOST="${REDIS_CACHE_NAME}.redis.cache.windows.net"
 # Note that it *cannot* be specified when creating the cache:
 # https://docs.microsoft.com/en-us/cli/azure/redis?view=azure-cli-latest#required-parameters
 #
-# Unfortunately, the PHP Redis extension does not support TLS/SSL for Redis
-# connections, yet. So, we have to use the non-SSL port.
+# Since Azure supports TLS/SSL but Redis clients don't typically do, "stunnel"
+# is used to locally proxy (insecure) port 6379 to the secure remote port
+# specified below.
 #
-REDIS_PORT="6379"
+REDIS_PORT="6380"
 
 echo "Creating Redis Key Secret for '${KUBE_REDIS_KEY_SECRET}'..."
 kubectl create secret generic "${KUBE_REDIS_KEY_SECRET}" \
