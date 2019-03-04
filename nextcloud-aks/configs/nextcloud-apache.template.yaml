@@ -127,6 +127,8 @@ spec:
               value: "yes"
             - name: STUNNEL_CHECK_HOST
               value: "$(REDIS_HOST)"
+            - name: STUNNEL_CIPHERS
+              value: "DHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-SHA256:DHE-RSA-AES128-SHA256:ECDHE-RSA-AES256-SHA384:ECDHE-RSA-AES128-SHA256:ECDHE-RSA-AES256-SHA:ECDHE-RSA-AES128-SHA:DHE-RSA-AES256-SHA:DHE-RSA-AES128-SHA"
       imagePullSecrets:
         # NOTE: This secret is added by `setup_aks_acr_service_principal.sh`.
         - name: "${ACR_DOCKER_CREDS_SECRET}"
