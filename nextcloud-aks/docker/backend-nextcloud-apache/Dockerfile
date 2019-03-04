@@ -8,10 +8,13 @@
 # @copyright Copyright (c) 2019, Inveniem
 # @license GNU AGPL version 3 or any later version
 #
-FROM nextcloud:15-apache
+FROM nextcloud:15.0.5-apache
 
 # Eliminate default APCu configuration (we're using Redis)
 RUN rm /usr/src/nextcloud/config/apcu.config.php
+
+# Eliminate stock Redis config (we provide our own config, including a password)
+RUN rm -f /usr/src/nextcloud/config/redis.config.php
 
 COPY nextcloud-common/entrypoint.sh /
 COPY nextcloud-common/config/* /usr/src/nextcloud/config/
