@@ -167,9 +167,11 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: frontend-nextcloud-lb
+  name: internal-lb-nextcloud
   labels:
-    role: frontend
+    role: internal-load-balancer
+  annotations:
+    service.beta.kubernetes.io/azure-load-balancer-internal: "true"
 spec:
   type: LoadBalancer
   ports:
