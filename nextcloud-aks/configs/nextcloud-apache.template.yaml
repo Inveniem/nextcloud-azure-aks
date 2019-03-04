@@ -11,7 +11,7 @@ kind: Deployment
 metadata:
   name: nextcloud
 spec:
-  replicas: 2
+  replicas: ${NEXTCLOUD_REPLICA_COUNT}
   revisionHistoryLimit: 2
   selector:
     matchLabels:
