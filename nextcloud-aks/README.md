@@ -42,12 +42,6 @@ deployment models:
    through Nginx, and Nginx handling static file hosting. This deployment 
    consists of pods with two containers -- `backend-nextcloud-fpm` and 
    `middle-nextcloud-nginx`.
-   
-Both pods are also accompanied by a ClamAV container running in daemon mode, to
-support antivirus scans through the 
-[Nextcloud Antivirus app](https://docs.nextcloud.com/server/15/admin_manual/configuration_server/antivirus_configuration.html).
-You will need to enable the app and configure antivirus settings after 
-Nextcloud is installed for the first time.
 
 Set this via the `POD_TYPE` setting in `config.env`.
 
@@ -106,6 +100,29 @@ scripts are listed in dependency order; Nextcloud requires both a Redis cache
 to be in place, as well as storage accounts to be created and registered with 
 Kubernetes as persistent volumes in order for deployment of Nextcloud pods to 
 proceed.
+
+#### Setting Up Antivirus
+If you fully deploy this kit, you will end up with a ClamAV pod and service 
+running alongside the pods for Nextcloud. ClamAV is configured to run in daemon 
+mode, to support antivirus scans through the 
+[Nextcloud Antivirus app](https://docs.nextcloud.com/server/15/admin_manual/configuration_server/antivirus_configuration.html). 
+You will need to enable the app and configure antivirus settings under 
+`settings/admin/security` after Nextcloud is installed for the first time.
+
+Use these settings:
+- **Mode:** 
+  Daemon
+- **Host:** 
+  internal-clamav._NAMESPACE_ (where _NAMESPACE_ is the Kubernetes namespace, 
+  such as `default` or `nextcloud-live`)
+- **Port:** 
+  3310
+- **Stream Length:** 
+  26214400 bytes
+- **File size limit, -1 means no limit:** 
+  -1 bytes
+- **When infected files are found during a background scan:** 
+  _(Administrator choice)_
 
 ## Removing Nextcloud from AKS
 Run `./delete_nextcloud.sh` to fully remove Nextcloud and its storage accounts
