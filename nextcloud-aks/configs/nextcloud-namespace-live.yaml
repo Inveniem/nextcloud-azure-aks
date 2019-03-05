@@ -1,0 +1,14 @@
+##
+# Kubernetes deployment configuration creating a new namespace called
+# "nextcloud-live".
+#
+# @author Guy Elsmore-Paddock (guy@inveniem.com)
+# @copyright Copyright (c) 2019, Inveniem
+# @license GNU AGPL version 3 or any later version
+#
+apiVersion: "v1"
+kind: "Namespace"
+metadata:
+  name: "nextcloud-live"
+  labels:
+    name: "nextcloud-live"
