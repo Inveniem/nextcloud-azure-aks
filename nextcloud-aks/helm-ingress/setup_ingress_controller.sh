@@ -32,7 +32,8 @@ helm install --tls \
     stable/nginx-ingress \
     --namespace "${INGRESS_NAMESPACE}" \
     --set 'controller.replicaCount=2' \
-    --set 'controller.service.externalTrafficPolicy=Local'
+    --set 'controller.service.externalTrafficPolicy=Local' \
+    --set-string controller.config.proxy-body-size="512M"
 
 # Public IP address of your ingress controller
 for attempt in {1..20}; do
