@@ -12,14 +12,10 @@
 set -e
 set -u
 
-DIRS=(
-    'backend-nextcloud-apache'
-    'backend-nextcloud-fpm'
-    'middle-nextcloud-nginx'
-)
+DIRS=$(find . -mindepth 1 -maxdepth 1 -type d -not -name '*common')
 
 ./nextcloud-common/download_apps.sh
 
-for dir in "${DIRS[@]}"; do
-    "${dir}/publish.sh"
+echo "${DIRS[@]}" | while read -r dir; do
+  "${dir}/publish.sh"
 done
