@@ -15,9 +15,9 @@ set -u
 source './config.env'
 
 if [[ "${POD_TYPE:-apache}" = "fpm-nginx" ]]; then
-    FILES=('nextcloud-fpm-nginx.template.yaml')
+    FILES=('app-nextcloud-fpm-nginx.template.yaml')
 else
-    FILES=('nextcloud-apache.template.yaml')
+    FILES=('app-nextcloud-apache.template.yaml')
 fi
 
 FILES+=(

@@ -9,7 +9,7 @@
 # - The `volume` lines are exported in `FILE_SHARE_VOLUME_LINES`.
 #
 # This frees users from having to edit shares directly in
-# `nextcloud-apache.template.yaml` or `nextcloud-fpm-nginx.template.yaml`.
+# `app-nextcloud-apache.template.yaml` or `app-nextcloud-fpm-nginx.template.yaml`.
 #
 # NOTE: This is a hack until AKS supports pod presets, which provide a much
 # more elegant approach to this problem. Vote for the feature here:
