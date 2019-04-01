@@ -33,7 +33,7 @@ helm install --tls \
     --namespace "${INGRESS_NAMESPACE}" \
     --set 'controller.replicaCount=2' \
     --set 'controller.service.externalTrafficPolicy=Local' \
-    --set-string controller.config.proxy-body-size="512M"
+    --set-string controller.config.proxy-body-size="2G"
 
 # Public IP address of your ingress controller
 for attempt in {1..20}; do
