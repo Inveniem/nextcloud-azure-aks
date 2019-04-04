@@ -102,7 +102,7 @@ spec:
               cpu: 100m
               memory: 50Mi
             limits:
-              cpu: 200m
+              cpu: 1000m
               memory: 128Mi
           env:
             - name: REDIS_HOST
@@ -152,6 +152,8 @@ apiVersion: v1
 kind: Service
 metadata:
   name: internal-nextcloud
+  labels:
+    role: internal-service
 spec:
   type: ClusterIP
   ports:

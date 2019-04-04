@@ -148,8 +148,9 @@ spec:
         # NOTE: This secret is added by `setup_aks_acr_service_principal.sh`.
         - name: "${ACR_DOCKER_CREDS_SECRET}"
       volumes:
-        # Ephemeral volume shared between the Nextcloud PHP-FPM and Nginx
-        # containers within the same pod
+        # Ephemeral volume that contains the loaded Nextcloud software,
+        # shared between the Nextcloud PHP-FPM and Nginx containers within the
+        # same pod
         - name: volume-nextcloud-app
           emptyDir: {}
         # Remaining volumes are handled through Persistent Volume Claims
