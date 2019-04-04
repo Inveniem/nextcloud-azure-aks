@@ -95,6 +95,29 @@ spec:
                 secretKeyRef:
                   name: "${KUBE_REDIS_KEY_SECRET}"
                   key: key
+          readinessProbe:
+            httpGet:
+              # This path should work both before and after installation.
+              # In local testing, Nextcloud serves up the installer regardless
+              # of which URL is provided.
+              path: "/index.php/login?direct=1"
+              port: 80
+              httpHeaders:
+                - name: "Host"
+                  value: "${NEXTCLOUD_PRIMARY_HOSTNAME}"
+            initialDelaySeconds: 1
+            periodSeconds: 5
+            timeoutSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: "/status.php"
+              port: 80
+              httpHeaders:
+                - name: "Host"
+                  value: "${NEXTCLOUD_PRIMARY_HOSTNAME}"
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 10
         # Container: Secure Tunnel Middleware
         - name: middle-stunnel
           image: "guyelsmorepaddock/stunnel:latest"
