@@ -25,7 +25,7 @@ spec:
       containers:
         # Container: The Apache-based Nextcloud backend
         - name: backend-nextcloud-apache
-          image: "${REGISTRY_HOST}/inveniem/nextcloud-apache:latest"
+          image: "${REGISTRY_HOST}/inveniem/nextcloud-apache:${CONTAINER_VERSION}"
           imagePullPolicy: Always
           ports:
             - containerPort: 80

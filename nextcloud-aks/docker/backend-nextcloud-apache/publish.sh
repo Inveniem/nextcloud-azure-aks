@@ -12,12 +12,13 @@
 set -e
 set -u
 
-CONTAINER_NAME="inveniem/nextcloud-apache:latest"
-
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 cd "${SCRIPT_DIR}"
 
 source '../../config.env'
+
+CONTAINER_VERSION="${CONTAINER_VERSION:-latest}"
+CONTAINER_NAME="inveniem/nextcloud-apache:${CONTAINER_VERSION}"
 
 ../nextcloud-common/generate_nr_setup_command.sh
 
