@@ -26,7 +26,7 @@ spec:
         # Container: The PHP-FPM-based Nextcloud backend
         - name: backend-nextcloud-fpm
           image: "${REGISTRY_HOST}/inveniem/nextcloud-fpm:${CONTAINER_VERSION}"
-          imagePullPolicy: Always
+#          imagePullPolicy: Always
           resources:
             requests:
               cpu: 10m
@@ -95,8 +95,8 @@ spec:
                   key: key
         # Container: Secure Tunnel Middleware
         - name: middle-stunnel
-          image: "guyelsmorepaddock/stunnel:latest"
-          imagePullPolicy: Always
+          image: "guyelsmorepaddock/stunnel@sha256:1e066a006c75ba487754857fa5b1ed259937e7e7650c108e16ff5ea184c94f0f"
+#          imagePullPolicy: Always
           resources:
             requests:
               cpu: 25m
@@ -132,7 +132,7 @@ spec:
         # Container: Nginx Server Middleware
         - name: middle-nextcloud-nginx
           image: "${REGISTRY_HOST}/inveniem/nextcloud-nginx-middleware:${CONTAINER_VERSION}"
-          imagePullPolicy: Always
+#          imagePullPolicy: Always
           ports:
             - containerPort: 80
           resources:
