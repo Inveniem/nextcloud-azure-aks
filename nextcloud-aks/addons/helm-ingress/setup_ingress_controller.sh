@@ -26,7 +26,7 @@ set -e
 set -u
 
 source "constants.env"
-source "./config.env"
+source "config.env"
 
 helm install --tls \
     stable/nginx-ingress \

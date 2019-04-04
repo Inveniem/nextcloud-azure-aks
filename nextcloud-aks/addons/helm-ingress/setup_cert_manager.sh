@@ -21,8 +21,8 @@
 set -e
 set -u
 
-source "./constants.env"
-source "./config.env"
+source "constants.env"
+source "config.env"
 
 kubectl label namespace \
     "${CERTMANAGER_NAMESPACE}" \
