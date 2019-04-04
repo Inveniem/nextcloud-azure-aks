@@ -3,4 +3,5 @@
 	# that gets echoed out to the Pod log.
 	$CONFIG = array(
 		'logfile' => '/var/log/nextcloud.log',
+		'loglevel' => 1,
 	);

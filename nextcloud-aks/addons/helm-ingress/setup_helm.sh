@@ -30,8 +30,8 @@
 set -e
 set -u
 
-source "./constants.env"
-source "./config.env"
+source "constants.env"
+source "config.env"
 
 if [[ ! -f "${CA_CERT_PATH}" ]]; then
     echo "CA certificate is missing: ${CA_CERT_PATH}" >&2

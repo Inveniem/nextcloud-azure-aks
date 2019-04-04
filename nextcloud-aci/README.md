@@ -41,7 +41,7 @@ Unfortunately, this approach doesn't work well for two reasons: a technical
 issue, and a pricing issue.
 
 ### The Technical Issue with This Approach
-ended up not working because of limitations in both
+This approach ended up not working because of limitations in both
 Azure Files and Nextcloud. Nextcloud requires `config.php` to be owned by the
 same user account as the web server is running under (i.e. `www-data`) and to
 have permissions of `0770`. Meanwhile, Azure Files uses SMB which does not 
@@ -99,3 +99,6 @@ provides more robust control over volumes at a much more affordable price. F2s
 v2 instances can be used as Kubernetes nodes. This has the added benefit that
 multiple applications can be run on the same VMs in addition to Nextcloud, 
 further increasing the cost effectiveness of your installation.
+
+**See the [nextcloud-aks](https://github.com/GuyPaddock/inveniem-nextcloud-azure/tree/master/nextcloud-aks)
+folder for an approach that works by using AKS.**

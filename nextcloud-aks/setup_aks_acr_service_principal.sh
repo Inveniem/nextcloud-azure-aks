@@ -4,7 +4,7 @@
 # This script is used to setup AKS with credentials to an Azure AD service
 # principal that has access to the ACR repo where images are stored.
 #
-# This script only needs to be run once per AKS instance. The name of each
+# This script only needs to be run once per AKS context. The name of each
 # ACR service principal must be unique within an AD tenant.
 #
 # This script is based on:

@@ -46,4 +46,7 @@ spec:
     requests:
       storage: 100Gi
   volumeName: "vol-nextcloud-share-${file_share_name}"
+
+# NOTE: Preserve the following break; this template runs in a loop and is concatenated
+# together to form the final config.
 ---

@@ -1,6 +1,6 @@
 ##
-# Kubernetes deployment configuration for running Nextcloud on PHP FPM with
-# an Nginx reverse proxy.
+# Kubernetes deployment configuration for running Nextcloud on Apache with
+# `mod_php`.
 #
 # @author Guy Elsmore-Paddock (guy@inveniem.com)
 # @copyright Copyright (c) 2019, Inveniem
@@ -23,13 +23,15 @@ spec:
         role: backend
     spec:
       containers:
-        # Container: The PHP-FPM-based Nextcloud backend
-        - name: backend-nextcloud-fpm
-          image: "${REGISTRY_HOST}/inveniem/nextcloud-fpm:${CONTAINER_VERSION}"
-          imagePullPolicy: Always
+        # Container: The Apache-based Nextcloud backend
+        - name: backend-nextcloud-apache
+          image: "${REGISTRY_HOST}/inveniem/nextcloud-apache:${CONTAINER_VERSION}"
+#          imagePullPolicy: Always
+          ports:
+            - containerPort: 80
           resources:
             requests:
-              cpu: 100m
+              cpu: 25m
               memory: 128Mi
             limits:
               cpu: 1500m
@@ -47,6 +49,8 @@ spec:
             #
             # ${FILE_SHARE_VOLUME_MOUNT_LINES}
           env:
+            - name: NEXTCLOUD_CONFIG_READ_ONLY
+              value: "${NEXTCLOUD_CONFIG_READ_ONLY}"
             - name: NEXTCLOUD_TRUSTED_DOMAINS
               valueFrom:
                 configMapKeyRef:
@@ -91,13 +95,36 @@ spec:
                 secretKeyRef:
                   name: "${KUBE_REDIS_KEY_SECRET}"
                   key: key
+          readinessProbe:
+            httpGet:
+              # This path should work both before and after installation.
+              # In local testing, Nextcloud serves up the installer regardless
+              # of which URL is provided.
+              path: "/index.php/login?direct=1"
+              port: 80
+              httpHeaders:
+                - name: "Host"
+                  value: "${NEXTCLOUD_PRIMARY_HOSTNAME}"
+            initialDelaySeconds: 1
+            periodSeconds: 5
+            timeoutSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: "/status.php"
+              port: 80
+              httpHeaders:
+                - name: "Host"
+                  value: "${NEXTCLOUD_PRIMARY_HOSTNAME}"
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 10
         # Container: Secure Tunnel Middleware
         - name: middle-stunnel
-          image: "guyelsmorepaddock/stunnel:latest"
-          imagePullPolicy: Always
+          image: "guyelsmorepaddock/stunnel@sha256:1e066a006c75ba487754857fa5b1ed259937e7e7650c108e16ff5ea184c94f0f"
+#          imagePullPolicy: Always
           resources:
             requests:
-              cpu: 100m
+              cpu: 25m
               memory: 50Mi
             limits:
               cpu: 1000m
@@ -127,35 +154,18 @@ spec:
               value: "$(REDIS_HOST)"
             - name: STUNNEL_CIPHERS
               value: "DHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-SHA256:DHE-RSA-AES128-SHA256:ECDHE-RSA-AES256-SHA384:ECDHE-RSA-AES128-SHA256:ECDHE-RSA-AES256-SHA:ECDHE-RSA-AES128-SHA:DHE-RSA-AES256-SHA:DHE-RSA-AES128-SHA"
-        # Container: Nginx Server Middleware
-        - name: middle-nextcloud-nginx
-          image: "${REGISTRY_HOST}/inveniem/nextcloud-nginx-middleware:${CONTAINER_VERSION}"
-          imagePullPolicy: Always
-          ports:
-            - containerPort: 80
-          resources:
-            requests:
-              cpu: 100m
-              memory: 128Mi
-            limits:
-              cpu: 1000m
-              memory: 512Mi
-          volumeMounts:
-            - name: volume-nextcloud-app
-              mountPath: /var/www/html
-              readOnly: true
       imagePullSecrets:
         # NOTE: This secret is added by `setup_aks_acr_service_principal.sh`.
         - name: "${ACR_DOCKER_CREDS_SECRET}"
       volumes:
-        # Ephemeral volume shared between the Nextcloud PHP-FPM and Nginx
-        # containers within the same pod
+        # Ephemeral volume that contains the loaded Nextcloud software
         - name: volume-nextcloud-app
           emptyDir: {}
         # Remaining volumes are handled through Persistent Volume Claims
         - name: volume-nextcloud-config
           persistentVolumeClaim:
             claimName: claim-nextcloud-config
+            readOnly: ${NEXTCLOUD_CONFIG_READ_ONLY}
         # HACK: Until AKS supports pod presets, we have to kludge the dynamic
         # mounts in via a variable expansion. Do not modify the last line of
         # this comment; it gets expanded and replaced automatically when this

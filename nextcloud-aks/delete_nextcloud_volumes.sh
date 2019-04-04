@@ -15,8 +15,7 @@ set -e
 set -u
 
 FILES=(
-    'blob-volumes.template.yaml'
-    'blob-claims.template.yaml'
+    'vol-blob.template.yaml'
 )
 
 echo "Removing Nextcloud persisted volumes for Azure Blob Storage..."

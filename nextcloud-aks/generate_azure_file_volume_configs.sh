@@ -21,6 +21,6 @@ for file_share_name in "${STORAGE_FILE_SHARES[@]}"; do
     export file_share_name
 
     # We use `grep -o` to skip Bash comment lines
-    ./preprocess_config.sh './configs/file-share.template.yaml' | \
+    ./preprocess_config.sh './configs/vol-file-share.template.yaml' | \
         grep -o '^[^#]*'
 done

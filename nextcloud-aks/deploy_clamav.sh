@@ -14,7 +14,7 @@ set -u
 source './config.env'
 
 FILES=(
-    'clamav.template.yaml'
+    'app-clamav.template.yaml'
 )
 
 

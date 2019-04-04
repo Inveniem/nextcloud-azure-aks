@@ -20,8 +20,8 @@ set -u
 source './config.env'
 
 FILES=(
-    'nextcloud-namespace-dev.yaml'
-    'nextcloud-namespace-live.yaml'
+    'namespace-nextcloud-dev.yaml'
+    'namespace-nextcloud-live.yaml'
 )
 
 echo "Deploying Nextcloud namespaces..."

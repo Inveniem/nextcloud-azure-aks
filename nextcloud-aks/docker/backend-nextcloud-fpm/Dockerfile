@@ -10,6 +10,8 @@
 #
 FROM nextcloud:15.0.5-fpm
 
+ENV NEXTCLOUD_CONFIG_READ_ONLY "false"
+
 # Eliminate default APCu configuration (we're using Redis)
 RUN rm /usr/src/nextcloud/config/apcu.config.php
 

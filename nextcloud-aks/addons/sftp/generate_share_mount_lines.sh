@@ -9,11 +9,15 @@
 # - The `volume` lines are exported in `FILE_SHARE_VOLUME_LINES`.
 #
 # This frees users from having to edit shares directly in
-# `app-nextcloud-apache.template.yaml` or `app-nextcloud-fpm-nginx.template.yaml`.
+# `app-sftp.template.yaml`.
 #
 # NOTE: This is a hack until AKS supports pod presets, which provide a much
 # more elegant approach to this problem. Vote for the feature here:
 # https://feedback.azure.com/forums/914020-azure-kubernetes-service-aks/suggestions/35054089-support-podpreset-alpha-feature
+#
+# ALSO NOTE: This is similar to, but distinct from,
+# `generate_backend_share_mount_lines.sh` in the parent folder. This script has
+# been tailored to match the needs of the SFTP application.
 #
 # @author Guy Elsmore-Paddock (guy@inveniem.com)
 # @copyright Copyright (c) 2019, Inveniem
@@ -30,16 +34,18 @@ generate_volume_mount_lines() {
     echo ""
 
     for file_share_name in "${STORAGE_FILE_SHARES[@]}"; do
-        if [[ "${file_share_name}" = "nextcloud-data" ]]; then
-            mount_path="/var/www/html/data"
-        else
-            mount_path="/mnt/share/${file_share_name}"
+        if [[ ! ${PATH_USERS["${file_share_name}"]+_} ]]; then
+            continue
         fi
 
-        cat <<EOF
+        for user in ${PATH_USERS["${file_share_name}"]}; do
+            mount_path="/home/${user}/${file_share_name}"
+
+            cat <<EOF
             - mountPath: "${mount_path}"
               name: "volume-nextcloud-${file_share_name}"
 EOF
+        done
     done
 }
 
