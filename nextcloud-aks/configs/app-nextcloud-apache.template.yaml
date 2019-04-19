@@ -105,9 +105,9 @@ spec:
               httpHeaders:
                 - name: "Host"
                   value: "${NEXTCLOUD_PRIMARY_HOSTNAME}"
-            initialDelaySeconds: 1
-            periodSeconds: 5
-            timeoutSeconds: 10
+            initialDelaySeconds: 5
+            periodSeconds: 30
+            timeoutSeconds: 5
           livenessProbe:
             httpGet:
               path: "/status.php"

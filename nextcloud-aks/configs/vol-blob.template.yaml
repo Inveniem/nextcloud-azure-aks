@@ -23,7 +23,7 @@ spec:
     options:
       container: nextcloud-config
       tmppath: /mnt/blobfusetmp/nextcloud-config
-      mountoptions: "-o uid=33 -o gid=33 -o allow_other -o umask=007 --file-cache-timeout-in-seconds=120"
+      mountoptions: "-o uid=33 -o gid=33 -o allow_other -o umask=007 --file-cache-timeout-in-seconds=300"
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
