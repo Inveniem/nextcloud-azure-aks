@@ -93,6 +93,16 @@ deploy_nextcloud_release() {
 
     rsync $rsync_options --delete --exclude-from=/upgrade.exclude /usr/src/nextcloud/ /var/www/html/
 
+    # Copy version.php last, per https://github.com/nextcloud/docker/pull/660
+    #
+    # NOTE: We have to do this separately since recent images added version.php
+    # to the "upgrade.exclude" list. However, we aren't affected by the upstream
+    # issue that this workaround was intended for because NC code is not
+    # persisted from container to container -- we keep it in an ephemeral,
+    # emptyDir volume within each pod, so we always sync version.php at startup.
+    #
+    rsync $rsync_options --include '/version.php' --exclude '/*' /usr/src/nextcloud/ /var/www/html/
+
     # Explicitly sync 'custom_apps' in this Docker image
     rsync $rsync_options --delete /usr/src/nextcloud/custom_apps/ /var/www/html/custom_apps/
 
