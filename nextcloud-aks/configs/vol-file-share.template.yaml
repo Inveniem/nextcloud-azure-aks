@@ -21,7 +21,7 @@ metadata:
   name: "vol-nextcloud-share-${file_share_name}"
 spec:
   capacity:
-    storage: 100Gi
+    storage: 1Ti
   accessModes:
     - ReadWriteMany
   azureFile:
@@ -44,7 +44,7 @@ spec:
     - ReadWriteMany
   resources:
     requests:
-      storage: 100Gi
+      storage: 1Ti
   volumeName: "vol-nextcloud-share-${file_share_name}"
 
 # NOTE: Preserve the following break; this template runs in a loop and is concatenated
