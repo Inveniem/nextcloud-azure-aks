@@ -32,6 +32,8 @@ generate_volume_mount_lines() {
     for file_share_name in "${STORAGE_FILE_SHARES[@]}"; do
         if [[ "${file_share_name}" = "nextcloud-data" ]]; then
             mount_path="/var/www/html/data"
+        elif [[ "${file_share_name}" = "nextcloud-config" ]]; then
+            mount_path="/var/www/html/config"
         else
             mount_path="/mnt/share/${file_share_name}"
         fi

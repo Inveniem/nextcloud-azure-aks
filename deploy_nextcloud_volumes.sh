@@ -14,17 +14,6 @@ set -u
 
 source './config.env'
 
-FILES=(
-    'vol-blob.template.yaml'
-)
-
-echo "Setting up Nextcloud persisted volumes for Azure Blob Storage..."
-for file in "${FILES[@]}"; do
-    ./preprocess_config.sh "configs/${file}" | kubectl apply -f -
-done
-echo "Done."
-echo ""
-
 echo "Setting up Nextcloud persisted volumes for Azure Files..."
 ./generate_azure_file_volume_configs.sh | kubectl apply -f -
 echo "Done."

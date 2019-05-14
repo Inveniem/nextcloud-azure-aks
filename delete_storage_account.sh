@@ -19,11 +19,6 @@ kubectl delete secret "${KUBE_FILES_STORAGE_ACCOUNT_SECRET}"
 echo "Done."
 echo ""
 
-echo "Removing BlobFUSE Kubernetes Secret for '${KUBE_BLOB_STORAGE_ACCOUNT_SECRET}'..."
-kubectl delete secret "${KUBE_BLOB_STORAGE_ACCOUNT_SECRET}"
-echo "Done."
-echo ""
-
 echo "Removing Storage Account '${STORAGE_ACCOUNT_NAME}'..."
 echo ""
 echo "WARNING: This will delete ALL files Nextcloud has stored on Azure."

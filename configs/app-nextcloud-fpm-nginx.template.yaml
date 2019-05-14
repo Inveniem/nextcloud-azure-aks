@@ -36,8 +36,6 @@ spec:
           volumeMounts:
             - name: volume-nextcloud-app
               mountPath: /var/www/html
-            - name: volume-nextcloud-config
-              mountPath: /var/www/html/config
             # HACK: Until AKS supports pod presets, we have to kludge the dynamic
             # mounts in via a variable expansion. Do not modify the last line of
             # this comment; it gets expanded and replaced automatically when this
@@ -148,11 +146,6 @@ spec:
         # same pod
         - name: volume-nextcloud-app
           emptyDir: {}
-        # Remaining volumes are handled through Persistent Volume Claims
-        - name: volume-nextcloud-config
-          persistentVolumeClaim:
-            claimName: claim-nextcloud-config
-            readOnly: ${NEXTCLOUD_CONFIG_READ_ONLY}
         # HACK: Until AKS supports pod presets, we have to kludge the dynamic
         # mounts in via a variable expansion. Do not modify the last line of
         # this comment; it gets expanded and replaced automatically when this

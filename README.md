@@ -10,8 +10,6 @@ run Nextcloud on Azure Container Instances.
 You will need to do the following before you can use this resource kit:
 - Create an AKS cluster with at least one node 
   (F2s v2 instances are recommended).
-- Install BlobFUSE on the AKS cluster (see [step 2 of the BlobFUSE
-  FlexVolume driver documentation](https://github.com/Azure/kubernetes-volume-drivers/tree/master/flexvolume/blobfuse)).
 - Setup an Azure Container Registry (ACR).
 - Setup a MySQL server instance on Azure.
 - Create an empty database and its corresponding user account on the MySQL 
@@ -78,11 +76,8 @@ persistent data that Nextcloud requires can be stored. The account is created by
 `./setup_storage_account.sh` as part of the top-level `./deploy_nextcloud.sh` 
 script.
 
-Nextcloud stores data in this storage account as follows:
-- Configuration files are stored in a low-cost Azure Blob container that is
-  mounted with the BlobFUSE driver.
-- All other data (including per-user data and additional per-client shares) are 
-  stored on Azure Files shares that the script creates.
+All files -- including configuration files, per-user data, and per-client 
+shares -- are stored on Azure Files shares that the script creates.
 
 #### About the Redis Cache
 To support clustered deployment (i.e. multiple Nextcloud pods behind a load
