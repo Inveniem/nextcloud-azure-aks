@@ -1,0 +1,43 @@
+##
+# Kubernetes deployment configuration for running a standard Ubuntu image, for
+# diagnosing issues with Nextcloud from inside the cluster.
+#
+# @author Guy Elsmore-Paddock (guy@inveniem.com)
+# @copyright Copyright (c) 2019, Inveniem
+# @license GNU AGPL version 3 or any later version
+#
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ubuntu-diag
+spec:
+  replicas: 1
+  revisionHistoryLimit: 2
+  selector:
+    matchLabels:
+      app: utility-ubuntu-diag
+  template:
+    metadata:
+      labels:
+        app: utility-ubuntu-diag
+        role: utility
+    spec:
+      containers:
+        - name: ubuntu
+          image: "ubuntu:18.04"
+          command: [ "sleep" ]
+          args: [ "infinity" ]
+          resources:
+            requests:
+              cpu: 100m
+              memory: 64Mi
+            limits:
+              cpu: 2000m
+              memory: 512Mi
+          volumeMounts:
+            - name: volume-nextcloud-client-zft
+              mountPath: "/mnt/share/client-zft"
+      volumes:
+        - name: volume-nextcloud-client-zft
+          persistentVolumeClaim:
+            claimName: "claim-nextcloud-client-zft"
