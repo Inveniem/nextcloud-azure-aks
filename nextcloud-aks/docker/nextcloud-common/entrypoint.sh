@@ -33,7 +33,6 @@ initialize_container() {
 
         ensure_compatible_image "${installed_version}" "${image_version}"
         deploy_nextcloud_release
-        restore_instance_state
         setup_redis
 
         if version_greater "$image_version" "$installed_version"; then
@@ -48,6 +47,8 @@ initialize_container() {
 
             capture_instance_state
         fi
+
+        update_htaccess
     fi
 }
 
@@ -137,18 +138,10 @@ populate_instance_dirs() {
     done
 }
 
-restore_instance_state() {
-    # Restore customizations that the installer makes to the `.htaccess`
-    if [ -f /var/www/html/config/root.htaccess ]; then
-        cp /var/www/html/config/root.htaccess /var/www/html/.htaccess
-    fi
-}
-
 capture_instance_state() {
-    # Capture the only two files needed from a distribution to properly spin up
-    # new instances and/or upgrade existing ones
+    # Capture the only file needed from a distribution to properly spin up a
+    # new instance and/or upgrade an existing one
     cp /usr/src/nextcloud/version.php /var/www/html/config/version.php
-    cp /var/www/html/.htaccess /var/www/html/config/root.htaccess
 }
 
 install_nextcloud() {
@@ -272,6 +265,12 @@ configure_trusted_domains() {
             NC_TRUSTED_DOMAIN_IDX=$(($NC_TRUSTED_DOMAIN_IDX+1))
         done
     fi
+}
+
+update_htaccess() {
+    # From https://help.nextcloud.com/t/apache-rewrite-to-remove-index-php/658
+    echo "Updating .htaccess for proper rewrites..."
+    run_as "php /var/www/html/occ maintenance:update:htaccess"
 }
 
 start_log_capture() {
