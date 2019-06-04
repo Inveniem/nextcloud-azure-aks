@@ -13,10 +13,37 @@ FROM nextcloud:15.0.7-apache
 ENV NEXTCLOUD_CONFIG_READ_ONLY "false"
 
 # Eliminate default APCu configuration (we're using Redis)
+#
+# NOTE: This removes a config added by the base image.
 RUN rm /usr/src/nextcloud/config/apcu.config.php
 
 # Eliminate stock Redis config (we provide our own config, including a password)
+#
+# NOTE: This removes a config added by the base image.
 RUN rm -f /usr/src/nextcloud/config/redis.config.php
+
+# Allow detection of HTTPS from behind SSL-enabled ingress
+#
+# NOTE: This has security implications if the Nextcloud service is exposed
+# directly to the internet via a LoadBalancer service type instead of being
+# an internal service behind an HTTPS-only ingress. Normally, it is only
+# safe to trust HTTP_X_FORWARDED_* headers from known proxies. However,
+# within a cluster that is only accessible through HTTPS-only ingress, it
+# should not be possible to access this internal Apache server directly.
+#
+RUN {\
+     echo 'SetEnvIf X-Forwarded-Proto "https" HTTPS=on' ;\
+    } > /etc/apache2/conf-available/forwarded-https.conf;\
+    a2enconf forwarded-https
+
+# Properly log real client IP address when behind ingress.
+#
+RUN {\
+     echo 'LogFormat "%v:%p %a %l %u %t \"%r\" %>s %O \"%{Referer}i\" \"%{User-Agent}i\"" vhost_combined' ;\
+     echo 'LogFormat "%a %l %u %t \"%r\" %>s %O \"%{Referer}i\" \"%{User-Agent}i\"" combined' ;\
+     echo 'LogFormat "%a %l %u %t \"%r\" %>s %O" common' ;\
+    } > /etc/apache2/conf-available/forwarded-client-ip.conf;\
+    a2enconf forwarded-client-ip
 
 COPY nextcloud-common/entrypoint.sh /
 COPY nextcloud-common/config/* /usr/src/nextcloud/config/
