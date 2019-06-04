@@ -140,6 +140,8 @@ spec:
                 secretKeyRef:
                   name: "${KUBE_REDIS_KEY_SECRET}"
                   key: port
+            - name: STUNNEL_DEBUG
+              value: "4"
             - name: STUNNEL_SERVICE
               value: "redis"
             - name: STUNNEL_CLIENT
