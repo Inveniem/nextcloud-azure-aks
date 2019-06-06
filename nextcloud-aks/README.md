@@ -86,10 +86,10 @@ Nextcloud stores data in this storage account as follows:
 
 #### About the Redis Cache
 To support clustered deployment (i.e. multiple Nextcloud pods behind a load
-balancer), this resource kit is designed to create a Redis cache instance that
-is used to persist file locks and PHP sessions. The cache is automatically 
-created by `./setup_redis_cache.sh` as part of running the top-level 
-`./deploy_nextcloud.sh` script.
+balancer), this resource kit is designed to create a Redis cache pod within
+the cluster that is used to persist file locks and PHP sessions. The cache is 
+automatically created by `./deploy_redis_cache.sh` as part of running the 
+top-level `./deploy_nextcloud.sh` script.
 
 #### Running the Deployment as Individual Pieces
 For greater control -- as an alternative to running the top-level script -- you 

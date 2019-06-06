@@ -15,6 +15,6 @@ set -u
 ./delete_nextcloud_app.sh
 ./delete_nextcloud_volumes.sh
 ./delete_storage_account.sh
-./delete_redis_cache.sh
+./delete_redis_app.sh
 ./delete_clamav.sh
 ./recreate_nextcloud_db.sh

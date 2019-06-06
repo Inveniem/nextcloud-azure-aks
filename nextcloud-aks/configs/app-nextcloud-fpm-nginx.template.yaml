@@ -85,52 +85,9 @@ spec:
                   name: "${KUBE_NEXTCLOUD_MYSQL_CREDS_SECRET}"
                   key: password
             - name: REDIS_HOST
-              value: "localhost"
+              value: "internal-redis"
             - name: REDIS_PORT
               value: "6379"
-            - name: REDIS_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: "${KUBE_REDIS_KEY_SECRET}"
-                  key: key
-        # Container: Secure Tunnel Middleware
-        - name: middle-stunnel
-          image: "guyelsmorepaddock/stunnel@sha256:1e066a006c75ba487754857fa5b1ed259937e7e7650c108e16ff5ea184c94f0f"
-#          imagePullPolicy: Always
-          resources:
-            requests:
-              cpu: 25m
-              memory: 50Mi
-            limits:
-              cpu: 1000m
-              memory: 128Mi
-          env:
-            - name: REDIS_HOST
-              valueFrom:
-                secretKeyRef:
-                  name: "${KUBE_REDIS_KEY_SECRET}"
-                  key: hostname
-            - name: REDIS_PORT
-              valueFrom:
-                secretKeyRef:
-                  name: "${KUBE_REDIS_KEY_SECRET}"
-                  key: port
-            - name: STUNNEL_DEBUG
-              value: "4"
-            - name: STUNNEL_SERVICE
-              value: "redis"
-            - name: STUNNEL_CLIENT
-              value: "yes"
-            - name: STUNNEL_ACCEPT
-              value: "6379"
-            - name: STUNNEL_CONNECT
-              value: "$(REDIS_HOST):$(REDIS_PORT)"
-            - name: STUNNEL_VERIFY_CHAIN
-              value: "yes"
-            - name: STUNNEL_CHECK_HOST
-              value: "$(REDIS_HOST)"
-            - name: STUNNEL_CIPHERS
-              value: "DHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-SHA256:DHE-RSA-AES128-SHA256:ECDHE-RSA-AES256-SHA384:ECDHE-RSA-AES128-SHA256:ECDHE-RSA-AES256-SHA:ECDHE-RSA-AES128-SHA:DHE-RSA-AES256-SHA:DHE-RSA-AES128-SHA"
         # Container: Nginx Server Middleware
         - name: middle-nextcloud-nginx
           image: "${REGISTRY_HOST}/inveniem/nextcloud-nginx-middleware:${CONTAINER_VERSION}"

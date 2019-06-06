@@ -17,7 +17,7 @@ ENV NEXTCLOUD_CONFIG_READ_ONLY "false"
 # NOTE: This removes a config added by the base image.
 RUN rm /usr/src/nextcloud/config/apcu.config.php
 
-# Eliminate stock Redis config (we provide our own config, including a password)
+# Eliminate stock Redis config (we provide our own config)
 #
 # NOTE: This removes a config added by the base image.
 RUN rm -f /usr/src/nextcloud/config/redis.config.php

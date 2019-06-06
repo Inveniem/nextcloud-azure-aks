@@ -65,22 +65,31 @@ ensure_compatible_image() {
 }
 
 setup_redis() {
-    if [ "${REDIS_HOST:-}" != "" ] && [ "${REDIS_PORT:-}" != "" ] && \
-       [ "${REDIS_KEY:-}" != "" ]; then
+    if [ "${REDIS_HOST:-}" = "" ]; then
+        return
+    fi
+
+    REDIS_PORT="${REDIS_PORT:-6379}"
+
+    if [ "${REDIS_KEY:-}" != "" ]; then
         # We have to escape special characters like equals signs and plus signs
         # that Azure customarily includes in auth keys.
         URL_SAFE_REDIS_KEY=$(uri_encode "${REDIS_KEY:-}")
 
-        echo "Configuring Nextcloud to use Redis-based session storage."
-        {
-            echo 'session.save_handler = redis'
-            echo "session.save_path = \"tcp://${REDIS_HOST}:${REDIS_PORT}?auth=${URL_SAFE_REDIS_KEY}\""
-            echo ''
-            echo 'redis.session.locking_enabled = 1'
-            echo 'redis.session.lock_wait_time = 25000'
-            echo 'redis.session.lock_retries = 4000'
-        } > /usr/local/etc/php/conf.d/redis-sessions.ini
+        REDIS_QUERY_STRING="?auth=${URL_SAFE_REDIS_KEY}"
+    else
+        REDIS_QUERY_STRING=""
     fi
+
+    echo "Configuring Nextcloud to use Redis-based session storage."
+    {
+        echo 'session.save_handler = redis'
+        echo "session.save_path = \"tcp://${REDIS_HOST}:${REDIS_PORT}${REDIS_QUERY_STRING}\""
+        echo ''
+        echo 'redis.session.locking_enabled = 1'
+        echo 'redis.session.lock_wait_time = 25000'
+        echo 'redis.session.lock_retries = 4000'
+    } > /usr/local/etc/php/conf.d/redis-sessions.ini
 }
 
 deploy_nextcloud_release() {

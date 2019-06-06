@@ -1,0 +1,80 @@
+##
+# Kubernetes deployment configuration for running Redis as an internal service,
+# for use by Nextcloud.
+#
+# With this configuration, Nextcloud can reach Redis on port 6379 at hostname
+# "internal-redis.NAMESPACE.svc.cluster.local" (aka "internal-redis.NAMESPACE"
+# or "internal-redis" for short") within the cluster.
+#
+# @author Guy Elsmore-Paddock (guy@inveniem.com)
+# @copyright Copyright (c) 2019, Inveniem
+# @license GNU AGPL version 3 or any later version
+#
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis
+spec:
+  replicas: 1
+  revisionHistoryLimit: 2
+  selector:
+    matchLabels:
+      app: backend-redis
+  template:
+    metadata:
+      labels:
+        app: backend-redis
+        role: backend
+    spec:
+      # This is needed to address this warning from Redis:
+      # "WARNING you have Transparent Huge Pages (THP) support enabled in
+      # your kernel."
+      initContainers:
+        - name: disable-thp
+          image: busybox
+          volumeMounts:
+            - name: host-sys
+              mountPath: /host-sys
+          command: ["sh", "-c", "echo never > /host-sys/kernel/mm/transparent_hugepage/enabled"]
+      containers:
+        - name: redis
+          image: "redis:5.0.5-alpine"
+          ports:
+            - containerPort: 6379
+          resources:
+            requests:
+              cpu: 50m
+              memory: 8Mi
+            limits:
+              cpu: 250m
+              memory: 256Mi
+          readinessProbe:
+            exec:
+              command: ["sh", "-c", "redis-cli ping"]
+            initialDelaySeconds: 5
+            periodSeconds: 30
+            timeoutSeconds: 5
+          livenessProbe:
+            exec:
+              command: ["sh", "-c", "redis-cli ping"]
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 10
+      volumes:
+        - name: host-sys
+          hostPath:
+            path: /sys
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: internal-redis
+  labels:
+    role: internal-service
+spec:
+  ports:
+    - name: redis
+      protocol: TCP
+      port: 6379
+  selector:
+    app: backend-redis
