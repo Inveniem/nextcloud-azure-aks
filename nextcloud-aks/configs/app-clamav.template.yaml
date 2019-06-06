@@ -3,8 +3,8 @@
 # service, for use by Nextcloud's Antivirus app.
 #
 # With this configuration, Nextcloud can reach ClamAV on port 3310 at hostname
-# "internal-clamav.default.svc.cluster.local" (aka "internal-clamav.default" or
-# "internal-clamav" for short") within the cluster.
+# "internal-clamav.NAMESPACE.svc.cluster.local" (aka "internal-clamav.NAMESPACE"
+# or "internal-clamav" for short") within the cluster.
 #
 # @author Guy Elsmore-Paddock (guy@inveniem.com)
 # @copyright Copyright (c) 2019, Inveniem
