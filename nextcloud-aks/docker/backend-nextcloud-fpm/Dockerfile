@@ -8,14 +8,14 @@
 # @copyright Copyright (c) 2019, Inveniem
 # @license GNU AGPL version 3 or any later version
 #
-FROM nextcloud:15.0.7-fpm
+FROM nextcloud:15.0.8-fpm
 
 ENV NEXTCLOUD_CONFIG_READ_ONLY "false"
 
 # Eliminate default APCu configuration (we're using Redis)
 RUN rm /usr/src/nextcloud/config/apcu.config.php
 
-# Eliminate stock Redis config (we provide our own config, including a password)
+# Eliminate stock Redis config (we provide our own config)
 RUN rm -f /usr/src/nextcloud/config/redis.config.php
 
 COPY nextcloud-common/entrypoint.sh /
