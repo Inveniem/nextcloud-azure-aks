@@ -170,11 +170,15 @@ install_nextcloud() {
         max_retries=10
         try=0
 
+        set +e
+
         until run_installer "${install_options}" || [ "$try" -gt "$max_retries" ]; do
             echo "Retrying installation..."
             try=$((try+1))
             sleep 3s
         done
+
+        set -e
 
         if [ "$try" -gt "$max_retries" ]; then
             echo "Installation of nextcloud has failed!"
@@ -257,8 +261,10 @@ capture_install_options() {
 run_installer() {
     local install_options="${1}"
 
-    run_as "php /var/www/html/occ maintenance:install ${install_options}"
-    configure_trusted_domains
+    run_as "php /var/www/html/occ maintenance:install ${install_options}" \
+    && configure_trusted_domains
+
+    return $?
 }
 
 configure_trusted_domains() {
@@ -317,8 +323,10 @@ uri_encode() {
 run_as() {
     if [ "$(id -u)" = 0 ]; then
         su -p www-data -s /bin/sh -c "$1"
+        return $?
     else
         sh -c "$1"
+        return $?
     fi
 }
 
