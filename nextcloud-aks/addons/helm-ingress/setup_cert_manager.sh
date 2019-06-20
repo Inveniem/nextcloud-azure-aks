@@ -30,11 +30,14 @@ kubectl label namespace \
     'certmanager.k8s.io/disable-validation=true'
 
 kubectl apply \
-    -f https://raw.githubusercontent.com/jetstack/cert-manager/release-0.6/deploy/manifests/00-crds.yaml
+    -f https://raw.githubusercontent.com/jetstack/cert-manager/release-0.8/deploy/manifests/00-crds.yaml
 
-helm install stable/cert-manager \
+helm repo add jetstack https://charts.jetstack.io
+helm repo update
+
+helm install jetstack/cert-manager \
     --tls \
     --namespace "${CERTMANAGER_NAMESPACE}" \
     --set ingressShim.defaultIssuerName=letsencrypt-prod \
     --set ingressShim.defaultIssuerKind=ClusterIssuer \
-    --version v0.6.0
+    --version v0.8.1
