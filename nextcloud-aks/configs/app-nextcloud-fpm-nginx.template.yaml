@@ -114,9 +114,16 @@ spec:
               httpHeaders:
                 - name: "Host"
                   value: "${NEXTCLOUD_PRIMARY_HOSTNAME}"
-            initialDelaySeconds: 5
-            periodSeconds: 30
-            timeoutSeconds: 5
+            # Wait 30 seconds after launch before checking for readiness
+            # (to allow for automated updates at launch)
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+            # Ensure stability across two checks before continuing to route
+            # traffic, so we don't sawtooth during heavy request load between
+            # being available-unavailable-available-unavailable.
+            successThreshold: 2
           livenessProbe:
             httpGet:
               path: "/status.php"
@@ -124,10 +131,14 @@ spec:
               httpHeaders:
                 - name: "Host"
                   value: "${NEXTCLOUD_PRIMARY_HOSTNAME}"
-            initialDelaySeconds: 10
-            periodSeconds: 10
+            # Wait 5 minutes after launch before checking for liveness
+            # (to allow for automated updates at launch)
+            initialDelaySeconds: 300
+            periodSeconds: 5
             timeoutSeconds: 10
+            # Restart container after it is down for 60 seconds
             failureThreshold: 12
+            successThreshold: 1
       imagePullSecrets:
         # NOTE: This secret is added by `setup_aks_acr_service_principal.sh`.
         - name: "${ACR_DOCKER_CREDS_SECRET}"
