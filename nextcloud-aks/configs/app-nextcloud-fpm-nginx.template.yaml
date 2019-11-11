@@ -26,7 +26,6 @@ spec:
         # Container: The PHP-FPM-based Nextcloud backend
         - name: backend-nextcloud-fpm
           image: "${REGISTRY_HOST}/inveniem/nextcloud-fpm:${CONTAINER_VERSION}"
-#          imagePullPolicy: Always
           resources:
             requests:
               cpu: 10m
@@ -91,7 +90,7 @@ spec:
         # Container: Nginx Server Middleware
         - name: middle-nextcloud-nginx
           image: "${REGISTRY_HOST}/inveniem/nextcloud-nginx-middleware:${CONTAINER_VERSION}"
-#          imagePullPolicy: Always
+          imagePullPolicy: Always
           ports:
             - containerPort: 80
           resources:
