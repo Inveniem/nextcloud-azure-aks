@@ -3,5 +3,5 @@
 
 config.env
 
-nextcloud-aks/docker/nextcloud-common/custom_apps
-nextcloud-aks/docker/nextcloud-common/generated/
+docker/nextcloud-common/custom_apps
+docker/nextcloud-common/generated/

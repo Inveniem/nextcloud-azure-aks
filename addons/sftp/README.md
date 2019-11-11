@@ -16,7 +16,7 @@ details.
 This is controlled by the `SFTP_USER_ARRAY` array in `config.env`.
 
 See 
-[`config.example.env`](https://github.com/GuyPaddock/inveniem-nextcloud-azure/blob/master/nextcloud-aks/addons/sftp/config.example.env)
+[`config.example.env`](https://github.com/GuyPaddock/inveniem-nextcloud-azure/blob/master/addons/sftp/config.example.env)
 for an example of how to add users and passwords. In the example file, 
 the following users are allowed to log-in to the system:
 - `larry` with a password of `larry-password` (password was encrypted).
@@ -41,7 +41,7 @@ volumes.
 This is controlled by the `PATH_USERS` associative array in `config.env`.
 
 See 
-[`config.example.env`](https://github.com/GuyPaddock/inveniem-nextcloud-azure/blob/master/nextcloud-aks/addons/sftp/config.example.env)
+[`config.example.env`](https://github.com/GuyPaddock/inveniem-nextcloud-azure/blob/master/addons/sftp/config.example.env)
 for an example of how to grant users access to file shares. In the example file, 
 the following users have access to the file shares specified:
 - Larry and Moe both have access to the `client1` volume/share. It will appear 

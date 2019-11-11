@@ -1,5 +1,5 @@
 # Resources for Running Nextcloud on an Azure Kubernetes Service (AKS)
-This folder contains docker images, configurations, and scripts to assist in 
+This repository contains docker images, configurations, and scripts to assist in 
 getting Nextcloud to run  on an Azure Kubernetes Service.
 
 This approach offers significantly more flexibility for storage than trying to
@@ -149,3 +149,9 @@ enhancements like automatic restoration of the tunnel if it dies.
 ### Connecting to the MySQL CLI
 Run `./launch_db_shell.sh` to launch the MySQL CLI, connected via the same 
 credentials that Nextcloud uses to connect.
+
+## Licensing
+All of the scripts and documentation provided in this repository are licensed
+under the GNU Affero GPL version 3, or any later version.
+
+© 2019 Inveniem. All rights reserved.
