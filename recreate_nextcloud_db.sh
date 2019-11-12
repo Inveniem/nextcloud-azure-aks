@@ -34,7 +34,7 @@ if [[ "${confirmed}" -eq 1 ]]; then
         --host="${MYSQL_HOST}" \
         --user="${MYSQL_USER}" \
         --password="${MYSQL_PASSWORD}" \
-        --execute="DROP DATABASE IF EXISTS ${MYSQL_DATABASE}" \
+        --execute="DROP DATABASE IF EXISTS \`${MYSQL_DATABASE}\`" \
         --verbose
     echo ""
 
@@ -43,7 +43,7 @@ if [[ "${confirmed}" -eq 1 ]]; then
         --host="${MYSQL_HOST}" \
         --user="${MYSQL_USER}" \
         --password="${MYSQL_PASSWORD}" \
-        --execute="CREATE DATABASE ${MYSQL_DATABASE}" \
+        --execute="CREATE DATABASE \`${MYSQL_DATABASE}\`" \
         --verbose
     echo ""
 fi
