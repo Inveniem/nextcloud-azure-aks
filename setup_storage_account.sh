@@ -48,7 +48,7 @@ done
 echo "Done."
 echo ""
 
-STORAGE_ACCOUNT_KEY=$( \
+export STORAGE_ACCOUNT_KEY=$( \
     az storage account keys list \
         --account-name "${STORAGE_ACCOUNT_NAME}" \
         --query "[0].value" \
@@ -56,9 +56,7 @@ STORAGE_ACCOUNT_KEY=$( \
 )
 
 echo "Creating Azure Files Kubernetes Secret for '${KUBE_FILES_STORAGE_ACCOUNT_SECRET}'..."
-kubectl create secret generic \
-    "${KUBE_FILES_STORAGE_ACCOUNT_SECRET}" \
-    --from-literal azurestorageaccountname="${STORAGE_ACCOUNT_NAME}" \
-    --from-literal azurestorageaccountkey="${STORAGE_ACCOUNT_KEY}"
+./preprocess_config.sh "configs/secret-azure-storage-account.yaml" | \
+    kubectl apply -f -
 echo "Done."
 echo ""
