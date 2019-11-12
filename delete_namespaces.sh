@@ -27,7 +27,7 @@ FILES=(
 
 echo "Removing Nextcloud namespaces..."
 for file in "${FILES[@]}"; do
-    kubectl delete -f "${file}"
+    kubectl delete -f "configs/${file}"
 done
 echo "Done."
 echo ""
