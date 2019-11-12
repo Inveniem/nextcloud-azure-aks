@@ -31,4 +31,16 @@ if [[ "${confirmed}" -eq 1 ]]; then
     ./delete_redis_app.sh
     ./delete_clamav.sh
     ./recreate_nextcloud_db.sh
+
+    {
+        echo "NOTE: Namespaces are intentionally NOT deleted during this"
+        echo "process. This is because the namespace list includes"
+        echo "'nextcloud-live', which you likely do not want to lose if you are"
+        echo "running this command for a different environment."
+        echo ""
+        echo "If you really want to destroy all Nextcloud Kubernetes"
+        echo "namespaces, run:"
+        echo "./delete_namespaces.sh."
+        echo ""
+    } >&2
 fi
