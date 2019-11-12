@@ -17,6 +17,7 @@ set -e
 set -u
 
 source './config.env'
+source './functions.sh'
 
 FILES=(
     'namespace-nextcloud-dev.yaml'
@@ -25,9 +26,21 @@ FILES=(
 
 ./set_context.sh
 
-echo "Removing Nextcloud namespaces..."
-for file in "${FILES[@]}"; do
-    kubectl delete -f "configs/${file}"
-done
-echo "Done."
-echo ""
+{
+    echo "This will attempt to remove ALL Nextcloud deployment information for"
+    echo "ALL NEXTCLOUD NAMESPACES (dev, live, etc) from your Kubernetes"
+    echo "infrastructure, which may result in loss of settings information"
+    echo "(access keys, database credentials, etc)."
+    echo ""
+} >&2
+
+confirmation_prompt "Are you sure"
+
+if [[ "${confirmed}" -eq 1 ]]; then
+    echo "Removing Nextcloud namespaces..."
+    for file in "${FILES[@]}"; do
+        kubectl delete -f "configs/${file}"
+    done
+    echo "Done."
+    echo ""
+fi

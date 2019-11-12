@@ -12,9 +12,23 @@
 set -e
 set -u
 
-./delete_nextcloud_app.sh
-./delete_nextcloud_volumes.sh
-./delete_storage_account.sh
-./delete_redis_app.sh
-./delete_clamav.sh
-./recreate_nextcloud_db.sh
+source "./functions.sh"
+
+{
+    echo "This will attempt to remove Nextcloud from your infrastructure, "
+    echo "resulting in data loss."
+    echo ""
+} >&2
+
+confirmation_prompt "Are you sure"
+
+if [[ "${confirmed}" -eq 1 ]]; then
+    export DELETE_PROMPT=0
+
+    ./delete_nextcloud_app.sh
+    ./delete_nextcloud_volumes.sh
+    ./delete_storage_account.sh
+    ./delete_redis_app.sh
+    ./delete_clamav.sh
+    ./recreate_nextcloud_db.sh
+fi

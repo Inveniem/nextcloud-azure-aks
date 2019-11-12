@@ -13,19 +13,36 @@ set -e
 set -u
 
 source './config.env'
+source './functions.sh'
 
 ./set_context.sh
 
-echo "Removing Azure Files Kubernetes Secret for '${KUBE_FILES_STORAGE_ACCOUNT_SECRET}'..."
-kubectl delete secret "${KUBE_FILES_STORAGE_ACCOUNT_SECRET}"
-echo "Done."
-echo ""
+if [[ "${DELETE_PROMPT:-1}" -eq 1 ]]; then
+    {
+        echo "This will attempt to REMOVE the Azure storage account that this"
+        echo "instance of Nextcloud uses to store ALL FILES."
+        echo ""
+        echo "THIS WILL RESULT IN DATA LOSS."
+        echo ""
+    } >&2
 
-echo "Removing Storage Account '${STORAGE_ACCOUNT_NAME}'..."
-echo ""
-echo "WARNING: This will delete ALL files Nextcloud has stored on Azure."
-az storage account delete \
-    --name "${STORAGE_ACCOUNT_NAME}" \
-    --resource-group "${STORAGE_RESOURCE_GROUP}" \
-    && echo "Done." || echo "Skipped."
-echo ""
+    confirmation_prompt "Are you sure"
+else
+    confirmed=1
+fi
+
+if [[ "${confirmed}" -eq 1 ]]; then
+    echo "Removing Azure Files Kubernetes Secret for '${KUBE_FILES_STORAGE_ACCOUNT_SECRET}'..."
+    kubectl delete secret "${KUBE_FILES_STORAGE_ACCOUNT_SECRET}" \
+        || echo "Already deleted."
+    echo "Done."
+    echo ""
+
+    echo "Removing Storage Account '${STORAGE_ACCOUNT_NAME}'..."
+    az storage account delete \
+        --name "${STORAGE_ACCOUNT_NAME}" \
+        --resource-group "${STORAGE_RESOURCE_GROUP}" \
+        --yes \
+        && echo "Done." || echo "Skipped."
+    echo ""
+fi
