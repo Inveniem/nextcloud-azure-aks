@@ -33,7 +33,8 @@ source ./generate_backend_share_mount_lines.sh
 
 echo "Un-deploying Nextcloud core application..."
 for file in "${FILES[@]}"; do
-    ./preprocess_config.sh "configs/${file}" | kubectl delete -f -
+    ./preprocess_config.sh "configs/${file}" | kubectl delete -f - \
+        || echo "Already un-deployed." && echo ""
 done
 echo "Done."
 echo ""

@@ -17,6 +17,7 @@ set -u
 ./set_context.sh
 
 echo "Removing Nextcloud persisted volumes for Azure Files..."
-./generate_azure_file_volume_configs.sh | kubectl delete -f -
+./generate_azure_file_volume_configs.sh | kubectl delete -f - \
+    || echo "Already removed." && echo ""
 echo "Done."
 echo ""
