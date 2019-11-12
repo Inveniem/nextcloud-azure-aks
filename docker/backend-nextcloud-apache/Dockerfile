@@ -45,12 +45,12 @@ RUN {\
     } > /etc/apache2/conf-available/forwarded-client-ip.conf;\
     a2enconf forwarded-client-ip
 
-COPY nextcloud-common/entrypoint.sh /
-COPY nextcloud-common/config/* /usr/src/nextcloud/config/
-
 # Setup New Relic (if configured)
 COPY nextcloud-common/generated/setup_newrelic.sh /
 RUN /setup_newrelic.sh && rm /setup_newrelic.sh
+
+COPY nextcloud-common/entrypoint.sh /
+COPY nextcloud-common/config/* /usr/src/nextcloud/config/
 
 # Supply all custom apps via Docker image; app store is disabled
 COPY nextcloud-common/custom_apps/. /usr/src/nextcloud/custom_apps/

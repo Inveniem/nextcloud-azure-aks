@@ -18,12 +18,12 @@ RUN rm /usr/src/nextcloud/config/apcu.config.php
 # Eliminate stock Redis config (we provide our own config)
 RUN rm -f /usr/src/nextcloud/config/redis.config.php
 
-COPY nextcloud-common/entrypoint.sh /
-COPY nextcloud-common/config/* /usr/src/nextcloud/config/
-
 # Setup New Relic (if configured)
 COPY nextcloud-common/generated/setup_newrelic.sh /
 RUN /setup_newrelic.sh && rm /setup_newrelic.sh
+
+COPY nextcloud-common/entrypoint.sh /
+COPY nextcloud-common/config/* /usr/src/nextcloud/config/
 
 # Supply all custom apps via Docker image; app store is disabled
 COPY nextcloud-common/custom_apps/. /usr/src/nextcloud/custom_apps/
