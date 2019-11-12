@@ -20,6 +20,8 @@ set -u
 
 source './config.env'
 
+./set_context.sh
+
 # Obtain the full registry ID for subsequent command args
 ACR_REGISTRY_ID=$(az acr show --name "${REGISTRY_NAME}" --query id --output tsv)
 

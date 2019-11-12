@@ -11,6 +11,8 @@
 set -e
 set -u
 
+../../set_context.sh
+
 echo "Un-deploying SFTP application..."
 kubectl delete -f "configs/app-ubuntu-diag.yaml"
 echo "Done."

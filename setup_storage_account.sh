@@ -14,6 +14,8 @@ set -e
 
 source './config.env'
 
+./set_context.sh
+
 echo "Creating resource group '${STORAGE_RESOURCE_GROUP}'..."
 az group create \
   --name "${STORAGE_RESOURCE_GROUP}" \

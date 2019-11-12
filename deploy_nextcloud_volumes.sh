@@ -14,6 +14,8 @@ set -u
 
 source './config.env'
 
+./set_context.sh
+
 echo "Setting up Nextcloud persisted volumes for Azure Files..."
 ./generate_azure_file_volume_configs.sh | kubectl apply -f -
 echo "Done."

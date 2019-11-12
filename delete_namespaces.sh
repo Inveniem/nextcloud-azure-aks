@@ -23,6 +23,8 @@ FILES=(
     'namespace-nextcloud-live.yaml'
 )
 
+./set_context.sh
+
 echo "Removing Nextcloud namespaces..."
 for file in "${FILES[@]}"; do
     kubectl delete -f "${file}"

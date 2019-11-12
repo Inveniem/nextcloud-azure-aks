@@ -33,6 +33,7 @@ else
     FILES+=('app-nextcloud-apache.template.yaml')
 fi
 
+./set_context.sh
 
 # HACK: Until AKS supports pod presets, we have to kludge the dynamic mounts in
 # via a variable expansions instead.

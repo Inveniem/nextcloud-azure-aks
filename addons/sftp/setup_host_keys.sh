@@ -14,6 +14,8 @@ set -u
 
 source './config.env'
 
+../../set_context.sh
+
 ./generate_host_keys.sh
 
 kubectl create secret generic "${KUBE_SFTP_CREDS_SECRET}" \

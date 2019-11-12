@@ -28,6 +28,8 @@ set -u
 source "constants.env"
 source "config.env"
 
+../../set_context.sh
+
 helm install --tls \
     stable/nginx-ingress \
     --namespace "${INGRESS_NAMESPACE}" \

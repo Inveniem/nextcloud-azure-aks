@@ -17,6 +17,7 @@ FILES=(
     'app-clamav.template.yaml'
 )
 
+./set_context.sh
 
 echo "Deploying ClamAV Daemon..."
 for file in "${FILES[@]}"; do

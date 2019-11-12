@@ -26,5 +26,6 @@ set -u
 source "constants.env"
 source "config.env"
 
+../../set_context.sh
 ../../preprocess_config.sh "${KUBE_CONFIG_PATH}/ingress-nextcloud.template.yaml" |
     kubectl apply -f -

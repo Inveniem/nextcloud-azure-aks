@@ -33,6 +33,8 @@ set -u
 source "constants.env"
 source "config.env"
 
+../../set_context.sh
+
 if [[ ! -f "${CA_CERT_PATH}" ]]; then
     echo "CA certificate is missing: ${CA_CERT_PATH}" >&2
     exit 2

@@ -21,6 +21,8 @@ set -u
 source "constants.env"
 source "config.env"
 
+../../set_context.sh
+
 read -p "Name of existing 'cert-manager' chart: " CHART_NAME
 
 if [[ -z "${CHART_NAME:-}" ]]; then

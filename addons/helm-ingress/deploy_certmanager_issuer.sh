@@ -24,5 +24,6 @@ set -u
 source "constants.env"
 source "config.env"
 
+../../set_context.sh
 ../../preprocess_config.sh "${KUBE_CONFIG_PATH}/certmanager-issuer.template.yaml" | \
     kubectl apply -f -

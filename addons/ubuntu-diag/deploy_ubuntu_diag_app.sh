@@ -13,6 +13,8 @@ set -u
 
 source '../../config.env'
 
+../../set_context.sh
+
 echo "Deploying Ubuntu diagnostic application..."
 kubectl apply -f "configs/app-ubuntu-diag.yaml"
 echo "Done."

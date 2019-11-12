@@ -25,6 +25,8 @@ FILES+=(
     'configmap.template.yaml'
 )
 
+./set_context.sh
+
 # HACK: Until AKS supports pod presets, we have to kludge the dynamic mounts in
 # via a variable expansions.
 source ./generate_backend_share_mount_lines.sh

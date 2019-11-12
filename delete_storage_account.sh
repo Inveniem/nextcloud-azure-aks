@@ -14,6 +14,8 @@ set -u
 
 source './config.env'
 
+./set_context.sh
+
 echo "Removing Azure Files Kubernetes Secret for '${KUBE_FILES_STORAGE_ACCOUNT_SECRET}'..."
 kubectl delete secret "${KUBE_FILES_STORAGE_ACCOUNT_SECRET}"
 echo "Done."

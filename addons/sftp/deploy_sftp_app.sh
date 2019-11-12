@@ -19,6 +19,8 @@ FILES+=(
     'app-sftp.template.yaml'
 )
 
+../../set_context.sh
+
 # HACK: Until AKS supports pod presets, we have to kludge the dynamic mounts in
 # via a variable expansions instead.
 source ./generate_share_mount_lines.sh

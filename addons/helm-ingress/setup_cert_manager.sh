@@ -24,6 +24,8 @@ set -u
 source "constants.env"
 source "config.env"
 
+../../set_context.sh
+
 kubectl label namespace \
     "${CERTMANAGER_NAMESPACE}" \
     --overwrite \

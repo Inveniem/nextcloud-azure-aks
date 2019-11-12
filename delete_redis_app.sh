@@ -17,6 +17,8 @@ FILES=(
     'app-redis.template.yaml'
 )
 
+./set_context.sh
+
 echo "Un-deploying Redis..."
 for file in "${FILES[@]}"; do
     ./preprocess_config.sh "configs/${file}" | kubectl delete -f -

@@ -17,6 +17,8 @@ FILES=(
     'app-clamav.template.yaml'
 )
 
+./set_context.sh
+
 echo "Un-deploying ClamAV Daemon..."
 for file in "${FILES[@]}"; do
     ./preprocess_config.sh "configs/${file}" | kubectl delete -f -

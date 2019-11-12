@@ -24,6 +24,8 @@ FILES=(
     'namespace-nextcloud-live.yaml'
 )
 
+./set_context.sh
+
 echo "Deploying Nextcloud namespaces..."
 for file in "${FILES[@]}"; do
     kubectl apply -f "configs/${file}"

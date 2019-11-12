@@ -17,6 +17,7 @@ FILES=(
     'app-redis.template.yaml'
 )
 
+./set_context.sh
 
 echo "Deploying Redis..."
 for file in "${FILES[@]}"; do
