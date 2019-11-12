@@ -18,26 +18,26 @@ source './config.env'
 
 echo "Creating resource group '${STORAGE_RESOURCE_GROUP}'..."
 az group create \
-  --name "${STORAGE_RESOURCE_GROUP}" \
-  --location "${LOCATION}"
+    --name "${STORAGE_RESOURCE_GROUP}" \
+    --location "${LOCATION}"
 echo "Done."
 echo ""
 
 echo "Creating '${STORAGE_SKU}' storage account '${STORAGE_ACCOUNT_NAME}'..."
 az storage account create \
-  --resource-group "${STORAGE_RESOURCE_GROUP}" \
-  --name "${STORAGE_ACCOUNT_NAME}" \
-  --kind "${STORAGE_KIND}" \
-  --sku "${STORAGE_SKU}" \
-  --location "${LOCATION}"
+    --resource-group "${STORAGE_RESOURCE_GROUP}" \
+    --name "${STORAGE_ACCOUNT_NAME}" \
+    --kind "${STORAGE_KIND}" \
+    --sku "${STORAGE_SKU}" \
+    --location "${LOCATION}"
 echo "Done."
 echo ""
 
 export AZURE_STORAGE_CONNECTION_STRING=$( \
-  az storage account show-connection-string \
-    --name "${STORAGE_ACCOUNT_NAME}" \
-    --query "connectionString" \
-    --output=tsv
+    az storage account show-connection-string \
+        --name "${STORAGE_ACCOUNT_NAME}" \
+        --query "connectionString" \
+        --output=tsv
 )
 
 echo "Creating file shares..."
@@ -49,10 +49,10 @@ echo "Done."
 echo ""
 
 STORAGE_ACCOUNT_KEY=$( \
-  az storage account keys list \
-    --account-name "${STORAGE_ACCOUNT_NAME}" \
-    --query "[0].value" \
-    --output=tsv
+    az storage account keys list \
+        --account-name "${STORAGE_ACCOUNT_NAME}" \
+        --query "[0].value" \
+        --output=tsv
 )
 
 echo "Creating Azure Files Kubernetes Secret for '${KUBE_FILES_STORAGE_ACCOUNT_SECRET}'..."

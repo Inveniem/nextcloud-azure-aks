@@ -63,12 +63,12 @@ fi
 kubectl apply -f "${KUBE_CONFIG_PATH}/helm-rbac.yaml"
 
 helm init \
-  --service-account=tiller \
-  --tiller-tls \
-  --tiller-tls-verify \
-  --tiller-tls-cert "${SERVER_CERT_PATH}" \
-  --tiller-tls-key "${SERVER_KEY_PATH}" \
-  --tls-ca-cert "${CA_CERT_PATH}"
+    --service-account=tiller \
+    --tiller-tls \
+    --tiller-tls-verify \
+    --tiller-tls-cert "${SERVER_CERT_PATH}" \
+    --tiller-tls-key "${SERVER_KEY_PATH}" \
+    --tls-ca-cert "${CA_CERT_PATH}"
 
 # Translates paths from C:\ to /mnt/c for compatibility with WLS
 HELM_HOME=$(

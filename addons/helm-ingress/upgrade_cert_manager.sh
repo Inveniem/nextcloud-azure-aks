@@ -26,7 +26,7 @@ source "config.env"
 read -p "Name of existing 'cert-manager' chart: " CHART_NAME
 
 if [[ -z "${CHART_NAME:-}" ]]; then
-  exit 1
+    exit 1
 fi
 
 backup_old_release() {

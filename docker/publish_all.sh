@@ -17,5 +17,5 @@ DIRS=$(find . -mindepth 1 -maxdepth 1 -type d -not -name '*common')
 ./nextcloud-common/download_apps.sh
 
 echo "${DIRS[@]}" | while read -r dir; do
-  "${dir}/publish.sh"
+    "${dir}/publish.sh"
 done

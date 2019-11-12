@@ -24,7 +24,7 @@ source "config.env"
 read -p "Name of existing 'nginx-ingress' chart: " CHART_NAME
 
 if [[ -z "${CHART_NAME:-}" ]]; then
-  exit 1
+    exit 1
 fi
 
 backup_old_release() {
