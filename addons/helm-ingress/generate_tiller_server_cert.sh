@@ -22,7 +22,7 @@ set -u
 
 source "constants.env"
 source "config.env"
-source "functions.sh"
+source "../../functions.sh"
 
 mkdir -p "${OUTPUT_PATH}"
 
