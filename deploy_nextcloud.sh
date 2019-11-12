@@ -12,6 +12,7 @@
 set -e
 set -u
 
+./deploy_namespaces.sh
 ./setup_storage_account.sh
 ./deploy_redis_app.sh
 ./deploy_clamav.sh
