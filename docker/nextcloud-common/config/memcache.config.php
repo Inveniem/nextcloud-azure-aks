@@ -9,7 +9,8 @@ if ($redis_port === FALSE) {
 
 if ($redis_hostname !== FALSE) {
 	$CONFIG = array(
-		'memcache.local' => '\OC\Memcache\Redis',
+		'memcache.local' => '\OC\Memcache\APCu',
+		'memcache.distributed' => '\OC\Memcache\Redis',
 		'memcache.locking' => '\OC\Memcache\Redis',
 		'redis' => array(
 			'host' => $redis_hostname,
