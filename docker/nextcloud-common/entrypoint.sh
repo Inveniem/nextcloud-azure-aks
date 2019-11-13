@@ -103,6 +103,15 @@ setup_redis() {
 tune_php() {
     echo "Tuning PHP performance."
     {
+        # Disable assertions since this is a production-like environment
+        echo 'assert.active = 0'
+        echo ''
+
+        # Code is static; no need to validate timestamps
+        echo 'opcache.validate_timestamps = 0'
+
+        # Save opcode cache on-disk for higher performance during low memory
+        # conditions.
         echo 'opcache.file_cache = /mnt/php-file-cache'
     } > /usr/local/etc/php/conf.d/perf-tuning.ini
 }
