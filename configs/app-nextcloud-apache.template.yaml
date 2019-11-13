@@ -38,6 +38,8 @@ spec:
           volumeMounts:
             - name: volume-nextcloud-app
               mountPath: /var/www/html
+            - name: volume-php-cache
+              mountPath: /mnt/php-file-cache
             # HACK: Until AKS supports pod presets, we have to kludge the dynamic
             # mounts in via a variable expansion. Do not modify the last line of
             # this comment; it gets expanded and replaced automatically when this
@@ -128,6 +130,9 @@ spec:
       volumes:
         # Ephemeral volume that contains the loaded Nextcloud software
         - name: volume-nextcloud-app
+          emptyDir: {}
+        # Ephemeral volume for on-disk PHP opcode cache
+        - name: volume-php-cache
           emptyDir: {}
         # HACK: Until AKS supports pod presets, we have to kludge the dynamic
         # mounts in via a variable expansion. Do not modify the last line of

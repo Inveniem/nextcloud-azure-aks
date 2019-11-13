@@ -34,6 +34,7 @@ initialize_container() {
         ensure_compatible_image "${installed_version}" "${image_version}"
         deploy_nextcloud_release
         setup_redis
+        tune_php
 
         if version_greater "$image_version" "$installed_version"; then
             capture_existing_app_list "$installed_version"
@@ -97,6 +98,13 @@ setup_redis() {
         echo 'redis.session.lock_wait_time = 100000'
         echo 'redis.session.lock_retries = 50'
     } > /usr/local/etc/php/conf.d/redis-sessions.ini
+}
+
+tune_php() {
+    echo "Tuning PHP performance."
+    {
+        echo 'opcache.file_cache = /mnt/php-file-cache'
+    } > /usr/local/etc/php/conf.d/perf-tuning.ini
 }
 
 deploy_nextcloud_release() {
