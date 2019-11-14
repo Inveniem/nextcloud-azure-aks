@@ -28,11 +28,11 @@ spec:
           image: "${REGISTRY_HOST}/inveniem/nextcloud-fpm:${CONTAINER_VERSION}"
           resources:
             requests:
-              cpu: 10m
+              cpu: 100m
               memory: 128Mi
             limits:
               cpu: 1500m
-              memory: 512Mi
+              memory: 1024Mi
           volumeMounts:
             - name: volume-nextcloud-app
               mountPath: /var/www/html

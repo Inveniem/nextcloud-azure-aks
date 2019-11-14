@@ -26,6 +26,18 @@ RUN set -eux; \
     groupmod -g 33 www-data && \
     apk del shadow
 
+# Tune PHP-FPM process manager
+RUN set -eu; \
+    { \
+        echo '[www]'; \
+        echo 'pm = dynamic'; \
+        echo 'pm.max_children = 20'; \
+        echo 'pm.start_servers = 10'; \
+        echo 'pm.min_spare_servers = 5'; \
+        echo 'pm.max_spare_servers = 10'; \
+        echo 'pm.max_requests = 50'; \
+    } >/usr/local/etc/php-fpm.d/www.pm-tuning.conf
+
 # Eliminate default APCu configuration (we're using Redis)
 # and stock Redis config (we provide our own config)
 RUN rm /usr/src/nextcloud/config/apcu.config.php && \
