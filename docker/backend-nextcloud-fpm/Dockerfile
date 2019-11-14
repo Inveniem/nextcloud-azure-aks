@@ -8,15 +8,28 @@
 # @copyright Copyright (c) 2019, Inveniem
 # @license GNU AGPL version 3 or any later version
 #
-FROM nextcloud:16.0.6-fpm
+FROM nextcloud:16.0.6-fpm-alpine
 
 ENV NEXTCLOUD_CONFIG_READ_ONLY "false"
 
-# Eliminate default APCu configuration (we're using Redis)
-RUN rm /usr/src/nextcloud/config/apcu.config.php
+# Fix-up www-data UID from 82 to 33.
+#
+# www-data MUST be UID 33 to match Azure Files SMB Mounts.
+# But first, we have to remove the XFS user account because it's occupying
+# UID 33.
+#
+RUN set -eux; \
+    apk --update --no-cache add shadow && \
+    deluser xfs && \
+    find '/var/www' -user 'www-data' -exec 'chown' 33 '{}' ';' && \
+    usermod -u 33 www-data && \
+    groupmod -g 33 www-data && \
+    apk del shadow
 
-# Eliminate stock Redis config (we provide our own config)
-RUN rm -f /usr/src/nextcloud/config/redis.config.php
+# Eliminate default APCu configuration (we're using Redis)
+# and stock Redis config (we provide our own config)
+RUN rm /usr/src/nextcloud/config/apcu.config.php && \
+    rm /usr/src/nextcloud/config/redis.config.php
 
 # Setup New Relic (if configured)
 COPY nextcloud-common/generated/setup_newrelic.sh /
