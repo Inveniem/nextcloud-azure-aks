@@ -38,7 +38,7 @@ spec:
               memory: 128Mi
             limits:
               cpu: 1000m
-              memory: 2048Mi
+              memory: 1536Mi
       imagePullSecrets:
         # NOTE: This secret is added by `setup_aks_acr_service_principal.sh`.
         - name: "${ACR_DOCKER_CREDS_SECRET}"
