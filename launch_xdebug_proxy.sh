@@ -25,7 +25,7 @@
 set -u
 set -e
 
-SSH_TUNNEL_CONTAINER="ssh-tunnel"
+SSH_TUNNEL_CONTAINER="ssh-xdebug-tunnel"
 SSH_TUNNEL_IMAGE="hermsi/alpine-sshd:8.1_p1-r0"
 
 LOCAL_SSH_PRIVATE_KEY_FILE="/tmp/ssh-tunnel.key"
