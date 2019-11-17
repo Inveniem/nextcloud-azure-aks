@@ -5,10 +5,9 @@
 # inside a Nextcloud PHP container.
 #
 # Usage:
-# launch_xdebug_proxy.sh <pod name> [xdebug client port] [local ssh port]
+# launch_xdebug_proxy.sh [xdebug client port] [local ssh port]
 #
 # Where:
-#  - <pod name> is the name of the pod in Kubernetes that's running Nextcloud.
 #  - <xdebug proxy port> is the port on the local machine that the IDE/XDebug
 #    client has been configured to connect to.
 #  - [local ssh port] is an optional override of what port to use locally when
@@ -37,12 +36,11 @@ REMOTE_AUTHORIZED_KEYS_FILE="${REMOTE_SSH_FOLDER}/authorized_keys"
 REMOTE_TUNNEL_SERVICE="xdebug-tunnel"
 
 parse_args() {
-    if [[ $# -lt 1 || $# -gt 3 ]]; then
+    if [[ $# -gt 2 ]]; then
         print_usage_and_exit
     else
-        POD_NAME="${1}"
-        LOCAL_XDEBUG_PORT="${2:-9000}"
-        LOCAL_SSH_PORT="${3:-1022}"
+        LOCAL_XDEBUG_PORT="${1:-9000}"
+        LOCAL_SSH_PORT="${2:-1022}"
     fi
 }
 
@@ -51,8 +49,6 @@ print_usage_and_exit() {
         echo "Usage: ${0} <pod name> [xdebug client port] [local ssh port]"
         echo ""
         echo "Where:"
-        echo "  - <pod name> is the name of the pod in Kubernetes that's"
-        echo "    running Nextcloud."
         echo "  - [xdebug proxy port] optionally specifies the port on the"
         echo "    local machine that the IDE/XDebug client has been configured"
         echo "    to connect to. The default is 9000."
