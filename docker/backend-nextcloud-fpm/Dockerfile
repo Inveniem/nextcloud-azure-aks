@@ -53,5 +53,35 @@ COPY nextcloud-common/config/* /usr/src/nextcloud/config/
 # Supply all custom apps via Docker image; app store is disabled
 COPY nextcloud-common/custom_apps/. /usr/src/nextcloud/custom_apps/
 
+ARG XDEBUG_ENABLED="false"
+
+# Give developers an ability to attach to a running container with XDebug.
+#
+# To take advantage of this, this requires forwarding a port on the local
+# (developer) machine to a port listening inside the container by combining
+# netcat (nc) running locally with `tcpserver` in the container.
+#
+# See ../../launch_xdebug_proxy.sh for more information.
+#
+RUN set -eu; \
+    if [ "${XDEBUG_ENABLED}" = "true" ]; then \
+        apk add --update --no-cache \
+            --virtual build-dependencies \
+            $PHPIZE_DEPS \
+        ; \
+        pecl install xdebug; \
+        apk del build-dependencies; \
+        \
+        docker-php-ext-enable xdebug; \
+        \
+        { \
+            echo 'xdebug.remote_host="xdebug-tunnel"'; \
+            echo 'xdebug.remote_port=9001'; \
+            echo 'xdebug.remote_enable=on'; \
+            echo 'xdebug.remote_autostart=off'; \
+            echo 'xdebug.remote_connect_back=off'; \
+        } >>/usr/local/etc/php/conf.d/xdebug.ini; \
+    fi
+
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["php-fpm"]

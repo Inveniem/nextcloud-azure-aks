@@ -13,4 +13,4 @@ set -e
 set -u
 
 cd "./docker"
-./publish_all.sh
+./publish_all.sh "$@"
