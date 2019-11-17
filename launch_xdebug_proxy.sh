@@ -111,33 +111,6 @@ kill_process_on_exit() {
 }
 
 ##
-# Delays this script, polling until the specified pod is running.
-#
-# @param string $1
-#   The name of the pod to wait for.
-#
-wait_for_pod_ready() {
-    local container_name="${1}"
-
-    while [[ $(get_pod_status "${container_name}") != 'Running' ]]; do
-        sleep 1
-    done
-}
-
-##
-# Gets the status of the specified pod.
-#
-# @param string $1
-#   The name of the pod to get a status for.
-#
-get_pod_status() {
-    local container_name="${1}"
-
-    kubectl get po "${container_name}" -o=jsonpath='{$.status.phase}' \
-        2>/dev/null
-}
-
-##
 # Delays this script, waiting until the specified local port is listening for
 # connections.
 #
@@ -176,7 +149,7 @@ kubectl run "${SSH_TUNNEL_CONTAINER}" \
   --port=9001
 add_on_exit "kubectl delete po ${SSH_TUNNEL_CONTAINER}"
 
-wait_for_pod_ready "${SSH_TUNNEL_CONTAINER}"
+kubectl wait --for=condition=Ready "pod/${SSH_TUNNEL_CONTAINER}"
 
 rm -f "${LOCAL_SSH_PRIVATE_KEY_FILE}" "${LOCAL_SSH_PUBLIC_KEY_FILE}"
 rm -f "${LOCAL_KNOWN_HOSTS_FILE}"
