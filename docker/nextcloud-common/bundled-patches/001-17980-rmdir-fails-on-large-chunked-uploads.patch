@@ -1,0 +1,142 @@
+From 297e534f9777b68b9fcbf1e6c4d3fc0539ff46cd Mon Sep 17 00:00:00 2001
+From: Guy Elsmore-Paddock <guy@inveniem.com>
+Date: Sun, 17 Nov 2019 22:43:54 -0500
+Subject: [PATCH] #17980 - Workaround Storage Driver Bugs when Deleting Folders
+
+For some reason, on SMBv3/Azure Files when there are more than 62 files in a folder, `RecursiveDirectoryIterator` cannot reliably iterate over the contents.
+---
+ lib/private/Files/Storage/Local.php | 113 +++++++++++++++++++++-------
+ 1 file changed, 87 insertions(+), 26 deletions(-)
+
+diff --git a/lib/private/Files/Storage/Local.php b/lib/private/Files/Storage/Local.php
+index e3e6ac783d..e7b1bb6b5d 100644
+--- a/lib/private/Files/Storage/Local.php
++++ b/lib/private/Files/Storage/Local.php
+@@ -91,32 +91,7 @@ class Local extends \OC\Files\Storage\Common {
+ 			return false;
+ 		}
+ 		try {
+-			$it = new \RecursiveIteratorIterator(
+-				new \RecursiveDirectoryIterator($this->getSourcePath($path)),
+-				\RecursiveIteratorIterator::CHILD_FIRST
+-			);
+-			/**
+-			 * RecursiveDirectoryIterator on an NFS path isn't iterable with foreach
+-			 * This bug is fixed in PHP 5.5.9 or before
+-			 * See #8376
+-			 */
+-			$it->rewind();
+-			while ($it->valid()) {
+-				/**
+-				 * @var \SplFileInfo $file
+-				 */
+-				$file = $it->current();
+-				if (in_array($file->getBasename(), array('.', '..'))) {
+-					$it->next();
+-					continue;
+-				} elseif ($file->isDir()) {
+-					rmdir($file->getPathname());
+-				} elseif ($file->isFile() || $file->isLink()) {
+-					unlink($file->getPathname());
+-				}
+-				$it->next();
+-			}
+-			return rmdir($this->getSourcePath($path));
++			return $this->multipassRmdir($path);
+ 		} catch (\UnexpectedValueException $e) {
+ 			return false;
+ 		}
+@@ -487,4 +462,90 @@ class Local extends \OC\Files\Storage\Common {
+ 	public function writeStream(string $path, $stream, int $size = null): int {
+ 		return (int)file_put_contents($this->getSourcePath($path), $stream);
+ 	}
++
++	/**
++	 * Attempts to clear out and delete the specified folder.
++	 *
++	 * This method makes multiple passes over the contents of the folder until
++	 * either all the files inside are removed, or the contents cannot be
++	 * deleted. This is a workaround for bugs in an underlying storage driver
++	 * that might otherwise cause only some files within a folder to be deleted
++	 * while others are inexplicably left behind.
++	 *
++	 * See:
++	 * https://github.com/nextcloud/server/issues/17980
++	 *
++	 * @param string $path
++	 *   The path to the folder to remove.
++	 *
++	 * @return bool
++	 *   Whether or not the folder was successfully removed.
++	 *
++	 * @throws ForbiddenException
++	 * 	 If the specified path is not accessible.
++	 */
++	protected function multipassRmdir($path):bool {
++		$unlink_count = -1;
++
++		// Keep looping until we're no longer actually un-linking anything
++		// after two passes in a row.
++		do {
++			$previous_unlink_count = $unlink_count;
++			$unlink_count          = $this->unlinkDirContents($path);
++		} while (($previous_unlink_count != 0) || ($unlink_count != 0));
++
++		return rmdir($this->getSourcePath($path));
++	}
++
++	/**
++	 * Attempts to delete all of the files inside the given folder.
++	 *
++	 * @param string $path
++	 *   The path to the folder containing the files to remove.
++	 *
++	 * @return int
++	 *   The number of files successfully deleted.
++	 *
++	 * @throws ForbiddenException
++	 * 	 If the specified path is not accessible.
++	 */
++	protected function unlinkDirContents(string $path): int {
++		$total_unlink_count = 0;
++
++		$it = new \RecursiveIteratorIterator(
++			new \RecursiveDirectoryIterator(
++				$this->getSourcePath($path),
++				\FilesystemIterator::SKIP_DOTS
++			),
++			\RecursiveIteratorIterator::CHILD_FIRST
++		);
++
++		/**
++		 * RecursiveDirectoryIterator on an NFS path isn't iterable with foreach
++		 * This bug is fixed in PHP 5.5.9 or before
++		 * See #8376
++		 */
++		$it->rewind();
++
++		while ($it->valid()) {
++			/* @var \SplFileInfo $file */
++			$file = $it->current();
++
++			if ($file->isDir()) {
++				$successful_unlink = rmdir($file->getPathname());
++			} elseif ($file->isFile() || $file->isLink()) {
++				$successful_unlink = @unlink($file->getPathname());
++			} else {
++				$successful_unlink = FALSE;
++			}
++
++			if ($successful_unlink) {
++				++$total_unlink_count;
++			}
++
++			$it->next();
++		}
++
++		return $total_unlink_count;
++	}
+ }
+-- 
+2.20.1.windows.1
+

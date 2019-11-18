@@ -55,5 +55,10 @@ COPY nextcloud-common/config/* /usr/src/nextcloud/config/
 # Supply all custom apps via Docker image; app store is disabled
 COPY nextcloud-common/custom_apps/. /usr/src/nextcloud/custom_apps/
 
+# Apply custom patches
+COPY nextcloud-common/apply_patches.sh /
+COPY nextcloud-common/bundled-patches/ /usr/src/nextcloud/bundled-patches
+RUN /apply_patches.sh
+
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["apache2-foreground"]
