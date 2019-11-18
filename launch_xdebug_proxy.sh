@@ -186,11 +186,11 @@ echo ""
 echo "Setting up remote XDebug forward from remote port '9001' to local port '${LOCAL_XDEBUG_PORT}'"
 
 ssh -NT \
-  -o "StrictHostKeyChecking no" \
-  -o UserKnownHostsFile="${LOCAL_KNOWN_HOSTS_FILE}" \
-  -i "${LOCAL_SSH_PRIVATE_KEY_FILE}" \
-  -4 tunnel@localhost -p "${LOCAL_SSH_PORT}" \
-  -R "9001:localhost:${LOCAL_XDEBUG_PORT}" &
+    -o "StrictHostKeyChecking no" \
+    -o UserKnownHostsFile="${LOCAL_KNOWN_HOSTS_FILE}" \
+    -i "${LOCAL_SSH_PRIVATE_KEY_FILE}" \
+    -4 tunnel@localhost -p "${LOCAL_SSH_PORT}" \
+    -R "9001:localhost:${LOCAL_XDEBUG_PORT}" &
 SSH_CLIENT_ID=$!
 kill_process_on_exit "${SSH_CLIENT_ID}"
 
