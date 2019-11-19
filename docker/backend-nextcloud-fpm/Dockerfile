@@ -4,9 +4,57 @@
 #
 # NOTE: All COPY paths are relative to the parent folder (../docker).
 #
+# This is a multi-stage build.
+#
 # @author Guy Elsmore-Paddock (guy@inveniem.com)
 # @copyright Copyright (c) 2019, Inveniem
 # @license GNU AGPL version 3 or any later version
+#
+
+################################################################################
+# musl Library Build
+################################################################################
+# Patch Alpine musl to work around this issue:
+# https://gitlab.alpinelinux.org/alpine/aports/issues/10960
+#
+FROM alpine:3.10 as musl_compile
+
+RUN set -eux;\
+    apk add --update \
+        make \
+        gcc \
+        musl-dev \
+        curl \
+        gnupg\
+    ; \
+    mkdir /build; \
+    cd /build; \
+    \
+    for key in \
+        836489290BB6B70F99FFDA0556BCDB593020450F \
+    ; do \
+        gpg --batch --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys "$key" || \
+        gpg --batch --keyserver hkp://ipv4.pool.sks-keyservers.net --recv-keys "$key" || \
+        gpg --batch --keyserver hkp://pgp.mit.edu:80 --recv-keys "$key" ; \
+    done; \
+    \
+    curl -O https://www.musl-libc.org/releases/musl-1.1.24.tar.gz; \
+    curl -O https://www.musl-libc.org/releases/musl-1.1.24.tar.gz.asc; \
+    \
+    gpg --batch --verify musl-1.1.24.tar.gz.asc musl-1.1.24.tar.gz; \
+    \
+    tar -xvzf musl-1.1.24.tar.gz; \
+    cd ./musl-1.1.24; \
+    sed -i 's/char buf\[2048\]/char buf\[8192\]/' ./src/dirent/__dirent.h; \
+    \
+    ./configure; \
+    make; \
+    make install
+
+################################################################################
+# Build Nextcloud container
+################################################################################
+# This is the container that actually gets pushed.
 #
 FROM nextcloud:16.0.6-fpm-alpine
 
@@ -52,6 +100,9 @@ COPY nextcloud-common/config/* /usr/src/nextcloud/config/
 
 # Supply all custom apps via Docker image; app store is disabled
 COPY nextcloud-common/custom_apps/. /usr/src/nextcloud/custom_apps/
+
+# Apply custom musl library
+COPY --from="musl_compile" /usr/local/musl/lib/libc.so /lib/ld-musl-x86_64.so.1
 
 # Apply custom patches
 COPY nextcloud-common/apply_patches.sh /
