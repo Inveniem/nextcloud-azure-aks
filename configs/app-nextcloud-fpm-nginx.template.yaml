@@ -90,7 +90,6 @@ spec:
         # Container: Nginx Server Middleware
         - name: middle-nextcloud-nginx
           image: "${REGISTRY_HOST}/inveniem/nextcloud-nginx-middleware:${CONTAINER_VERSION}"
-          imagePullPolicy: Always
           ports:
             - containerPort: 80
           resources:
