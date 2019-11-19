@@ -1,10 +1,10 @@
 <?php
 	$all_ssl_ca_locations = [
 		# Location of Azure Trusted CA on Alpine Linux
-		'/etc/ssl/certs/Baltimore_CyberTrust_Root.pem',
+		'/etc/ssl/certs/ca-cert-Baltimore_CyberTrust_Root.pem',
 
 		# Location of Azure Trusted CA on Ubuntu Linux
-		'/etc/ssl/certs/ca-cert-Baltimore_CyberTrust_Root.pem',
+		'/etc/ssl/certs/Baltimore_CyberTrust_Root.pem',
 	];
 
 	foreach ($all_ssl_ca_locations as $location) {
