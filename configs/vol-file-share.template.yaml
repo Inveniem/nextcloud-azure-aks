@@ -33,8 +33,7 @@ spec:
     - gid=33
     - dir_mode=0770
     - file_mode=0770
-    - actimeo=5
-    - nostrictsync
+    - actimeo=2
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
