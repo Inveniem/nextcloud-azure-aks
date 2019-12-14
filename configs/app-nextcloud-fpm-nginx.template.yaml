@@ -22,6 +22,17 @@ spec:
         app: backend-nextcloud
         role: backend
     spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          # Prevent multiple replicas from being on the same node.
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - backend-nextcloud
+            topologyKey: "kubernetes.io/hostname"
       containers:
         # Container: The PHP-FPM-based Nextcloud backend
         - name: backend-nextcloud-fpm
