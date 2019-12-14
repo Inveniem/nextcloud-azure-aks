@@ -90,7 +90,7 @@ setup_redis() {
         echo ''
 
         # Locks are only allowed for up to 60 seconds.
-        echo 'redis.session.locking_enabled = 1'
+        echo 'redis.session.locking_enabled = 0'
         echo 'redis.session.lock_expire = 60'
 
         # Wait up to 5 seconds for a lock before giving up.
