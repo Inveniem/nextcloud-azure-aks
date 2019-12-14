@@ -26,16 +26,25 @@ spec:
         app: backend-redis
         role: backend
     spec:
-      # This is needed to address this warning from Redis:
-      # "WARNING you have Transparent Huge Pages (THP) support enabled in
-      # your kernel."
       initContainers:
+        # This is needed to address this warning from Redis:
+        # "WARNING you have Transparent Huge Pages (THP) support enabled in
+        # your kernel."
         - name: disable-thp
           image: busybox
           volumeMounts:
             - name: host-sys
               mountPath: /host-sys
           command: ["sh", "-c", "echo never > /host-sys/kernel/mm/transparent_hugepage/enabled"]
+        # This is needed to address this warning from Redis:
+        # "WARNING: The TCP backlog setting of 511 cannot be enforced because
+        # /proc/sys/net/core/somaxconn is set to the lower value of 128."
+        - name: increase-max-conn
+          image: busybox
+          volumeMounts:
+            - name: host-proc
+              mountPath: /host-proc
+          command: ["sh", "-c", "echo 1024 > /host-proc/sys/net/core/somaxconn"]
       containers:
         - name: redis
           image: "redis:5.0.5-alpine"
@@ -64,6 +73,9 @@ spec:
         - name: host-sys
           hostPath:
             path: /sys
+        - name: host-proc
+          hostPath:
+            path: /proc
 ---
 apiVersion: v1
 kind: Service
