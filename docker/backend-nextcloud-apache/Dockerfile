@@ -60,5 +60,17 @@ COPY nextcloud-common/apply_patches.sh /
 COPY nextcloud-common/bundled-patches/ /usr/src/nextcloud/bundled-patches
 RUN /apply_patches.sh
 
+# Install additional utilities for CLI-based utilization
+RUN set -eux; \
+    \
+    apt-get update; \
+    apt-get install -y --no-install-recommends \
+        zip \
+        unzip \
+    ; \
+    \
+    apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false; \
+    rm -rf /var/lib/apt/lists/*
+
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["apache2-foreground"]
