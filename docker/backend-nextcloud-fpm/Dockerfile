@@ -139,5 +139,11 @@ RUN set -eu; \
         } >>/usr/local/etc/php/conf.d/xdebug.ini; \
     fi
 
+# Install additional utilities for CLI-based utilization
+RUN apk add --update --no-cache \
+        zip \
+        unzip \
+    ;
+
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["php-fpm"]
