@@ -73,3 +73,34 @@ namespace by running the following command:
 
 This command is idempotent; you can tweak your deployment and run it again to
 make changes to the SFTP pod configuration.
+
+### Setting-up DNS (Optional)
+If you had Nextcloud installed at `nextcloud.example.com`, you might want to
+configure an A record in your DNS zone so that `sftp.nextcloud.example.com` 
+points at the IP address of the load balancer that is created by deploying this 
+add-on.
+
+After deploying this add-on, run `kubectl get services` to obtain the IP address
+of the service. For example:
+
+```
+$ kubectl get services
+
+NAME                 TYPE           CLUSTER-IP  EXTERNAL-IP PORT(S)          AGE
+external-sftp        LoadBalancer   10.0.1.5    1.2.3.4     22889:30425/TCP  1d
+internal-clamav      ClusterIP      10.0.1.4    <none>      3310/TCP         1d
+internal-nextcloud   ClusterIP      10.0.1.3    <none>      80/TCP           1d
+internal-redis       ClusterIP      10.0.1.2    <none>      6379/TCP         1d
+```
+
+In the example above, the external IP address for SFTP is `1.2.3.4`, so you'd
+create an A record for `sftp.nextcloud.example.com` that points to `1.2.3.4`.
+Obviously, this is just an example -- customize DNS zones as appropriate for
+your deployment.
+
+### Connecting to the SFTP Server
+- **Protocol:** Secure FTP (SFTP)
+- **Hostname:** _IP address or hostname configured for load balancer (see above)._
+- **Port:** 22889
+- **Username:** _One of the usernames from `SFTP_USER_ARRAY`_
+- **Password:** _Password you encoded for this user_

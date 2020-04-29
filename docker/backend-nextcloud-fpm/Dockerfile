@@ -143,6 +143,7 @@ RUN set -eu; \
 RUN apk add --update --no-cache \
         zip \
         unzip \
+        p7zip \
     ;
 
 ENTRYPOINT ["/entrypoint.sh"]
