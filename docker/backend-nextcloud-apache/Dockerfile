@@ -67,6 +67,7 @@ RUN set -eux; \
     apt-get install -y --no-install-recommends \
         zip \
         unzip \
+        p7zip-full \
     ; \
     \
     apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false; \
