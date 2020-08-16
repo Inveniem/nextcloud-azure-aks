@@ -32,15 +32,19 @@ generate_volume_mount_lines() {
     for file_share_name in "${STORAGE_FILE_SHARES[@]}"; do
         if [[ "${file_share_name}" = "nextcloud-data" ]]; then
             mount_path="/var/www/html/data"
+            read_only="false"
         elif [[ "${file_share_name}" = "nextcloud-config" ]]; then
             mount_path="/var/www/html/config"
+            read_only="${NEXTCLOUD_CONFIG_READ_ONLY}"
         else
             mount_path="/mnt/share/${file_share_name}"
+            read_only="false"
         fi
 
         cat <<EOF
             - mountPath: "${mount_path}"
               name: "volume-nextcloud-${file_share_name}"
+              readOnly: ${read_only}
 EOF
     done
 }
