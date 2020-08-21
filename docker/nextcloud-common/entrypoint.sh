@@ -314,9 +314,21 @@ update_htaccess() {
 }
 
 start_log_capture() {
-    touch /var/log/nextcloud.log
-    chown www-data:root /var/log/nextcloud.log
-    tail -F /var/log/nextcloud.log &
+    local app_log="/var/log/nextcloud.log"
+    local audit_log="/var/log/nextcloud-audit.log"
+
+    # Application log
+    touch "${app_log}"
+    chown www-data:root "${app_log}"
+    tail -F "${app_log}" &
+
+    # Audit log
+    touch "${audit_log}"
+    chown www-data:root "${audit_log}"
+
+    run_as "php /var/www/html/occ config:app:set admin_audit logfile '--value=${audit_log}'"
+
+    tail -F "${audit_log}" &
 }
 
 # version_greater A B returns whether A > B
