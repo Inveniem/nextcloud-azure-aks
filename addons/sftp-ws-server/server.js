@@ -8,6 +8,8 @@ const url                 = require('url');
 const util                = require('util');
 const SFTP                = require("@inveniem/sftp-ws");
 
+const FilteredFilesystem = require('./FilteredFilesystem');
+
 //==============================================================================
 // Constants
 //==============================================================================
@@ -132,13 +134,19 @@ app.use(express.static(__dirname + '/client'));
 const ALLOWED_ORIGIN_REGEXES =
   JSON.parse(process.env.ALLOWED_ORIGIN_REGEXES || '[]');
 
+const virtualRoot = __dirname + '/files';
+
+const fileSystem =
+  new FilteredFilesystem(virtualRoot, ['client-a', 'client-b']);
+
 // Create an HTTP server to handle protocol switching.
 const server = http.createServer(app);
 
 // Start SFTP over WebSockets server.
 const sftp = new SFTP.Server({
   server:       server,
-  virtualRoot:  __dirname + '/files',
+  filesystem:   fileSystem,
+  virtualRoot:  virtualRoot,
   path:         APP_ENDPOINT,
   verifyClient: authenticateClient,
   log:          console // log to console
