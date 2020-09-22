@@ -84,25 +84,7 @@ class JwtScopedSftpServer extends SFTP.Server {
             parsedJwt   = this.parseJwt(requestOrigin, token);
 
       if (parsedJwt) {
-        if (parsedJwt.authorized_paths) {
-          const filesystem =
-            new FilteredFilesystem(
-              this._sessionInfo.virtualRoot,
-              parsedJwt.authorized_paths
-            );
-
-          this._log.info("User authenticated: %s", JSON.stringify(parsedJwt));
-
-          // Use this filesystem to provide a filtered/scoped view for the
-          // current session.
-          sessionInfo = {filesystem};
-        }
-        else {
-          this._log.error(
-            "Valid JWT presented without 'authorized_paths' claim: %s",
-            JSON.stringify(parsedJwt)
-          );
-        }
+        sessionInfo = this.validateJwtAndInitializeSession(parsedJwt);
       }
     }
 
@@ -186,6 +168,45 @@ class JwtScopedSftpServer extends SFTP.Server {
     }
 
     return parsedJwt;
+  }
+
+  /**
+   * Uses the JWT presented by a client to initialize his or her session.
+   *
+   * The basic claims and signature of the JWT are validated before this method
+   * is called. This method is only called if the JWT has been considered valid
+   * up to this point.
+   *
+   * @param {object} jwt
+   *   The JWT that was parsed from the request.
+   *
+   * @returns {boolean, {filesystem: IFilesystem}}
+   *   The parameters to apply to the client's new session; or, false if the
+   *   JWT is missing required information to start a session.
+   */
+  validateJwtAndInitializeSession(jwt) {
+    let sessionInfo = false;
+
+    if (jwt.authorized_paths) {
+      const filesystem =
+        new FilteredFilesystem(
+          this._sessionInfo.virtualRoot,
+          jwt.authorized_paths
+        );
+
+      this._log.info("User authenticated: %s", JSON.stringify(jwt));
+
+      // Use this filesystem to provide a filtered/scoped view for the
+      // current session.
+      sessionInfo = {filesystem};
+    } else {
+      this._log.error(
+        "Valid JWT presented without 'authorized_paths' claim: %s",
+        JSON.stringify(jwt)
+      );
+    }
+
+    return sessionInfo;
   }
 }
 
