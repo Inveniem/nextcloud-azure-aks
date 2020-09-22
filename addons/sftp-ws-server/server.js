@@ -14,18 +14,22 @@ const JwtScopedSftpServer = require('./lib/JwtScopedSftpServer');
 //==============================================================================
 // Constants
 //==============================================================================
-// Specify host and port for the HTTP + SFTP server WebSocket endpoint.
+// Host and port for the HTTP + SFTP server WebSocket endpoint.
 const APP_HOSTNAME    = 'localhost';
 const APP_PORT        = (process.env.SFTP_WS_PORT || 4002);
 const APP_HOST        = APP_HOSTNAME + ":" + APP_PORT;
+
+// Resource for starting a SFTP-WS session.
 const APP_ENDPOINT    = '/sftp';
-const JWT_HMAC_SECRET = process.env.JWT_HMAC_SECRET;
+
+// RSA public key for validating JWT signature.
+const JWT_RSA_PUB_KEY = process.env.JWT_RSA_PUB_KEY;
 
 //==============================================================================
 // Main Body
 //==============================================================================
-if (!JWT_HMAC_SECRET) {
-  throw new Error('JWT_HMAC_SECRET must be provided in environment.');
+if (!JWT_RSA_PUB_KEY) {
+  throw new Error('JWT_RSA_PUB_KEY must be provided in environment.');
 }
 
 const app = express();
@@ -46,7 +50,7 @@ const server = http.createServer(app);
 const sftp = new JwtScopedSftpServer(
   APP_HOST,
   ALLOWED_ORIGINS,
-  JWT_HMAC_SECRET,
+  JWT_RSA_PUB_KEY,
   {
   server:      server,
   virtualRoot: __dirname + '/files',

@@ -23,13 +23,15 @@ class JwtScopedSftpServer extends SFTP.Server {
    *   An array of regular expressions used to match what origins clients may
    *   be directed to make connections on behalf of. Matching is done based on
    *   the "Origin" header in the UPGRADE request.
-   * @param {string} jwtHmacSecret
-   *   The HS512 shared secret -- in Base64-encoding -- that is used to sign
-   *   JWTs.
+   * @param {(string|Buffer)} jwtSigningSecret
+   *   The secret used to validate that the signature on a JWT is authentic; as
+   *   either a Buffer containing an HS256, HS384, or HS512 shared secret in
+   *   Base64-encoding, or a string containing an RS256, RS384, or RS512
+   *   public key.
    * @param {object} options
    *   Optional arguments to configure the SFTP server instance.
    */
-  constructor(appHost, allowedOrigins, jwtHmacSecret, options = {}) {
+  constructor(appHost, allowedOrigins, jwtSigningSecret, options = {}) {
     // Prevent options we forcibly control from being set.
     ['verifyClient', 'filesystem'].forEach(function (unsupportedOption) {
       if (options[unsupportedOption]) {
@@ -56,11 +58,34 @@ class JwtScopedSftpServer extends SFTP.Server {
       );
     }
 
-    this.allowedOrigins = allowedOrigins;
-    this.appHost        = appHost;
-    this.hmacSecret     = jwtHmacSecret;
+    this.allowedOrigins   = allowedOrigins;
+    this.appHost          = appHost;
+    this.jwtSigningSecret = jwtSigningSecret;
 
-    this._verifyClient  = this.authenticateClient;
+    this._verifyClient = this.authenticateClient;
+  }
+
+  /**
+   * Gets the secret used to validate that the signature on a JWT is authentic.
+   *
+   * This can be either a Buffer containing an HS256, HS384, or HS512 shared
+   * secret in Base64-encoding, or a string containing an RS256, RS384, or RS512
+   * public key.
+   *
+   * Origin must be provided, to allow sub-classes the flexibility to vary which
+   * secret gets returned by the origin of the request. This is secure because
+   * the issuer of the JWT is *required* to match the issuer claim ("iss") in
+   * the JWT.
+   *
+   * @param {string} origin
+   *   The origin from which the request originated, as a URL.
+   *
+   * @returns {(string|Buffer|null)}
+   *   The secret; or, null if there is no secret that matches the provided
+   *   origin.
+   */
+  getJwtSigningSecret(origin) {
+    return this.jwtSigningSecret;
   }
 
   /**
@@ -105,14 +130,7 @@ class JwtScopedSftpServer extends SFTP.Server {
 
     if (origin) {
       for (let allowedOrigin of this.allowedOrigins) {
-        let originRegex;
-
-        if (allowedOrigin instanceof RegExp) {
-          originRegex = allowedOrigin;
-        }
-        else {
-          originRegex = new RegExp(allowedOrigin);
-        }
+        let originRegex = this.convertToRegex(allowedOrigin);
 
         if (origin.match(originRegex)) {
           isAllowedOrigin = true;
@@ -145,24 +163,30 @@ class JwtScopedSftpServer extends SFTP.Server {
     let parsedJwt = null;
 
     if (token) {
-      try {
-        // noinspection JSUnresolvedVariable
-        parsedJwt =
-          jwt.verify(
-            token,
-            Buffer.from(this.hmacSecret, 'base64'),
-            {
-              audience: this.appHost,
-              issuer:   origin
-            }
-          );
-      }
-      catch (ex) {
-        if (ex instanceof JsonWebTokenError) {
-          this._log.error("JWT validation failed (" + ex + ") - JWT: " + token);
+      const jwtSigningSecret = this.getJwtSigningSecret(origin);
+
+      if (jwtSigningSecret) {
+        try {
+          // noinspection JSUnresolvedVariable
+          parsedJwt =
+            jwt.verify(
+              token,
+              jwtSigningSecret,
+              {
+                audience: this.appHost,
+                issuer:   origin
+              }
+            );
         }
-        else {
-          throw ex;
+        catch (ex) {
+          if (ex instanceof JsonWebTokenError) {
+            this._log.error(
+              'JWT validation failed (' + ex + ') - JWT: ' + token
+            );
+          }
+          else {
+            throw ex;
+          }
         }
       }
     }
@@ -207,6 +231,28 @@ class JwtScopedSftpServer extends SFTP.Server {
     }
 
     return sessionInfo;
+  }
+
+  /**
+   * Converts a value that may be a string or RegExp to a RegExp.
+   *
+   * @param {(string|RegExp)} stringOrRegex
+   *   The value to convert.
+   *
+   * @returns {RegExp}
+   *   The resulting regular expression.
+   */
+  convertToRegex(stringOrRegex) {
+    let regex;
+
+    if (stringOrRegex instanceof RegExp) {
+      regex = stringOrRegex;
+    }
+    else {
+      regex = new RegExp(stringOrRegex);
+    }
+
+    return regex;
   }
 }
 
