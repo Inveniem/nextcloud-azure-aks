@@ -19,7 +19,7 @@ class JwtScopedSftpServer extends SFTP.Server {
    * @param {string} appHost
    *   The external host name and port of this application. This must match the
    *   "audience" of incoming JWTs.
-   * @param {string[]|RegExp[]} allowedOrigins
+   * @param {(string[]|RegExp[])} allowedOrigins
    *   An array of regular expressions used to match what origins clients may
    *   be directed to make connections on behalf of. Matching is done based on
    *   the "Origin" header in the UPGRADE request.
@@ -69,7 +69,7 @@ class JwtScopedSftpServer extends SFTP.Server {
    * @param {RequestInfo} requestInfo
    *   The incoming WebSocket connection request and header information.
    *
-   * @returns {boolean, {filesystem: IFilesystem}}
+   * @returns {(boolean|{filesystem: IFilesystem})}
    *   Either the default parameters to apply to the client's new session; or,
    *   false if the user is not allowed to authenticate.
    */
@@ -132,13 +132,13 @@ class JwtScopedSftpServer extends SFTP.Server {
    * @param {string} token
    *   The JSON Web Token that was provided in the query-string of the request.
    *
-   * @returns {null, {
-   *              iss: string,
-   *              aud: string,
-   *              iat: int,
-   *              exp: int,
-   *              authorized_paths: string[]
-   *          }}
+   * @returns {(null|{
+   *            iss: string,
+   *            aud: string,
+   *            iat: int,
+   *            exp: int,
+   *            authorized_paths: string[]
+   *          })}
    *  The parsed JWT; or, null, if the JWT is not valid/acceptable.
    */
   parseJwt(origin, token) {
@@ -180,7 +180,7 @@ class JwtScopedSftpServer extends SFTP.Server {
    * @param {object} jwt
    *   The JWT that was parsed from the request.
    *
-   * @returns {boolean, {filesystem: IFilesystem}}
+   * @returns {(boolean|{filesystem: IFilesystem})}
    *   The parameters to apply to the client's new session; or, false if the
    *   JWT is missing required information to start a session.
    */
