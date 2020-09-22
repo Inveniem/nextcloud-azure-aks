@@ -98,6 +98,8 @@ class FilteredFilesystem extends LocalFilesystem {
           }
         });
 
+        // BUGBUG: Why does this array have a *string* key inside? This isn't
+        // PHP, it's JavaScript.
         filteredFiles['path'] = files['path'];
 
         callback(err, filteredFiles);
