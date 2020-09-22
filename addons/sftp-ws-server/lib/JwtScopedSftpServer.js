@@ -129,7 +129,7 @@ class JwtScopedSftpServer extends SFTP.Server {
     let isAllowedOrigin = false;
 
     if (origin) {
-      for (let allowedOrigin of this.allowedOrigins) {
+      for (const allowedOrigin of this.allowedOrigins) {
         let originRegex = this.convertToRegex(allowedOrigin);
 
         if (origin.match(originRegex)) {

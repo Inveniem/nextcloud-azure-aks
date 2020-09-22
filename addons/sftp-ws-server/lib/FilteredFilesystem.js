@@ -159,7 +159,7 @@ class FilteredFilesystem extends LocalFilesystem {
       return true;
     }
 
-    for (let allowedRootPath of this.allowedPathList) {
+    for (const allowedRootPath of this.allowedPathList) {
       if (strippedPath.startsWith(allowedRootPath)) {
         return true;
       }
