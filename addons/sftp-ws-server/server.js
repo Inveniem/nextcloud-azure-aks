@@ -8,8 +8,8 @@ const url                 = require('url');
 const util                = require('util');
 const SFTP                = require("@inveniem/sftp-ws");
 
-const FilteredFilesystem  = require('./lib/FilteredFilesystem');
-const JwtScopedSftpServer = require('./lib/JwtScopedSftpServer');
+const MultiIssuerJwtScopedSftpServer =
+  require("./lib/MultiIssuerJwtScopedSftpServer");
 
 //==============================================================================
 // Constants
@@ -22,35 +22,70 @@ const APP_HOST        = APP_HOSTNAME + ":" + APP_PORT;
 // Resource for starting a SFTP-WS session.
 const APP_ENDPOINT    = '/sftp';
 
-// RSA public key for validating JWT signature.
-const JWT_RSA_PUB_KEY = process.env.JWT_RSA_PUB_KEY;
+// An array of arrays that gets converted into a Map from origins -> pub keys.
+//
+// Each origin is expected to be regular expression, and the pub key should be
+// an RSA public key. For example:
+//
+// ```
+// [
+//   [
+//     "https?:\/\/localhost:4002",
+//     "-----BEGIN PUBLIC KEY-----\n" +
+//     "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAvosthErm4A7SUzpHCMOR\n" +
+//     "koAnEzNK0NHPD0sM2Mw5xkcGOGvf6Rq5hUXHk4sQKWNGV/wSXnjj0/EYgqysxW7O\n" +
+//     "JeGC9ZZRPVGil7OM/MdB17OO7bHeVIFud3UiAApyKt+EQpp0SvHnBWyPBfhEHAQa\n" +
+//     "4mkGFSq9SFTuKNhW2wONPVRa5HvxHJYAi6xnqPGpIHl2xuu+utF316fNKY/gydIA\n" +
+//     "CJsxjMfY15rh7ol/KXqV7XkMfHzVd0KoFHh72oZ9p0PXMA33Pxn+Yi/Is6vhNzXU\n" +
+//     "PuemePhgtL8Ycbgz/9Eif1HFrQpk1DB5qczcyBVOTw6bmv/xBfmYnLz2uusYzmN2\n" +
+//     "XwIDAQAB\n" +
+//     "-----END PUBLIC KEY-----"
+//   ],
+//   [
+//     "https?:\/\/example.com",
+//     "-----BEGIN PUBLIC KEY-----\n" +
+//     "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAvosthErm4A7SUzpHCMOR\n" +
+//     "koAnEzNK0NHPD0sM2Mw5xkcGOGvf6Rq5hUXHk4sQKWNGV/wSXnjj0/EYgqysxW7O\n" +
+//     "JeGC9ZZRPVGil7OM/MdB17OO7bHeVIFud3UiAApyKt+EQpp0SvHnBWyPBfhEHAQa\n" +
+//     "4mkGFSq9SFTuKNhW2wONPVRa5HvxHJYAi6xnqPGpIHl2xuu+utF316fNKY/gydIA\n" +
+//     "CJsxjMfY15rh7ol/KXqV7XkMfHzVd0KoFHh72oZ9p0PXMA33Pxn+Yi/Is6vhNzXU\n" +
+//     "PuemePhgtL8Ycbgz/9Eif1HFrQpk1DB5qczcyBVOTw6bmv/xBfmYnLz2uusYzmN2\n" +
+//     "XwIDAQAB\n" +
+//     "-----END PUBLIC KEY-----"
+//   ],
+// ]
+// ```
+//
+const ORIGIN_JWT_RSA_PUB_KEYS =
+  new Map(JSON.parse(process.env.ORIGIN_JWT_RSA_PUB_KEYS || '[]'));
 
 //==============================================================================
 // Main Body
 //==============================================================================
-if (!JWT_RSA_PUB_KEY) {
-  throw new Error('JWT_RSA_PUB_KEY must be provided in environment.');
+if (ORIGIN_JWT_RSA_PUB_KEYS.length === 0) {
+  throw new Error('ORIGIN_JWT_RSA_PUB_KEYS must be provided in environment.');
 }
+
+console.log("");
+console.log("Allowed origin patterns:");
+
+for (const [origin, pubKey] of ORIGIN_JWT_RSA_PUB_KEYS) {
+  console.log(" - " + origin);
+}
+console.log("");
 
 const app = express();
 
 // FIXME: For debug - serve static files from 'client' subfolder.
 app.use(express.static(__dirname + '/client'));
 
-// Specify what origins allowed to connect to this app via regular expressions.
-//
-// NOTE: Though "Origin" is not spoof-able in a browser, it is totally
-// spoof-able via CLI tools.
-const ALLOWED_ORIGINS = JSON.parse(process.env.ALLOWED_ORIGINS || '[]');
-
 // Create an HTTP server to handle protocol switching.
 const server = http.createServer(app);
 
 // Start SFTP over WebSockets server.
-const sftp = new JwtScopedSftpServer(
+const sftp = new MultiIssuerJwtScopedSftpServer(
   APP_HOST,
-  ALLOWED_ORIGINS,
-  JWT_RSA_PUB_KEY,
+  ORIGIN_JWT_RSA_PUB_KEYS,
   {
   server:      server,
   virtualRoot: __dirname + '/files',
@@ -62,6 +97,7 @@ const sftp = new JwtScopedSftpServer(
 server.listen(APP_PORT, APP_HOSTNAME, function () {
   const host = server.address().address;
 
+  console.log("");
   console.log('HTTP server listening at http://%s:%s', host, APP_PORT);
   console.log('WS-SFTP server listening at ws://%s:%s%s', host, APP_PORT, APP_ENDPOINT);
 });
