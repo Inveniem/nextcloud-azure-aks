@@ -28,46 +28,8 @@ const APP_ENDPOINT    = '/sftp';
 //
 // Each origin is expected to be regular expression. Restrictions must include
 // a list of paths and a public key. The public key should be an RSA public key.
-// For example:
 //
-// ```
-// {
-//   "https?:\/\/localhost:4002": {
-//     public_key:
-//       "-----BEGIN PUBLIC KEY-----\n" +
-//       "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAvosthErm4A7SUzpHCMOR\n" +
-//       "koAnEzNK0NHPD0sM2Mw5xkcGOGvf6Rq5hUXHk4sQKWNGV/wSXnjj0/EYgqysxW7O\n" +
-//       "JeGC9ZZRPVGil7OM/MdB17OO7bHeVIFud3UiAApyKt+EQpp0SvHnBWyPBfhEHAQa\n" +
-//       "4mkGFSq9SFTuKNhW2wONPVRa5HvxHJYAi6xnqPGpIHl2xuu+utF316fNKY/gydIA\n" +
-//       "CJsxjMfY15rh7ol/KXqV7XkMfHzVd0KoFHh72oZ9p0PXMA33Pxn+Yi/Is6vhNzXU\n" +
-//       "PuemePhgtL8Ycbgz/9Eif1HFrQpk1DB5qczcyBVOTw6bmv/xBfmYnLz2uusYzmN2\n" +
-//       "XwIDAQAB\n" +
-//       "-----END PUBLIC KEY-----",
-//
-//     allowed_paths: [
-//       "client-a",
-//       "client-b"
-//     ]
-//   },
-//   "https?:\/\/example.com": {
-//     public_key:
-//       "-----BEGIN PUBLIC KEY-----\n" +
-//       "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAvosthErm4A7SUzpHCMOR\n" +
-//       "koAnEzNK0NHPD0sM2Mw5xkcGOGvf6Rq5hUXHk4sQKWNGV/wSXnjj0/EYgqysxW7O\n" +
-//       "JeGC9ZZRPVGil7OM/MdB17OO7bHeVIFud3UiAApyKt+EQpp0SvHnBWyPBfhEHAQa\n" +
-//       "4mkGFSq9SFTuKNhW2wONPVRa5HvxHJYAi6xnqPGpIHl2xuu+utF316fNKY/gydIA\n" +
-//       "CJsxjMfY15rh7ol/KXqV7XkMfHzVd0KoFHh72oZ9p0PXMA33Pxn+Yi/Is6vhNzXU\n" +
-//       "PuemePhgtL8Ycbgz/9Eif1HFrQpk1DB5qczcyBVOTw6bmv/xBfmYnLz2uusYzmN2\n" +
-//       "XwIDAQAB\n" +
-//       "-----END PUBLIC KEY-----",
-//
-//     allowed_paths: [
-//       "client-c",
-//       "client-d"
-//     ]
-//   }
-// }
-// ```
+// See README.md.
 //
 
 const ORIGIN_RESTRICTIONS =
