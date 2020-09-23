@@ -86,13 +86,13 @@ if (ORIGIN_RESTRICTIONS.size === 0) {
   );
 }
 
-console.log();
+console.log('');
 console.log('Allowed origins and paths:');
 
 for (const [origin, restrictions] of ORIGIN_RESTRICTIONS) {
   console.log(' - ' + origin + ': [' + restrictions.allowed_paths + ']');
 }
-console.log();
+console.log('');
 
 const app = express();
 
@@ -117,9 +117,9 @@ const sftp = new MultiIssuerJwtScopedSftpServer(
 server.listen(APP_PORT, APP_HOSTNAME, function () {
   const host = server.address().address;
 
-  console.log();
+  console.log('');
   console.log('HTTP server listening at http://%s:%s', host, APP_PORT);
   console.log('WS-SFTP server listening at ws://%s:%s%s', host, APP_PORT, APP_ENDPOINT);
-  console.log();
+  console.log('');
   console.log('Externally hosted on %s', APP_HOST);
 });
