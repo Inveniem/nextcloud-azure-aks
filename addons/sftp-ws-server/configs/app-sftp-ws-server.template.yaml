@@ -84,6 +84,7 @@ metadata:
   annotations:
     kubernetes.io/ingress.class: nginx
     certmanager.k8s.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/rewrite-target: "/sftp"
     nginx.ingress.kubernetes.io/proxy-connect-timeout: "1800"
     nginx.ingress.kubernetes.io/proxy-send-timeout: "1800"
     nginx.ingress.kubernetes.io/proxy-read-timeout: "1800"
@@ -96,7 +97,7 @@ spec:
     - host: "${NEXTCLOUD_PRIMARY_HOSTNAME}"
       http:
         paths:
-          - path: /
+          - path: /sftp
             backend:
               serviceName: internal-sftp-ws-server
               servicePort: 4002
