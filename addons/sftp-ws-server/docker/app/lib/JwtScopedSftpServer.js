@@ -104,6 +104,8 @@ class JwtScopedSftpServer extends SFTP.Server {
     const requestOrigin   = requestInfo.origin,
           isAllowedOrigin = this.validateOrigin(requestOrigin);
 
+    this._log.trace("Authenticating client from origin %s", requestOrigin);
+
     if (isAllowedOrigin) {
       const queryParams = url.parse(requestInfo.req.url, true).query,
             token       = queryParams.token,
@@ -112,6 +114,12 @@ class JwtScopedSftpServer extends SFTP.Server {
       if (parsedJwt) {
         sessionInfo = this.validateJwtAndInitializeSession(parsedJwt);
       }
+    }
+    else {
+      this._log.error(
+        "Origin %s is not allowed to make requests to this service.",
+        requestOrigin,
+      );
     }
 
     return sessionInfo;
