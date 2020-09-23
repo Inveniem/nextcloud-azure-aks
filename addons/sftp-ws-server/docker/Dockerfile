@@ -5,7 +5,7 @@ COPY app/ /app/
 WORKDIR /app
 VOLUME /app/files
 
-ENV ORIGIN_RESTRICTIONS="{}"
+ENV SFTP_WS_ORIGIN_RESTRICTIONS="{}"
 
 RUN yarn install
 

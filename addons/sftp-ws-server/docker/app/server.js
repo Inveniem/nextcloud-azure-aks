@@ -69,13 +69,19 @@ const APP_ENDPOINT    = '/sftp';
 //
 
 const ORIGIN_RESTRICTIONS =
-  new Map(Object.entries(JSON.parse(process.env.ORIGIN_RESTRICTIONS || '{}')));
+  new Map(
+    Object.entries(
+      JSON.parse(process.env.SFTP_WS_ORIGIN_RESTRICTIONS || '{}')
+    )
+  );
 
 //==============================================================================
 // Main Body
 //==============================================================================
 if (ORIGIN_RESTRICTIONS.size === 0) {
-  throw new Error('ORIGIN_RESTRICTIONS must be provided in environment.');
+  throw new Error(
+    'SFTP_WS_ORIGIN_RESTRICTIONS must be provided in environment.'
+  );
 }
 
 console.log();

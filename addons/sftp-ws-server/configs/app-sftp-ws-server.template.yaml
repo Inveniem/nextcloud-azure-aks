@@ -44,8 +44,8 @@ spec:
             #
             # ${FILE_SHARE_VOLUME_MOUNT_LINES}
           env:
-            - name: ORIGIN_RESTRICTIONS
-              value: '${ORIGIN_RESTRICTIONS}'
+            - name: SFTP_WS_ORIGIN_RESTRICTIONS
+              value: '${SFTP_WS_ORIGIN_RESTRICTIONS}'
       imagePullSecrets:
         # NOTE: This secret is added by `setup_aks_acr_service_principal.sh`.
         - name: "${ACR_DOCKER_CREDS_SECRET}"
