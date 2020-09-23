@@ -12,7 +12,12 @@ class MultiIssuerJwtScopedSftpServer extends JwtScopedSftpServer {
    * @param {string} appHost
    *   The external host name and port of this application. This must match the
    *   "audience" of incoming JWTs.
-   * @param {Map.<(string|RegExp),(String|Buffer)>} originSecretMap
+   * @param {Map.<(string|RegExp),
+   *              {
+   *                public_key:    (String|Buffer),
+   *                allowed_paths: string[]
+   *              }>
+   *        } originRestrictions
    *   A map in which:
    *   - Each key is a regular expression used to match an origin that a client
    *     may be directed to make connections on behalf of; and
@@ -23,10 +28,10 @@ class MultiIssuerJwtScopedSftpServer extends JwtScopedSftpServer {
    * @param {object} options
    *   Optional arguments to configure the SFTP server instance.
    */
-  constructor(appHost, originSecretMap, options = {}) {
-    super(appHost, Array.from(originSecretMap.keys()), null, options);
+  constructor(appHost, originRestrictions, options = {}) {
+    super(appHost, Array.from(originRestrictions.keys()), null, options);
 
-    this.originSecretMap = originSecretMap;
+    this.originRestrictions = originRestrictions;
   }
 
   /**
@@ -38,6 +43,7 @@ class MultiIssuerJwtScopedSftpServer extends JwtScopedSftpServer {
    *
    * The secret returned is the one appropriate for the given origin.
    *
+   * @override
    * @param {string} origin
    *   The origin from which the request originated, as a URL.
    *
@@ -46,15 +52,93 @@ class MultiIssuerJwtScopedSftpServer extends JwtScopedSftpServer {
    *   origin.
    */
   getJwtSigningSecret(origin) {
-    for (const [originPattern, signingSecret] of this.originSecretMap) {
+    for (const [originPattern, restrictions] of this.originRestrictions) {
       let originRegex = this.convertToRegex(originPattern);
 
       if (origin.match(originRegex)) {
-        return signingSecret;
+        if (restrictions.public_key) {
+          return restrictions.public_key;
+        }
+        else {
+          this._log.error("Origin is missing a 'public_key': " + origin);
+        }
       }
     }
 
     return null;
+  }
+
+  /**
+   * @inheritDoc
+   */
+  validateJwtAndInitializeSession(jwt) {
+    let sessionInfo = super.validateJwtAndInitializeSession(jwt);
+
+    if (sessionInfo) {
+      const origin = jwt.iss;
+
+      if (!this.validateOriginPathRestrictions(origin, jwt)) {
+        sessionInfo = false;
+      }
+    }
+
+    return sessionInfo;
+  }
+
+  /**
+   * Validates a JWT's authorized paths are a subset of origin's allowed paths.
+   *
+   * @param {string} origin
+   *   The 'Origin' that was provided as the issuer in the JWT.
+   * @param {object} jwt
+   *   The JWT that was parsed from the request.
+   *
+   * @returns {boolean}
+   *   true if the JWT does not allow access to any path outside of those
+   *   permitted for the origin; false otherwise.
+   */
+  validateOriginPathRestrictions(origin, jwt) {
+    let isValid = true;
+
+    for (const [originPattern, restrictions] of this.originRestrictions) {
+      let originRegex = this.convertToRegex(originPattern);
+
+      if (origin.match(originRegex)) {
+        const originAllowedPaths = (restrictions.allowed_paths || []);
+
+        if (!Array.isArray(originAllowedPaths) ||
+            (originAllowedPaths.length === 0)) {
+          this._log.error(
+            "Origin is missing an 'allowed_paths' restriction: " + origin
+          );
+
+          isValid = false;
+          break;
+        }
+        else {
+          const badPaths =
+            jwt.authorized_paths.filter(
+              (path) => !originAllowedPaths.includes(path)
+            );
+
+          if (badPaths.length !== 0) {
+            this._log.error(
+              "Valid JWT presented with an 'authorized_paths' claim that is " +
+              "invalid for the origin. JWT: '%s', origin: '%s', allowed " +
+              "paths for origin: '%s'",
+              JSON.stringify(jwt),
+              origin,
+              JSON.stringify(originAllowedPaths)
+            );
+
+            isValid = false;
+            break;
+          }
+        }
+      }
+    }
+
+    return isValid;
   }
 }
 

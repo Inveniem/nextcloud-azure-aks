@@ -22,57 +22,69 @@ const APP_HOST        = APP_HOSTNAME + ":" + APP_PORT;
 // Resource for starting a SFTP-WS session.
 const APP_ENDPOINT    = '/sftp';
 
-// An array of arrays that gets converted into a Map from origins -> pub keys.
+// A map from origins -> restrictions.
 //
-// Each origin is expected to be regular expression, and the pub key should be
-// an RSA public key. For example:
+// Each origin is expected to be regular expression. Restrictions must include
+// a list of paths and a public key. The public key should be an RSA public key.
+// For example:
 //
 // ```
-// [
-//   [
-//     "https?:\/\/localhost:4002",
-//     "-----BEGIN PUBLIC KEY-----\n" +
-//     "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAvosthErm4A7SUzpHCMOR\n" +
-//     "koAnEzNK0NHPD0sM2Mw5xkcGOGvf6Rq5hUXHk4sQKWNGV/wSXnjj0/EYgqysxW7O\n" +
-//     "JeGC9ZZRPVGil7OM/MdB17OO7bHeVIFud3UiAApyKt+EQpp0SvHnBWyPBfhEHAQa\n" +
-//     "4mkGFSq9SFTuKNhW2wONPVRa5HvxHJYAi6xnqPGpIHl2xuu+utF316fNKY/gydIA\n" +
-//     "CJsxjMfY15rh7ol/KXqV7XkMfHzVd0KoFHh72oZ9p0PXMA33Pxn+Yi/Is6vhNzXU\n" +
-//     "PuemePhgtL8Ycbgz/9Eif1HFrQpk1DB5qczcyBVOTw6bmv/xBfmYnLz2uusYzmN2\n" +
-//     "XwIDAQAB\n" +
-//     "-----END PUBLIC KEY-----"
-//   ],
-//   [
-//     "https?:\/\/example.com",
-//     "-----BEGIN PUBLIC KEY-----\n" +
-//     "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAvosthErm4A7SUzpHCMOR\n" +
-//     "koAnEzNK0NHPD0sM2Mw5xkcGOGvf6Rq5hUXHk4sQKWNGV/wSXnjj0/EYgqysxW7O\n" +
-//     "JeGC9ZZRPVGil7OM/MdB17OO7bHeVIFud3UiAApyKt+EQpp0SvHnBWyPBfhEHAQa\n" +
-//     "4mkGFSq9SFTuKNhW2wONPVRa5HvxHJYAi6xnqPGpIHl2xuu+utF316fNKY/gydIA\n" +
-//     "CJsxjMfY15rh7ol/KXqV7XkMfHzVd0KoFHh72oZ9p0PXMA33Pxn+Yi/Is6vhNzXU\n" +
-//     "PuemePhgtL8Ycbgz/9Eif1HFrQpk1DB5qczcyBVOTw6bmv/xBfmYnLz2uusYzmN2\n" +
-//     "XwIDAQAB\n" +
-//     "-----END PUBLIC KEY-----"
-//   ],
-// ]
+// {
+//   "https?:\/\/localhost:4002": {
+//     public_key:
+//       "-----BEGIN PUBLIC KEY-----\n" +
+//       "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAvosthErm4A7SUzpHCMOR\n" +
+//       "koAnEzNK0NHPD0sM2Mw5xkcGOGvf6Rq5hUXHk4sQKWNGV/wSXnjj0/EYgqysxW7O\n" +
+//       "JeGC9ZZRPVGil7OM/MdB17OO7bHeVIFud3UiAApyKt+EQpp0SvHnBWyPBfhEHAQa\n" +
+//       "4mkGFSq9SFTuKNhW2wONPVRa5HvxHJYAi6xnqPGpIHl2xuu+utF316fNKY/gydIA\n" +
+//       "CJsxjMfY15rh7ol/KXqV7XkMfHzVd0KoFHh72oZ9p0PXMA33Pxn+Yi/Is6vhNzXU\n" +
+//       "PuemePhgtL8Ycbgz/9Eif1HFrQpk1DB5qczcyBVOTw6bmv/xBfmYnLz2uusYzmN2\n" +
+//       "XwIDAQAB\n" +
+//       "-----END PUBLIC KEY-----",
+//
+//     allowed_paths: [
+//       "client-a",
+//       "client-b"
+//     ]
+//   },
+//   "https?:\/\/example.com": {
+//     public_key:
+//       "-----BEGIN PUBLIC KEY-----\n" +
+//       "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAvosthErm4A7SUzpHCMOR\n" +
+//       "koAnEzNK0NHPD0sM2Mw5xkcGOGvf6Rq5hUXHk4sQKWNGV/wSXnjj0/EYgqysxW7O\n" +
+//       "JeGC9ZZRPVGil7OM/MdB17OO7bHeVIFud3UiAApyKt+EQpp0SvHnBWyPBfhEHAQa\n" +
+//       "4mkGFSq9SFTuKNhW2wONPVRa5HvxHJYAi6xnqPGpIHl2xuu+utF316fNKY/gydIA\n" +
+//       "CJsxjMfY15rh7ol/KXqV7XkMfHzVd0KoFHh72oZ9p0PXMA33Pxn+Yi/Is6vhNzXU\n" +
+//       "PuemePhgtL8Ycbgz/9Eif1HFrQpk1DB5qczcyBVOTw6bmv/xBfmYnLz2uusYzmN2\n" +
+//       "XwIDAQAB\n" +
+//       "-----END PUBLIC KEY-----",
+//
+//     allowed_paths: [
+//       "client-c",
+//       "client-d"
+//     ]
+//   }
+// }
 // ```
 //
-const ORIGIN_JWT_RSA_PUB_KEYS =
-  new Map(JSON.parse(process.env.ORIGIN_JWT_RSA_PUB_KEYS || '[]'));
+
+const ORIGIN_RESTRICTIONS =
+  new Map(Object.entries(JSON.parse(process.env.ORIGIN_RESTRICTIONS || '{}')));
 
 //==============================================================================
 // Main Body
 //==============================================================================
-if (ORIGIN_JWT_RSA_PUB_KEYS.length === 0) {
-  throw new Error('ORIGIN_JWT_RSA_PUB_KEYS must be provided in environment.');
+if (ORIGIN_RESTRICTIONS.size === 0) {
+  throw new Error('ORIGIN_RESTRICTIONS must be provided in environment.');
 }
 
-console.log("");
-console.log("Allowed origin patterns:");
+console.log();
+console.log('Allowed origins and paths:');
 
-for (const [origin, pubKey] of ORIGIN_JWT_RSA_PUB_KEYS) {
-  console.log(" - " + origin);
+for (const [origin, restrictions] of ORIGIN_RESTRICTIONS) {
+  console.log(' - ' + origin + ': [' + restrictions.allowed_paths + ']');
 }
-console.log("");
+console.log();
 
 const app = express();
 
@@ -85,7 +97,7 @@ const server = http.createServer(app);
 // Start SFTP over WebSockets server.
 const sftp = new MultiIssuerJwtScopedSftpServer(
   APP_HOST,
-  ORIGIN_JWT_RSA_PUB_KEYS,
+  ORIGIN_RESTRICTIONS,
   {
   server:      server,
   virtualRoot: __dirname + '/files',
@@ -97,7 +109,7 @@ const sftp = new MultiIssuerJwtScopedSftpServer(
 server.listen(APP_PORT, APP_HOSTNAME, function () {
   const host = server.address().address;
 
-  console.log("");
+  console.log();
   console.log('HTTP server listening at http://%s:%s', host, APP_PORT);
   console.log('WS-SFTP server listening at ws://%s:%s%s', host, APP_PORT, APP_ENDPOINT);
 });
