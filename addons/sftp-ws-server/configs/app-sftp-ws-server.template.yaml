@@ -44,6 +44,12 @@ spec:
             #
             # ${FILE_SHARE_VOLUME_MOUNT_LINES}
           env:
+            - name: SFTP_WS_HOST
+              value: "0.0.0.0"
+            - name: SFTP_WS_PORT
+              value: "4002"
+            - name: SFTP_WS_APP_HOST
+              value: "${NEXTCLOUD_PRIMARY_HOSTNAME}"
             - name: SFTP_WS_ORIGIN_RESTRICTIONS
               value: '${SFTP_WS_ORIGIN_RESTRICTIONS}'
       imagePullSecrets:

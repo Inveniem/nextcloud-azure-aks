@@ -46,9 +46,10 @@ class JwtScopedSftpServer extends SFTP.Server {
 
     super(options);
 
-    if ((typeof appHost !== 'string') || !appHost.match(/^[^:]+:[\d]+$/)) {
+    if ((typeof appHost !== 'string') || !appHost.match(/^[^:]+(:[\d]+)?$/)) {
       throw new Error(
-        '`appHost` must be a string consisting of "host:port" (no protocol)'
+        '`appHost` must be a string consisting of "host:port" (no protocol); ' +
+        'got: ' + appHost
       );
     }
 

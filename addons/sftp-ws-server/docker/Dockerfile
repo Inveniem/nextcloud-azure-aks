@@ -5,6 +5,9 @@ COPY app/ /app/
 WORKDIR /app
 VOLUME /app/files
 
+ENV SFTP_WS_HOST="localhost"
+ENV SFTP_WS_PORT="4002"
+ENV SFTP_WS_APP_HOST="localhost:4002"
 ENV SFTP_WS_ORIGIN_RESTRICTIONS="{}"
 
 RUN yarn install

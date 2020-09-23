@@ -15,9 +15,11 @@ const MultiIssuerJwtScopedSftpServer =
 // Constants
 //==============================================================================
 // Host and port for the HTTP + SFTP server WebSocket endpoint.
-const APP_HOSTNAME    = 'localhost';
-const APP_PORT        = (process.env.SFTP_WS_PORT || 4002);
-const APP_HOST        = APP_HOSTNAME + ":" + APP_PORT;
+const APP_HOSTNAME = (process.env.SFTP_WS_HOST || 'localhost');
+const APP_PORT     = (process.env.SFTP_WS_PORT || 4002);
+
+const APP_HOST =
+  (process.env.SFTP_WS_APP_HOST || (APP_HOSTNAME + ":" + APP_PORT));
 
 // Resource for starting a SFTP-WS session.
 const APP_ENDPOINT    = '/sftp';
@@ -118,4 +120,6 @@ server.listen(APP_PORT, APP_HOSTNAME, function () {
   console.log();
   console.log('HTTP server listening at http://%s:%s', host, APP_PORT);
   console.log('WS-SFTP server listening at ws://%s:%s%s', host, APP_PORT, APP_ENDPOINT);
+  console.log();
+  console.log('Externally hosted on %s', APP_HOST);
 });
