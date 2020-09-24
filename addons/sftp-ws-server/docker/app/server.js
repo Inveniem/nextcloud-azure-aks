@@ -1,12 +1,8 @@
 "use strict";
 
-const express             = require('express');
-const http                = require('http');
-const {JsonWebTokenError} = require("jsonwebtoken");
-const jwt                 = require('jsonwebtoken');
-const url                 = require('url');
-const util                = require('util');
-const SFTP                = require("@inveniem/sftp-ws");
+const express = require('express');
+const http    = require('http');
+const bunyan  = require('bunyan');
 
 const MultiIssuerJwtScopedSftpServer =
   require("./lib/MultiIssuerJwtScopedSftpServer");
@@ -14,6 +10,9 @@ const MultiIssuerJwtScopedSftpServer =
 //==============================================================================
 // Constants
 //==============================================================================
+// Level of log output to produce.
+const LOG_LEVEL = (process.env.SFTP_WS_LOG_LEVEL || 'info')
+
 // Host and port for the HTTP + SFTP server WebSocket endpoint.
 const APP_HOSTNAME = (process.env.SFTP_WS_HOST || 'localhost');
 const APP_PORT     = (process.env.SFTP_WS_PORT || 4002);
@@ -39,6 +38,12 @@ const ORIGIN_RESTRICTIONS =
     )
   );
 
+const LOGGER =
+  bunyan.createLogger({
+    name:  'sftp-ws-server',
+    level: LOG_LEVEL,
+  });
+
 //==============================================================================
 // Main Body
 //==============================================================================
@@ -48,13 +53,12 @@ if (ORIGIN_RESTRICTIONS.size === 0) {
   );
 }
 
-console.log('');
-console.log('Allowed origins and paths:');
+LOGGER.info('Allowed origins and paths:');
 
 for (const [origin, restrictions] of ORIGIN_RESTRICTIONS) {
-  console.log(' - ' + origin + ': [' + restrictions.allowed_paths + ']');
+  LOGGER.info(' - %s: [%s]', origin, restrictions.allowed_paths.join(', '));
 }
-console.log('');
+LOGGER.info('');
 
 const app = express();
 
@@ -72,16 +76,16 @@ const sftp = new MultiIssuerJwtScopedSftpServer(
   server:      server,
   virtualRoot: __dirname + '/files',
   path:        APP_ENDPOINT,
-  log:         console // log to console
+  log:         LOGGER,
 });
 
 // Start accepting requests.
 server.listen(APP_PORT, APP_HOSTNAME, function () {
   const host = server.address().address;
 
-  console.log('');
-  console.log('HTTP server listening at http://%s:%s', host, APP_PORT);
-  console.log('WS-SFTP server listening at ws://%s:%s%s', host, APP_PORT, APP_ENDPOINT);
-  console.log('');
-  console.log('Externally hosted on %s', APP_HOST);
+  LOGGER.info('');
+  LOGGER.info('HTTP server listening at http://%s:%s', host, APP_PORT);
+  LOGGER.info('WS-SFTP server listening at ws://%s:%s%s', host, APP_PORT, APP_ENDPOINT);
+  LOGGER.info('');
+  LOGGER.info('Externally hosted on %s', APP_HOST);
 });

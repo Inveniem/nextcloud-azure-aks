@@ -44,6 +44,8 @@ spec:
             #
             # ${FILE_SHARE_VOLUME_MOUNT_LINES}
           env:
+            - name: SFTP_WS_LOG_LEVEL
+              value: "info"
             - name: SFTP_WS_HOST
               value: "0.0.0.0"
             - name: SFTP_WS_PORT
