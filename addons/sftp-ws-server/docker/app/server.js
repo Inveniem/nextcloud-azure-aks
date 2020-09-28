@@ -62,9 +62,6 @@ LOGGER.info('');
 
 const app = express();
 
-// FIXME: For debug - serve static files from 'client' subfolder.
-app.use(express.static(__dirname + '/client'));
-
 // Create an HTTP server to handle protocol switching.
 const server = http.createServer(app);
 
