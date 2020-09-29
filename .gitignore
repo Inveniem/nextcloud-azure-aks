@@ -5,3 +5,5 @@ config.env
 
 docker/nextcloud-common/custom_apps
 docker/nextcloud-common/generated/
+
+backups/
