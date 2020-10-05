@@ -45,7 +45,6 @@ spec:
               cpu: 1500m
               memory: 1280Mi
           volumeMounts:
-            # FIXME Find a way to make nextcloud-config readOnly: true
             - name: volume-nextcloud-app
               mountPath: /var/www/html
             - name: volume-php-cache
