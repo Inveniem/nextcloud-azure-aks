@@ -3,7 +3,7 @@ kind: CronJob
 metadata:
   name: nextcloud-file-scan
 spec:
-  schedule: "* 12,20 * * *"
+  schedule: "0 12,20 * * *"
   jobTemplate:
     spec:
       template:
