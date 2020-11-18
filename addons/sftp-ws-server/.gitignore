@@ -1,1 +1,3 @@
 config.origin_restrictions.json
+*.pem
+issued_keys/

@@ -25,6 +25,12 @@ for an example of how to expose a Nextcloud file share into the SFTP-WS Server
 pod. In the example file, the `client1` volume/share is exposed. It will appear 
 as `/files/client1` in the container.
 
+### Generating Key Pairs for Authentication
+Run `generate_jwt_rs256_keypair.sh` to save the private key to `jwt_private.pem`
+and the public key to `jwt_public.pem`. The client should be configured with the
+private key, and the public key should be supplied to the SFTP-WS server via
+Origin restrictions (see next section).
+
 ### Specifying Origin Restrictions
 For security reasons -- in addition to the SFTP-WS server only having access to
 some but not all Nextcloud volumes -- the server also only selectively exposes
