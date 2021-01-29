@@ -33,8 +33,18 @@ spec:
               cpu: 100m
               memory: 64Mi
             limits:
-              cpu: 500m
+              cpu: 1000m
               memory: 128Mi
+          readinessProbe:
+            tcpSocket:
+              port: 22
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: 22
+            initialDelaySeconds: 10
+            periodSeconds: 30
           volumeMounts:
             - name: volume-secret-ssh-host-keys
               mountPath: /etc/ssh/ssh_host_ed25519_key

@@ -1,0 +1,13 @@
+{
+  "name": "sftp-ws-server",
+  "version": "1.0.0",
+  "description": "A server for allowing connections to the Nextcloud file system via SFTP over WebSockets (SFTP-WS).",
+  "dependencies": {
+    "@inveniem/sftp-ws": "^0.8.1",
+    "bunyan": "^1.8.14",
+    "express": "^4.10",
+    "jsonwebtoken": "^8.1.0"
+  },
+  "author": "Inveniem",
+  "license": "UNLICENSED"
+}

@@ -1,0 +1,3 @@
+app/files/
+app/node_modules/
+app/*.log
