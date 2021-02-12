@@ -1,17 +1,20 @@
 #!/usr/bin/env bash
 
 ##
-# This script is used to setup AKS with credentials to an Azure AD service
-# principal that has access to the ACR repo where images are stored.
+# This script is used to setup AKS with new or updated credentials to an Azure
+# AD service principal that has access to the ACR repo where images are
+# stored.
 #
-# This script only needs to be run once per AKS context. The name of each
-# ACR service principal must be unique within an AD tenant.
+# This script needs to be run once per AKS context, and then later re-run when
+# credentials have expired. The name of each ACR service principal must be
+# unique within an AD tenant.
 #
 # This script is based on:
 # https://docs.microsoft.com/en-us/azure/container-registry/container-registry-auth-aci
+# https://blog.atomist.com/updating-a-kubernetes-secret-or-configmap/
 #
 # @author Guy Elsmore-Paddock (guy@inveniem.com)
-# @copyright Copyright (c) 2019, Inveniem
+# @copyright Copyright (c) 2019-2021, Inveniem
 # @license GNU AGPL version 3 or any later version
 #
 
@@ -62,12 +65,14 @@ export DOCKER_PASSWORD="${SP_PASSWD}"
 # See https://github.com/MicrosoftDocs/azure-docs/issues/12925
 export DOCKER_EMAIL="placeholder@example.com"
 
-echo "Creating Docker Registry Secret for '${REGISTRY_SERVICE_PRINCIPLE_NAME}' as '${ACR_DOCKER_CREDS_SECRET}'..."
+echo "Creating/updating Docker Registry Secret for '${REGISTRY_SERVICE_PRINCIPLE_NAME}' as '${ACR_DOCKER_CREDS_SECRET}'..."
 kubectl create secret docker-registry \
+    --dry-run=true -o yaml \
     "${ACR_DOCKER_CREDS_SECRET}" \
     --docker-server="${REGISTRY_HOST}" \
     --docker-username="${DOCKER_USER}" \
     --docker-password="${DOCKER_PASSWORD}" \
-    --docker-email="${DOCKER_EMAIL}"
+    --docker-email="${DOCKER_EMAIL}" |
+    kubectl apply -f -
 echo "Done."
 echo ""
