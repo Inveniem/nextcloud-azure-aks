@@ -98,6 +98,11 @@ spec:
               value: "internal-redis"
             - name: REDIS_PORT
               value: "6379"
+            - name: REDIS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: "${KUBE_REDIS_AUTH_SECRET}"
+                  key: password
         # Container: Nginx Server Middleware
         - name: middle-nextcloud-nginx
           image: "${REGISTRY_HOST}/inveniem/nextcloud-nginx-middleware:${CONTAINER_VERSION}"

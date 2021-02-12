@@ -14,6 +14,7 @@ set -u
 source './config.env'
 
 FILES=(
+    'secrets-redis.template.yaml'
     'app-redis.template.yaml'
 )
 
