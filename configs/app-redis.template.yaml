@@ -47,7 +47,14 @@ spec:
           command: ["sh", "-c", "echo 1024 > /host-proc/sys/net/core/somaxconn"]
       containers:
         - name: redis
-          image: "redis:5.0.5-alpine"
+          image: "redis:5.0.10-alpine"
+          command:
+            - redis-server
+            - "/usr/local/etc/redis/redis.conf"
+          volumeMounts:
+            - name: redis-config
+              mountPath: "/usr/local/etc/redis"
+              readOnly: true
           ports:
             - containerPort: 6379
           resources:
@@ -76,6 +83,12 @@ spec:
         - name: host-proc
           hostPath:
             path: /proc
+        - name: redis-config
+          secret:
+            secretName: "${KUBE_REDIS_CONFIG_SECRET}"
+            items:
+              - key: "redis.conf"
+                path: "redis.conf"
 ---
 apiVersion: v1
 kind: Service
