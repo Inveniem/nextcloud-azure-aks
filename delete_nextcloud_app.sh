@@ -21,7 +21,7 @@ else
 fi
 
 FILES+=(
-    'secrets.template.yaml'
+    'secrets-nextcloud.template.yaml'
     'configmap.template.yaml'
 )
 
