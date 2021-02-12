@@ -15,6 +15,7 @@ source './config.env'
 
 FILES=(
     'app-redis.template.yaml'
+    'secrets-redis.template.yaml'
 )
 
 ./set_context.sh
