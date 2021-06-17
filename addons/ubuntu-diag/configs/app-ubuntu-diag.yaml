@@ -35,9 +35,8 @@ spec:
               cpu: 2000m
               memory: 512Mi
           volumeMounts:
-            - name: volume-nextcloud-client-zft
-              mountPath: "/mnt/share/client-zft"
+            - mountPath: /mnt/share/homes
+              name: volume-nextcloud-nextcloud-data
+            # ${FILE_SHARE_VOLUME_MOUNT_LINES}
       volumes:
-        - name: volume-nextcloud-client-zft
-          persistentVolumeClaim:
-            claimName: "claim-nextcloud-client-zft"
+        # ${FILE_SHARE_VOLUME_LINES}
