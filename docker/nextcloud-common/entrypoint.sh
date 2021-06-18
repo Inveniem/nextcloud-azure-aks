@@ -141,7 +141,7 @@ deploy_nextcloud_release() {
     rsync $rsync_options --delete /usr/src/nextcloud/custom_apps/ /var/www/html/custom_apps/
 
     if [ -w "/var/www/html/config" ] && \
-       [ "${NEXTCLOUD_CONFIG_READ_ONLY:-false}" == "false" ]; then
+       [ "${NEXTCLOUD_CONFIG_READ_ONLY:-false}" = "false" ]; then
         echo "'config' directory is writable."
         echo "Sync-ing configuration snippets:"
         cp -v /usr/src/nextcloud/config/*.config.php /var/www/html/config/
