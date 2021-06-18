@@ -89,14 +89,14 @@ setup_redis() {
         echo 'session.lazy_write = 0'
         echo ''
 
-        # Locks are only allowed for up to 60 seconds.
-        echo 'redis.session.locking_enabled = 0'
-        echo 'redis.session.lock_expire = 60'
+        # From:
+        # https://github.com/nextcloud/docker/commit/9b057aafb0c41bab63870277c53307d3d6dc572b
+        echo 'redis.session.locking_enabled = 1'
+        echo 'redis.session.lock_retries = -1'
 
-        # Wait up to 5 seconds for a lock before giving up.
-        # NOTE: lock_wait_time is in usecs, not msecs.
-        echo 'redis.session.lock_wait_time = 100000'
-        echo 'redis.session.lock_retries = 50'
+        # redis.session.lock_wait_time is specified in microseconds.
+        # Wait 10ms before retrying the lock rather than the default 2ms.
+        echo "redis.session.lock_wait_time = 10000"
     } > /usr/local/etc/php/conf.d/redis-sessions.ini
 }
 
