@@ -61,6 +61,8 @@ spec:
           env:
             - name: NEXTCLOUD_CONFIG_READ_ONLY
               value: "${NEXTCLOUD_CONFIG_READ_ONLY}"
+            - name: NEXTCLOUD_FILE_LOCKING_ENABLED
+              value: "${NEXTCLOUD_FILE_LOCKING_ENABLED}"
             - name: NEXTCLOUD_TRUSTED_DOMAINS
               valueFrom:
                 configMapKeyRef:
