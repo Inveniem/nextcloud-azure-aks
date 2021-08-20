@@ -19,10 +19,10 @@ spec:
     - host: "${NEXTCLOUD_INGRESS_HOSTNAME}"
       http:
         paths:
-          - path: /
-            pathType: prefix
+          - pathType: Prefix
+            path: "/"
             backend:
               service:
                 name: internal-nextcloud
-              port:
-                number: 80
+                port:
+                  number: 80
