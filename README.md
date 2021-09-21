@@ -10,6 +10,8 @@ run Nextcloud on Azure Container Instances.
 You will need to do the following before you can use this resource kit:
 - Create an AKS cluster with at least one node 
   (F2s v2 instances are recommended).
+- Setup nginx ingress on the cluster (this project has not been updated to work
+  with Application Gateway ingress yet, but PRs are welcome!).
 - Setup an Azure Container Registry (ACR).
 - Setup a MySQL server instance on Azure.
 - Create an empty database and its corresponding user account on the MySQL 
