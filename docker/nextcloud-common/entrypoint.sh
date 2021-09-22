@@ -89,14 +89,14 @@ setup_redis() {
         echo 'session.lazy_write = 0'
         echo ''
 
-        # Locks are only allowed for up to 60 seconds.
-        echo 'redis.session.locking_enabled = 0'
-        echo 'redis.session.lock_expire = 60'
+        # From:
+        # https://github.com/nextcloud/docker/commit/9b057aafb0c41bab63870277c53307d3d6dc572b
+        echo 'redis.session.locking_enabled = 1'
+        echo 'redis.session.lock_retries = -1'
 
-        # Wait up to 5 seconds for a lock before giving up.
-        # NOTE: lock_wait_time is in usecs, not msecs.
-        echo 'redis.session.lock_wait_time = 100000'
-        echo 'redis.session.lock_retries = 50'
+        # redis.session.lock_wait_time is specified in microseconds.
+        # Wait 10ms before retrying the lock rather than the default 2ms.
+        echo "redis.session.lock_wait_time = 10000"
     } > /usr/local/etc/php/conf.d/redis-sessions.ini
 }
 
@@ -141,7 +141,7 @@ deploy_nextcloud_release() {
     rsync $rsync_options --delete /usr/src/nextcloud/custom_apps/ /var/www/html/custom_apps/
 
     if [ -w "/var/www/html/config" ] && \
-       [ "${NEXTCLOUD_CONFIG_READ_ONLY:-false}" == "false" ]; then
+       [ "${NEXTCLOUD_CONFIG_READ_ONLY:-false}" = "false" ]; then
         echo "'config' directory is writable."
         echo "Sync-ing configuration snippets:"
         cp -v /usr/src/nextcloud/config/*.config.php /var/www/html/config/

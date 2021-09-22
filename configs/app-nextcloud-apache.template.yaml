@@ -22,6 +22,17 @@ spec:
         app: backend-nextcloud
         role: backend
     spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            # Prevent multiple replicas from being on the same node.
+            - labelSelector:
+                matchExpressions:
+                  - key: app
+                    operator: In
+                    values:
+                      - backend-nextcloud
+              topologyKey: "kubernetes.io/hostname"
       containers:
         # Container: The Apache-based Nextcloud backend
         - name: backend-nextcloud-apache
@@ -50,6 +61,8 @@ spec:
           env:
             - name: NEXTCLOUD_CONFIG_READ_ONLY
               value: "${NEXTCLOUD_CONFIG_READ_ONLY}"
+            - name: NEXTCLOUD_FILE_LOCKING_ENABLED
+              value: "${NEXTCLOUD_FILE_LOCKING_ENABLED}"
             - name: NEXTCLOUD_TRUSTED_DOMAINS
               valueFrom:
                 configMapKeyRef:
