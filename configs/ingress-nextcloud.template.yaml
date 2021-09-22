@@ -1,4 +1,4 @@
-apiVersion: networking.k8s.io/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: frontend-nextcloud-ingress
@@ -19,7 +19,10 @@ spec:
     - host: "${NEXTCLOUD_INGRESS_HOSTNAME}"
       http:
         paths:
-          - path: /
+          - pathType: Prefix
+            path: "/"
             backend:
-              serviceName: internal-nextcloud
-              servicePort: 80
+              service:
+                name: internal-nextcloud
+                port:
+                  number: 80

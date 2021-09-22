@@ -25,6 +25,7 @@ source './config.env'
 FILES=(
     'configmap.template.yaml'
     'secrets-nextcloud.template.yaml'
+    'ingress-nextcloud.template.yaml'
 )
 
 if [[ "${POD_TYPE:-apache}" = "fpm-nginx" ]]; then
