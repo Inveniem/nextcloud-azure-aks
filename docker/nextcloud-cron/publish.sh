@@ -20,8 +20,20 @@ source '../../config.env'
 CONTAINER_VERSION="${CONTAINER_VERSION:-latest}"
 CONTAINER_NAME="inveniem/nextcloud-cron:${CONTAINER_VERSION}"
 
-docker build -t "${CONTAINER_NAME}" -f Dockerfile ..
-docker tag "${CONTAINER_NAME}" "${REGISTRY_HOST}/${CONTAINER_NAME}"
+$CONTAINER_ENGINE build -t "${CONTAINER_NAME}" -f Dockerfile ..
+$CONTAINER_ENGINE tag "${CONTAINER_NAME}" "${REGISTRY_HOST}/${CONTAINER_NAME}"
 
-az acr login --name "${REGISTRY_NAME}"
-docker push "${REGISTRY_HOST}/${CONTAINER_NAME}"
+
+case $CONTAINER_ENGINE in
+
+  docker)
+    az acr login --name "${REGISTRY_NAME}"
+    ;;
+
+  podman)
+    GET_REGISTRY_TOKEN=`az acr login --name ${REGISTRY_NAME} --expose-token | jq .accessToken |tr -d '"'`
+    "$CONTAINER_ENGINE" login "${REGISTRY_HOST}" -u 00000000-0000-0000-0000-000000000000 -p "$GET_REGISTRY_TOKEN"
+    ;;
+esac
+
+"$CONTAINER_ENGINE" push "${REGISTRY_HOST}/${CONTAINER_NAME}"
