@@ -1,0 +1,27 @@
+##
+# @file
+# Kubernetes deployment manifest for the "Let's Encrypt" Production issuer.
+#
+# This is standard boilerplate for any application that has ingress protected by
+# Let's Encrypt SSL/TLS certificates. To increase application portability, this
+# is defined as an Issuer rather than a ClusterIssuer, which avoids a
+# requirement that every cluster must name this Issuer the same.
+#
+# @author Guy Elsmore-Paddock (guy@inveniem.com)
+# @copyright Copyright (c) 2019-2022, Inveniem
+# @license GNU AGPL version 3 or any later version
+#
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: letsencrypt-production
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: support@yourcompany.com
+    privateKeySecretRef:
+      name: letsencrypt-production
+    solvers:
+      - http01:
+          ingress:
+            class: nginx

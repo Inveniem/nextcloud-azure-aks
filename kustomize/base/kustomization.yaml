@@ -1,0 +1,16 @@
+##
+# Base Kustomization file for deploying Nextcloud to a Kubernetes environment.
+#
+# @author Guy Elsmore-Paddock (guy@inveniem.com)
+# @copyright Copyright (c) 2022, Inveniem
+# @license GNU AGPL version 3 or any later version
+#
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - manifests/app-clamav.yaml
+  - manifests/app-nextcloud.yaml
+  - manifests/app-redis.yaml
+  - manifests/cert-manager-lets-encrypt-prod.yaml
+  - manifests/pod-disruption-budgets.yaml

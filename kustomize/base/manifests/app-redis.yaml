@@ -1,0 +1,105 @@
+##
+# Kubernetes deployment configuration for running Redis as an internal service,
+# for use by Nextcloud.
+#
+# With this configuration, Nextcloud can reach Redis on port 6379 at hostname
+# "internal-redis.NAMESPACE.svc.cluster.local" (aka "internal-redis.NAMESPACE"
+# or "internal-redis" for short") within the cluster.
+#
+# @author Guy Elsmore-Paddock (guy@inveniem.com)
+# @copyright Copyright (c) 2019-2022, Inveniem
+# @license GNU AGPL version 3 or any later version
+#
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis
+spec:
+  replicas: 1
+  revisionHistoryLimit: 2
+  selector:
+    matchLabels:
+      app: db-redis
+  template:
+    metadata:
+      labels:
+        app: db-redis
+        role: backend
+    spec:
+      initContainers:
+        # This is needed to address this warning from Redis:
+        # "WARNING you have Transparent Huge Pages (THP) support enabled in
+        # your kernel."
+        - name: disable-thp
+          image: busybox
+          volumeMounts:
+            - name: host-sys
+              mountPath: /host-sys
+          command: ["sh", "-c", "echo never > /host-sys/kernel/mm/transparent_hugepage/enabled"]
+        # This is needed to address this warning from Redis:
+        # "WARNING: The TCP backlog setting of 511 cannot be enforced because
+        # /proc/sys/net/core/somaxconn is set to the lower value of 128."
+        - name: increase-max-conn
+          image: busybox
+          volumeMounts:
+            - name: host-proc
+              mountPath: /host-proc
+          command: ["sh", "-c", "echo 1024 > /host-proc/sys/net/core/somaxconn"]
+      containers:
+        - name: redis
+          image: "redis:5.0.10-alpine"
+          command:
+            - redis-server
+            - "/usr/local/etc/redis/redis.conf"
+          volumeMounts:
+            - name: redis-config
+              mountPath: "/usr/local/etc/redis"
+              readOnly: true
+          ports:
+            - containerPort: 6379
+          resources:
+            requests:
+              cpu: 50m
+              memory: 8Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          readinessProbe:
+            exec:
+              command: ["sh", "-c", "redis-cli ping"]
+            initialDelaySeconds: 5
+            periodSeconds: 30
+            timeoutSeconds: 5
+          livenessProbe:
+            exec:
+              command: ["sh", "-c", "redis-cli ping"]
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 10
+      volumes:
+        - name: host-sys
+          hostPath:
+            path: /sys
+        - name: host-proc
+          hostPath:
+            path: /proc
+        - name: redis-config
+          secret:
+            secretName: "nextcloud-redis-config"
+            items:
+              - key: "redis.conf"
+                path: "redis.conf"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: internal-redis
+  labels:
+    role: internal-service
+spec:
+  ports:
+    - name: redis
+      protocol: TCP
+      port: 6379
+  selector:
+    app: db-redis

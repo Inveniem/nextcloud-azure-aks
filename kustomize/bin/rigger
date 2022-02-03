@@ -1,0 +1,754 @@
+#!/usr/bin/env bash
+##
+# @file
+# "Rigger" CLI utility for deploying this application to Kubernetes.
+#
+# This is the top-level script; it is not intended to be run directly. Instead,
+# users are expected to run the "rigger" script within each overlay under
+# "overlays/".
+#
+# The "rigger" script for each overlay is expected to include this script
+# and add-on to its commands.
+#
+# @author Guy Elsmore-Paddock (guy@inveniem.com)
+# @copyright Copyright (c) 2019-2022, Inveniem
+# @license GNU AGPL version 3 or any later version
+#
+
+set -e
+set -u
+
+################################################################################
+# Constants
+################################################################################
+
+##
+# Error thrown when a bad command-line argument has been provided.
+#
+error_bad_arguments=1
+
+##
+# Error thrown when the user has to do some setup before the command can work.
+#
+error_setup_required=2
+
+##
+# Error thrown when the user runs a command in a place where it doesn't apply.
+#
+error_bad_environment=3
+
+script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+program_name=$(basename "$0")
+sub_command="${1:-}"
+
+kfilt_version_tag=v0.0.6
+
+docker_image_names=(
+  "inveniem/nextcloud-fpm"
+  "inveniem/nextcloud-nginx-middleware"
+  "inveniem/nextcloud-cron"
+)
+
+nextcloud_deployment_name="nextcloud"
+
+environment_config_path="manifests/config-environment.yaml"
+
+mysql_secrets_path="manifests/secrets-mysql.yaml"
+mysql_secrets_encrypted_path="manifests/secrets-mysql.enc.yaml"
+
+secrets_files=(
+  "${mysql_secrets_path}"
+  "manifests/secrets-nextcloud.yaml"
+  "manifests/secrets-redis.yaml"
+)
+
+publish_bin_path="../docker/publish_all.sh"
+storage_secrets_generator_bin_path="generate_secrets_azure_files_storage.php"
+
+generated_storage_secrets_path="manifests/generated/secrets-azure_files.yaml"
+encrypted_storage_secrets_path="manifests/generated/secrets-azure_files.enc.yaml"
+
+################################################################################
+# Sub-commands
+################################################################################
+
+##
+# Sub-command: "help"
+#
+# Displays the usage for this program.
+#
+sub_help() {
+  echo "Rigger -- Deployment Utility for Kubernetes-Powered Applications"
+  echo ""
+  echo "Usage: ${program_name} <sub-command> [options]"
+  echo ""
+  echo "Subcommands:"
+  echo ""
+  echo "    publish                  Publishes Docker images for the checked-out version."
+  echo "    version-stamp            Updates the version that this overlay will pull down to match the checked-out version."
+  echo ""
+  echo "    generate-storage-secrets Generates secrets files containing the access keys for storage accounts."
+  echo ""
+  echo "    encrypt-secrets          Encrypts secrets to manifests/secrets.enc.yaml."
+  echo "    decrypt-secrets          Decrypts secrets to manifests/secrets.yaml."
+  echo ""
+  echo "    show-manifests [options] Displays manifests for resources of this overlay."
+  echo "    deploy [options]         Deploys resources of this overlay to Kubernetes."
+  echo "    undeploy [options]       Removes resources of this overlay from Kubernetes."
+  echo "    cycle-pods [options]     Cycles deployments in this overlay's namespace on Kubernetes."
+  echo "    scale <options>          Scales a particular deployment up or down."
+  echo ""
+  echo "    launch-nc-bash-shell     Launches a bash shell on a Nextcloud worker pod."
+  echo "    launch-nc-db-shell       Launches a MySQL interactive shell connected to the Nextcloud database."
+  echo ""
+
+  if [[ "${have_addon_commands}" -ne 0 ]]; then
+    sub_addon_help
+
+    echo ""
+  fi
+
+  echo ""
+  echo "For help with sub-commands that take options, run:"
+  echo ""
+  echo "    ${program_name} <sub-command> -h|--help"
+  echo ""
+  echo ""
+  echo "Copyright 2019-2022 Inveniem. All rights reserved."
+  echo ""
+}
+
+##
+# Sub-command: "publish"
+#
+# Publishes Docker images for the checked-out version.
+#
+sub_publish() {
+  declare -g script_dir
+  declare -g publish_bin_path
+
+  version_from_git=$(detect_checked_out_version)
+
+  echo "Building and publishing Nextcloud image '${version_from_git}'..."
+  echo ""
+
+  "${script_dir}/${publish_bin_path}" "${version_from_git}"
+
+  echo ""
+
+  sub_version_stamp
+}
+
+##
+# Sub-command: "version-stamp"
+#
+# Updates the version in the generated 'version.properties' file.
+#
+sub_version_stamp() {
+  declare -g docker_image_names
+
+  version_from_git=$(detect_checked_out_version)
+
+  for docker_image in "${docker_image_names[@]}"; do
+    echo "Updating '${docker_image}' version to '${version_from_git}'..."
+    echo ""
+
+    kustomize edit set image "${docker_image}:${version_from_git}"
+  done
+}
+
+##
+# Sub-command: "generate-storage-secrets"
+#
+# Uses the Azure CLI to obtain the storage key for all configured storage
+# accounts, and then exports the secret as a Kubernetes deployment manifest.
+#
+sub_generate_storage_secrets() {
+  declare -g error_setup_required
+  declare -g script_dir
+  declare -g environment_config_path
+  declare -g storage_secrets_generator_bin_path
+  declare -g generated_storage_secrets_path
+
+  local generator_path
+  local storage_accounts_json
+
+  require_command "php"
+
+  # A future version of this resource kit may wish to convert this into being
+  # a generator, though that will need to handle authenticating with the Azure
+  # CLI.
+  generator_path="${script_dir}/${storage_secrets_generator_bin_path}"
+
+  storage_accounts_json=$(
+    yq eval '.data.azureFilesStorageAccounts' "${environment_config_path}"
+  )
+
+  if [[ -z "${storage_accounts_json}" ]]; then
+    {
+      echo "[ERROR] Storage accounts are missing or not configured in '${environment_config_path}'"
+      echo ""
+    } >&2
+
+    exit "${error_setup_required}"
+  fi
+
+  mkdir -p "$(dirname "${generated_storage_secrets_path}")"
+
+  echo "${storage_accounts_json}" | \
+    "${generator_path}" > "${generated_storage_secrets_path}"
+
+  echo "Storage account secrets written out to '${generated_storage_secrets_path}'."
+  echo ""
+}
+
+##
+# Sub-command: "encrypt_secrets"
+#
+# Encrypts "secrets.yaml" as "secrets.enc.yaml", using an Azure Key Vault key.
+#
+# The original files must NOT be checked-in to source control or shared.
+#
+sub_encrypt_secrets() {
+  declare -g secrets_files
+  declare -g generated_storage_secrets_path
+  declare -g encrypted_storage_secrets_path
+
+  local at_least_one_exists=0
+
+  for secrets_file in "${secrets_files[@]}"; do
+    if [[ -f "${secrets_file}" ]]; then
+      at_least_one_exists=1
+      secrets_encrypted_path="${secrets_file/.yaml/.enc.yaml}"
+
+      encrypt_secrets_file \
+        "${secrets_file}" \
+        "${secrets_encrypted_path}"
+    fi
+  done
+
+  if [[ -f "${generated_storage_secrets_path}" ]]; then
+    at_least_one_exists=1
+
+    encrypt_secrets_file \
+      "${generated_storage_secrets_path}" \
+      "${encrypted_storage_secrets_path}"
+  fi
+
+  if [[ "${at_least_one_exists}" -eq 0 ]]; then
+    {
+      echo "[ERROR] No decrypted secrets were found that needed encrypting."
+      echo ""
+    } >&2
+
+    exit "${error_setup_required}"
+  fi
+}
+
+##
+# Sub-command: "decrypt-secrets"
+#
+# Decrypts "secrets.enc.yaml" as "secrets.yaml", using an Azure Key Vault key.
+#
+# The resulting files must NOT be checked-in to source control or shared. After
+# making updates, use "encrypt-secrets" to generate an encrypted copy that is
+# safe to check-in.
+#
+sub_decrypt_secrets() {
+  declare -g secrets_files
+  declare -g encrypted_storage_secrets_path
+  declare -g generated_storage_secrets_path
+
+  for secrets_file in "${secrets_files[@]}"; do
+    at_least_one_exists=1
+    secrets_encrypted_path="${secrets_file/.yaml/.enc.yaml}"
+
+    decrypt_secrets_file \
+      "${secrets_encrypted_path}" \
+      "${secrets_file}"
+  done
+
+  decrypt_secrets_file \
+    "${encrypted_storage_secrets_path}" \
+    "${generated_storage_secrets_path}"
+}
+
+##
+# Sub-command: "show-manifests"
+#
+# Displays manifests for all resources of this overlay.
+#
+# shellcheck disable=SC2120
+sub_show_manifests() {
+  declare -g program_name
+  declare -g error_setup_required
+  declare -g secrets_files
+
+  local deployment="${1:-}"
+  local with_dependencies="${2:-}"
+
+  if should_show_help "$@"; then
+    echo "Usage: ${program_name} show-manifests [deployment name] [--with-dependencies]"
+    echo ""
+    echo "Where [deployment name] is an optional argument that specifies the"
+    echo "name of the deployment for which a manifest is desired. If omitted,"
+    echo "manifests for all resources are shown."
+    echo ""
+    echo "When '--with-dependencies' is specified, all shared resources are"
+    echo "also included."
+    exit 0;
+  fi
+
+  for secret_file in "${secrets_files[@]}"; do
+    if [[ ! -f "${secret_file}" ]]; then
+      {
+        echo "[ERROR] Encrypted secrets file '${secret_file}' was not found. Has this overlay been setup?"
+        echo ""
+      } >&2
+
+      exit "${error_setup_required}"
+    fi
+  done
+
+  if [[ -z "${deployment}" ]]; then
+    kustomize build --enable-alpha-plugins .
+  elif [[ "${with_dependencies}" == "--with-dependencies" ]]; then
+    # Filter configs to just the deployment requested and its potential
+    # dependencies.
+    kustomize build --enable-alpha-plugins . | \
+      docker run --rm -i "ryane/kfilt:${kfilt_version_tag}" \
+        -i k=Namespace \
+        -i k=ConfigMap \
+        -i k=Secret \
+        -i k=Service \
+        -i k=PersistentVolume \
+        -i k=PersistentVolumeClaim \
+        -i "k=Deployment,n=${deployment}" \
+        -i k=Issuer \
+        -i k=Ingress
+  else
+    # Filter configs to just the deployment requested.
+    kustomize build --enable-alpha-plugins . | \
+      docker run --rm -i "ryane/kfilt:${kfilt_version_tag}" \
+        -i "k=Deployment,n=${deployment}"
+  fi
+}
+
+##
+# Sub-command: "deploy"
+#
+# Deploys all resources of this overlay to Kubernetes.
+#
+sub_deploy() {
+  declare -g program_name
+
+  if should_show_help "$@"; then
+    echo "Usage: ${program_name} deploy [deployment name] [--with-dependencies]"
+    echo ""
+    echo "Where [deployment name] is an optional argument that specifies the"
+    echo "name of the specific deployment that should be deployed. If omitted,"
+    echo "all resources are deployed."
+    echo ""
+    echo "When '--with-dependencies' is specified, all shared resources are"
+    echo "also included."
+    echo ""
+    exit 0;
+  fi
+
+  sub_show_manifests "$@" | kubectl apply -f -
+}
+
+##
+# Sub-command: "undeploy"
+#
+# Removes all resources of this overlay from Kubernetes.
+#
+sub_undeploy() {
+  declare -g program_name
+
+  local deployment="${1:-}"
+
+  if should_show_help "$@"; then
+    echo "Usage: ${program_name} undeploy [deployment name]"
+    echo ""
+    echo "Where [deployment name] is an optional argument that specifies the"
+    echo "name of the specific deployment that should be un-deployed. If"
+    echo "omitted, all resources are un-deployed."
+    echo ""
+    exit 0;
+  fi
+
+  sub_show_manifests "${deployment}" | kubectl delete -f -
+}
+
+##
+# Sub-command: "cycle-pods"
+#
+# Cycles all pods in this overlay's namespace on Kubernetes.
+#
+sub_cycle_pods() {
+  declare -g program_name
+  declare -g namespace
+
+  local deployment="${1:-}"
+
+  if should_show_help "$@"; then
+    echo "Usage: ${program_name} cycle-pods [deployment name]"
+    echo ""
+    echo "Where [deployment name] is an optional argument that specifies the"
+    echo "name of the specific deployment that should be cycled. If omitted,"
+    echo "all deployments are cycled."
+    echo ""
+    exit 0;
+  fi
+
+  if [[ -z "${deployment}" ]]; then
+    echo "Cycling all pods in the '${namespace}' namespace..."
+    echo ""
+
+    kubectl -n "${namespace}" rollout restart deployment
+  else
+    echo "Cycling all pods for the '${deployment}' deployment..."
+    echo ""
+
+    kubectl -n "${namespace}" rollout restart "deployment/${deployment}"
+  fi
+}
+
+##
+# Sub-command: "scale"
+#
+# Scales a particular deployment up or down.
+#
+sub_scale() {
+  declare -g error_bad_arguments
+  declare -g program_name
+  declare -g namespace
+
+  local deployment="${1:-}"
+  local replicas="${2:-}"
+
+  local is_arg_missing=0
+
+  if [[ -z "${deployment}" || -z "${replicas}" ]]; then
+    is_arg_missing=1
+  fi
+
+  if [[ "${is_arg_missing}" -eq "1" ]] || should_show_help "$@"; then
+    echo "Usage: ${program_name} scale <deployment name> <replicas>"
+    echo ""
+    echo "Where <deployment name> specifies the name of the specific deployment"
+    echo "that will be scaled, and <replicas> specifies the new number of"
+    echo "replicas to maintain for the deployment (can be 0)."
+    echo ""
+    echo "This will only have a temporary effect until the next re-deployment"
+    echo "of the application."
+    echo ""
+
+    if [[ "${is_arg_missing}" -eq "1" ]]; then
+      exit "${error_bad_arguments}"
+    else
+      exit 0
+    fi
+  fi
+
+  kubectl scale \
+    -n "${namespace}" \
+    "--replicas=${replicas}" \
+    "deployment/${deployment}"
+}
+
+##
+# Sub-command: "launch-nc-bash-shell"
+#
+# Launches a bash shell on a Nextcloud pod.
+#
+sub_launch_nc_bash_shell() {
+  declare -g nextcloud_deployment_name
+  declare -g error_bad_environment
+
+  pod_name=$(
+    kubectl get pods -n "${namespace}" -o name |
+      grep -m1 "${nextcloud_deployment_name}" || echo ""
+  )
+
+  if [[ -z "${pod_name}" ]]; then
+    {
+      echo "[ERROR] There is no '${nextcloud_deployment_name}' deployment in the '${namespace}' namespace."
+      echo ""
+    } >&2
+
+    exit "${error_bad_environment}"
+  fi
+
+  kubectl exec -it -n "${namespace}" "${pod_name}" -- bash
+}
+
+##
+# Sub-command: "launch-pm-db-shell"
+#
+# Launches a MySQL interactive shell connected to the Nextcloud database.
+#
+sub_launch_nc_db_shell() {
+  declare -g error_setup_required
+  declare -g mysql_secrets_encrypted_path
+
+  local db_credentials
+  local db_hostname
+  local db_port
+  local db_schema
+  local db_username
+  local db_password
+
+  require_command "mysql"
+
+  if [[ ! -f "${mysql_secrets_encrypted_path}" ]]; then
+    {
+      echo "[ERROR] Encrypted secrets file not found: ${mysql_secrets_encrypted_path}"
+      echo ""
+    } >&2
+
+    exit "${error_setup_required}"
+  fi
+
+  db_credentials=$(
+    sops --decrypt "${mysql_secrets_encrypted_path}" | \
+    yq eval \
+      '. | select(.metadata.name == "nextcloud-mysql-creds") | .stringData' -
+  )
+
+  db_hostname=$(echo "${db_credentials}" | yq eval '.hostname' -)
+  db_port=$(echo "${db_credentials}" | yq eval '.port' -)
+  db_schema=$(echo "${db_credentials}" | yq eval '.database' -)
+  db_username=$(echo "${db_credentials}" | yq eval '.username' -)
+  db_password=$(echo "${db_credentials}" | yq eval '.password' -)
+
+  mysql \
+      --host="${db_hostname}" \
+      --database="${db_schema}" \
+      --port="${db_port}" \
+      --user="${db_username}" \
+      --password="${db_password}"
+  echo ""
+}
+
+################################################################################
+# Utility Methods
+################################################################################
+
+##
+# Uses SOPS to encrypt a single YAML file containing secrets.
+#
+# @param $1
+#  The name of the unencrypted YAML file to encrypt.
+# @param $2
+#  The name of the encrypted YAML file to generate.
+#
+encrypt_secrets_file() {
+  declare -g error_setup_required
+  declare -g error_bad_environment
+  declare -g environment_config_path
+
+  local key_vault_sops_key_url
+  local unencrypted_secrets_file_path="${1}"
+  local encrypted_secret_file_path="${2}"
+
+  if [[ ! -f "${environment_config_path}" ]]; then
+    {
+      echo "[ERROR] Environment configuration not found: ${environment_config_path}"
+      echo ""
+    } >&2
+
+    exit "${error_bad_environment}"
+  fi
+
+  if [[ ! -f "${unencrypted_secrets_file_path}" ]]; then
+    {
+      echo "[ERROR] Unencrypted secrets file not found: ${unencrypted_secrets_file_path}"
+      echo ""
+    } >&2
+
+    exit "${error_setup_required}"
+  fi
+
+  key_vault_sops_key_url=$(yq eval '.data.sopsKey' "${environment_config_path}")
+
+  echo "Encrypting '${unencrypted_secrets_file_path}' to '${encrypted_secret_file_path}'..."
+
+  # shellcheck disable=SC2154
+  sops --encrypt \
+    --azure-kv "${key_vault_sops_key_url}" \
+    --encrypted-regex '^(data|stringData)$' \
+    "${unencrypted_secrets_file_path}" > "${encrypted_secret_file_path}"
+
+  echo ""
+  echo "Done!"
+  echo ""
+}
+
+##
+# Uses SOPS to decrypt a single YAML file containing secrets.
+#
+# @param $1
+#  The name of the encrypted YAML file to decrypt.
+# @param $2
+#  The name of the unencrypted YAML file to generate.
+#
+decrypt_secrets_file() {
+  declare -g error_setup_required
+
+  local encrypted_secret_file_path="${1}"
+  local unencrypted_secrets_file_path="${2}"
+
+  if [[ ! -f "${encrypted_secret_file_path}" ]]; then
+    {
+      echo "[ERROR] Encrypted secrets file not found: ${encrypted_secret_file_path}"
+      echo ""
+    } >&2
+
+    exit "${error_setup_required}"
+  fi
+
+  echo "Decrypting '${encrypted_secret_file_path}' to '${unencrypted_secrets_file_path}'..."
+
+  # shellcheck disable=SC2154
+  sops --decrypt "${encrypted_secret_file_path}" > "${unencrypted_secrets_file_path}"
+
+  echo ""
+  echo "Done!"
+  echo ""
+}
+
+##
+# Uses Git to identify what version of this project is currently checked-out.
+#
+# @return
+#   Either a version number, or "latest", based on Git.
+#
+detect_checked_out_version() {
+  local version_from_git
+
+  version_from_git=$(git tag --points-at HEAD)
+
+  if [[ -z "${version_from_git}" ]]; then
+    version="latest"
+  else
+    version=$(echo "${version_from_git}" | sed -E 's/^v//')
+  fi
+
+  echo "${version}"
+}
+
+##
+# Given all of the arguments passed-in to a sub-command, determines if the user
+# requested help to be shown.
+#
+should_show_help() {
+  for arg in "$@"; do
+    if [[ "${arg}" == "-h" || "${arg}" == "--help" ]]; then
+      return 0
+    fi
+  done
+
+  return 1
+}
+
+##
+# Ensures everything this tool uses is installed on this system.
+#
+# If not installed, the script will halt.
+#
+ensure_dependencies_installed() {
+  required_commands=(
+    'az'
+    'docker'
+    'git'
+    'kustomize'
+    'kubectl'
+    'sops'
+    'yq'
+  )
+
+  for command in "${required_commands[@]}"; do
+    require_command "${command}"
+  done
+}
+
+##
+# Ensures the specified command exists on the current system.
+#
+# If not installed, the script will halt.
+#
+# @param string $1
+#   The name of the command to require.
+#
+require_command() {
+  local command="${1}"
+
+  if ! command_exists "${command}"; then
+    {
+      echo "[ERROR] The '${command}' command is not installed on this system."
+      echo ""
+    } >&2
+
+    exit "${error_setup_required}"
+  fi
+
+}
+
+##
+# Check if the specified command exists on the current system.
+#
+# @param string $1
+#   The name of the command to check.
+#
+command_exists() {
+  command -v "${1}" >/dev/null 2>&1
+  return $?
+}
+
+################################################################################
+# Main Script
+################################################################################
+
+ensure_dependencies_installed
+
+# Can be overridden by including scripts in order to define additional
+# sub-commands.
+have_addon_commands="0"
+
+namespace=$(yq eval ".namespace" ./kustomization.yaml 2>/dev/null || true)
+
+if [[ -z "${namespace}" || "${namespace}" == "null" ]]; then
+  {
+    echo "[ERROR] This script can only be invoked while in an overlay under the 'overlays/' folder."
+    echo ""
+  } >&2
+
+  exit "${error_bad_environment}"
+fi
+
+case ${sub_command} in
+  "" | "-h" | "--help")
+    sub_help
+    ;;
+  *)
+  shift
+
+  sub_command_escaped=$(echo "${sub_command}" | tr '-' '_')
+  sub_command_function="sub_${sub_command_escaped}"
+
+  if [[ "$(type -t "${sub_command_function}")" == 'function' ]]; then
+    "${sub_command_function}" "$@"
+  else
+    {
+      echo "[ERROR] '${sub_command}' is not a known sub-command."
+      echo ""
+    } >&2
+
+    sub_help >&2
+
+    exit "${error_bad_arguments}"
+  fi
+  ;;
+esac

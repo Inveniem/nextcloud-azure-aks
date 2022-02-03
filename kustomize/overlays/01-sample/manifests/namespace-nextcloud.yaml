@@ -1,0 +1,18 @@
+##
+# Kubernetes deployment configuration creating a new namespace called
+# "nextcloud".
+#
+# This is an EXAMPLE file. Customize for your environment! If you have multiple
+# environments, you can create multiple copies of the containing, sample overlay
+# folder and customize manifests in each one to match your environments.
+#
+# @author Guy Elsmore-Paddock (guy@inveniem.com)
+# @copyright Copyright (c) 2019, Inveniem
+# @license GNU AGPL version 3 or any later version
+#
+apiVersion: "v1"
+kind: "Namespace"
+metadata:
+  name: "nextcloud"
+  labels:
+    name: "nextcloud"

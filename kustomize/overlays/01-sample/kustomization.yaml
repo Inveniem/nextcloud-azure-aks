@@ -1,0 +1,36 @@
+##
+# Kustomization overlay for deploying Nextcloud to a Kubernetes environment.
+#
+# This is an EXAMPLE file. Customize for your environment! If you have multiple
+# environments, you can create multiple copies of the containing, sample overlay
+# folder and customize manifests in each one to match your environments.
+#
+# @author Guy Elsmore-Paddock (guy@inveniem.com)
+# @copyright Copyright (c) 2022, Inveniem
+# @license GNU AGPL version 3 or any later version
+#
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../../base
+  - manifests/config-environment.yaml
+  - manifests/namespace-nextcloud.yaml
+
+components:
+  - ../../components/ingress-dns
+
+generators:
+  - decrypt-secrets.yaml
+
+namespace: nextcloud-dev
+
+images:
+  - name: inveniem/nextcloud-fpm
+    newName: your-acr-instance.azurecr.io/inveniem/nextcloud-fpm
+    newTag: latest
+
+  - name: inveniem/nextcloud-nginx-middleware
+    newName: your-acr-instance.azurecr.io/inveniem/nextcloud-nginx-middleware
+    newTag: latest
+
