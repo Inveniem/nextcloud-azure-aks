@@ -29,5 +29,6 @@ replacements:
           kind: Deployment
           name: nextcloud
         fieldPaths:
+          - spec.template.spec.containers.1.startupProbe.httpGet.httpHeaders.0.value
           - spec.template.spec.containers.1.livenessProbe.httpGet.httpHeaders.0.value
           - spec.template.spec.containers.1.readinessProbe.httpGet.httpHeaders.0.value

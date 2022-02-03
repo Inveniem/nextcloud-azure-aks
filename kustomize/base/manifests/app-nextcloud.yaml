@@ -130,11 +130,46 @@ spec:
               mountPath: /var/www/html
               readOnly: true
 
+          startupProbe:
+            # After pod creation, allow Nextcloud to take up to 10 minutes
+            # (5 seconds x 120 attempts) before concluding the container
+            # has failed, to allow for automated updates at launch.
+            periodSeconds: 5
+            failureThreshold: 120
+            httpGet:
+              path: "/status.php"
+              port: 80
+              httpHeaders:
+                - name: "Host"
+                  # This host gets overwritten by
+                  # components/ingress-dns/kustomization.yaml
+                  value: "nextcloud.local"
+
+          # This probe kicks in after startup, according to the docs:
+          # "Once the startup probe has succeeded once, the liveness probe takes
+          # over to provide a fast response to container deadlocks."
+          #
+          # From:
+          # https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+          livenessProbe:
+            periodSeconds: 15
+            timeoutSeconds: 10
+            # Restart container after it is down for 5 minutes. The readiness
+            # probe should prevent it from receiving traffic within 5 seconds of
+            # it becoming unresponsive.
+            failureThreshold: 20
+            successThreshold: 1
+            httpGet:
+              path: "/status.php"
+              port: 80
+              httpHeaders:
+                - name: "Host"
+                  # This host gets overwritten by
+                  # components/ingress-dns/kustomization.yaml
+                  value: "nextcloud.local"
+
           readinessProbe:
-            # Wait 30 seconds after launch before checking for readiness
-            # (to allow for automated updates at launch)
-            initialDelaySeconds: 30
-            periodSeconds: 10
+            periodSeconds: 5
             timeoutSeconds: 3
             failureThreshold: 3
             # Ensure stability across two checks before continuing to route
@@ -146,24 +181,6 @@ spec:
               # In local testing, Nextcloud serves up the installer regardless
               # of which URL is provided.
               path: "/index.php/login?direct=1"
-              port: 80
-              httpHeaders:
-                - name: "Host"
-                  # This host gets overwritten by
-                  # components/ingress-dns/kustomization.yaml
-                  value: "nextcloud.local"
-
-          livenessProbe:
-            # Wait 5 minutes after launch before checking for liveness
-            # (to allow for automated updates at launch)
-            initialDelaySeconds: 300
-            periodSeconds: 5
-            timeoutSeconds: 10
-            # Restart container after it is down for 60 seconds
-            failureThreshold: 12
-            successThreshold: 1
-            httpGet:
-              path: "/status.php"
               port: 80
               httpHeaders:
                 - name: "Host"
