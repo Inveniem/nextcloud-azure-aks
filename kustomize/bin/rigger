@@ -98,7 +98,7 @@ sub_help() {
   echo "    cycle-pods [options]     Cycles deployments in this overlay's namespace on Kubernetes."
   echo "    scale <options>          Scales a particular deployment up or down."
   echo ""
-  echo "    launch-nc-bash-shell     Launches a bash shell on a Nextcloud worker pod."
+  echo "    launch-nc-sh-shell       Launches an sh shell on a Nextcloud worker pod."
   echo "    launch-nc-db-shell       Launches a MySQL interactive shell connected to the Nextcloud database."
   echo ""
 
@@ -459,11 +459,11 @@ sub_scale() {
 }
 
 ##
-# Sub-command: "launch-nc-bash-shell"
+# Sub-command: "launch-nc-sh-shell"
 #
-# Launches a bash shell on a Nextcloud pod.
+# Launches an SH shell on a Nextcloud pod.
 #
-sub_launch_nc_bash_shell() {
+sub_launch_nc_sh_shell() {
   declare -g nextcloud_deployment_name
   declare -g error_bad_environment
 
@@ -481,7 +481,7 @@ sub_launch_nc_bash_shell() {
     exit "${error_bad_environment}"
   fi
 
-  kubectl exec -it -n "${namespace}" "${pod_name}" -- bash
+  kubectl exec -it -n "${namespace}" "${pod_name}" -- su -s /bin/sh www-data
 }
 
 ##
