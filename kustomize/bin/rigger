@@ -299,15 +299,9 @@ sub_show_manifests() {
     exit 0;
   fi
 
-  for secret_file in "${secrets_files[@]}"; do
-    if [[ ! -f "${secret_file}" ]]; then
-      {
-        echo "[ERROR] Encrypted secrets file '${secret_file}' was not found. Has this overlay been setup?"
-        echo ""
-      } >&2
-
-      exit "${error_setup_required}"
-    fi
+  for secrets_file in "${secrets_files[@]}"; do
+    secrets_encrypted_path="${secrets_file/.yaml/.enc.yaml}"
+    require_encrypted_secrets_file "${secrets_encrypted_path}"
   done
 
   if [[ -z "${deployment}" ]]; then
@@ -501,15 +495,7 @@ sub_launch_nc_db_shell() {
   local db_password
 
   require_command "mysql"
-
-  if [[ ! -f "${mysql_secrets_encrypted_path}" ]]; then
-    {
-      echo "[ERROR] Encrypted secrets file not found: ${mysql_secrets_encrypted_path}"
-      echo ""
-    } >&2
-
-    exit "${error_setup_required}"
-  fi
+  require_encrypted_secrets_file "${mysql_secrets_encrypted_path}"
 
   db_credentials=$(
     sops --decrypt "${mysql_secrets_encrypted_path}" | \
@@ -595,19 +581,10 @@ encrypt_secrets_file() {
 #  The name of the unencrypted YAML file to generate.
 #
 decrypt_secrets_file() {
-  declare -g error_setup_required
-
   local encrypted_secret_file_path="${1}"
   local unencrypted_secrets_file_path="${2}"
 
-  if [[ ! -f "${encrypted_secret_file_path}" ]]; then
-    {
-      echo "[ERROR] Encrypted secrets file not found: ${encrypted_secret_file_path}"
-      echo ""
-    } >&2
-
-    exit "${error_setup_required}"
-  fi
+  require_encrypted_secrets_file "${encrypted_secret_file_path}"
 
   echo "Decrypting '${encrypted_secret_file_path}' to '${unencrypted_secrets_file_path}'..."
 
@@ -651,6 +628,29 @@ should_show_help() {
   done
 
   return 1
+}
+
+##
+# Ensures that an encrypted secret file has been created for this overlay.
+#
+# If not present, the script will halt.
+#
+# @param string $1
+#   The name of the secret encrypted secret file to require.
+#
+require_encrypted_secrets_file() {
+  declare -g error_setup_required
+
+  local file_path="${1}"
+
+  if [[ ! -f "${file_path}" ]]; then
+    {
+      echo "[ERROR] Encrypted secrets file '${file_path}' was not found. Has this overlay been configured?"
+      echo ""
+    } >&2
+
+    exit "${error_setup_required}"
+  fi
 }
 
 ##
