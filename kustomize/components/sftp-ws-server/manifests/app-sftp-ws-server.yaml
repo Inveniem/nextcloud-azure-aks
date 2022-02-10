@@ -1,9 +1,9 @@
 ##
-# Kubernetes deployment configuration for running an SFTP-WS alongside
+# Kubernetes deployment configuration for running an SFTP-WS server alongside
 # Nextcloud for one or more shares.
 #
 # @author Guy Elsmore-Paddock (guy@inveniem.com)
-# @copyright Copyright (c) 2019, Inveniem
+# @copyright Copyright (c) 2019-2022, Inveniem
 # @license GNU AGPL version 3 or any later version
 #
 apiVersion: apps/v1
@@ -25,7 +25,7 @@ spec:
       containers:
         # Container: The SFTP-WS server.
         - name: backend-sftp-ws-server
-          image: "${REGISTRY_HOST}/inveniem/sftp-ws-server:latest"
+          image: "inveniem/sftp-ws-server:latest"
           ports:
             - containerPort: 4002
           resources:
@@ -35,14 +35,6 @@ spec:
             limits:
               cpu: 500m
               memory: 128Mi
-          volumeMounts:
-            # HACK: Until AKS supports pod presets, we have to kludge the dynamic
-            # mounts in via a variable expansion. Do not modify the last line of
-            # this comment; it gets expanded and replaced automatically when this
-            # file is pre-processed. Remove this entire comment when switching over
-            # to using pod presets.
-            #
-            # ${FILE_SHARE_VOLUME_MOUNT_LINES}
           env:
             - name: SFTP_WS_LOG_LEVEL
               value: "info"
@@ -51,20 +43,15 @@ spec:
             - name: SFTP_WS_PORT
               value: "4002"
             - name: SFTP_WS_APP_HOST
-              value: "${NEXTCLOUD_PRIMARY_HOSTNAME}"
+              valueFrom:
+                configMapKeyRef:
+                  name: environment
+                  key:  primaryHostname
             - name: SFTP_WS_ORIGIN_RESTRICTIONS
-              value: '${SFTP_WS_ORIGIN_RESTRICTIONS}'
-      imagePullSecrets:
-        # NOTE: This secret is added by `setup_aks_acr_service_principal.sh`.
-        - name: "${ACR_DOCKER_CREDS_SECRET}"
-      volumes:
-        # HACK: Until AKS supports pod presets, we have to kludge the dynamic
-        # mounts in via a variable expansion. Do not modify the last line of
-        # this comment; it gets expanded and replaced automatically when this
-        # file is pre-processed. Remove this entire comment when switching over
-        # to using pod presets.
-        #
-        # ${FILE_SHARE_VOLUME_LINES}
+              valueFrom:
+                configMapKeyRef:
+                  name: sftp-ws
+                  key: originRestrictions
 ---
 apiVersion: v1
 kind: Service
@@ -79,27 +66,34 @@ spec:
   selector:
     app: backend-sftp-ws-server
 ---
-apiVersion: extensions/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: frontend-sftp-ws-server-ingress
+  labels:
+    owning-app: "nextcloud"
   annotations:
-    kubernetes.io/ingress.class: nginx
     certmanager.k8s.io/cluster-issuer: letsencrypt-prod
     nginx.ingress.kubernetes.io/rewrite-target: "/sftp"
     nginx.ingress.kubernetes.io/proxy-connect-timeout: "1800"
     nginx.ingress.kubernetes.io/proxy-send-timeout: "1800"
     nginx.ingress.kubernetes.io/proxy-read-timeout: "1800"
 spec:
+  ingressClassName: nginx
   tls:
     - hosts:
-        - "${NEXTCLOUD_PRIMARY_HOSTNAME}"
+        # This host gets overwritten by components/ingress-dns/kustomization.yaml
+        - "nextcloud.local"
       secretName: nextcloud-tls-certificate
   rules:
-    - host: "${NEXTCLOUD_PRIMARY_HOSTNAME}"
+    # This host gets overwritten by components/ingress-dns/kustomization.yaml
+    - host: "nextcloud.local"
       http:
         paths:
           - path: /sftp
+            pathType: Prefix
             backend:
-              serviceName: internal-sftp-ws-server
-              servicePort: 4002
+              service:
+                name: internal-sftp-ws-server
+                port:
+                  number: 4002

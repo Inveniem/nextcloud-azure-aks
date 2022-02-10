@@ -18,10 +18,19 @@ resources:
   - manifests/namespace-nextcloud.yaml
 
 components:
+  # You can pick and choose the optional components you'd like to include by
+  # uncommenting lines below.
+  # - ../../components/sftp-ws-server
   - ../../components/ingress-dns
 
 generators:
   - decrypt-secrets.yaml
+
+# Uncomment this if using the "sftp-ws-server" component.
+#configMapGenerator:
+#  - name: sftp-ws
+#    files:
+#      - originRestrictions=configs/sftp-ws/origin-restrictions.json
 
 namespace: nextcloud-dev
 
@@ -34,3 +43,6 @@ images:
     newName: your-acr-instance.azurecr.io/inveniem/nextcloud-nginx-middleware
     newTag: latest
 
+  - name: inveniem/sftp-ws-server
+    newName: your-acr-instance.azurecr.io/inveniem/sftp-ws-server
+    newTag: latest

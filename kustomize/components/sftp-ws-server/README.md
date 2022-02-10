@@ -1,35 +1,77 @@
 # SFTP-WS Server Add-on for Nextcloud Running on AKS 
-This folder contains configurations and scripts to assist in setting up an 
-SFTP-WS server that web applications other than Nextcloud can use to read files
-from and write files to the Azure Files volumes that underlie a Nextcloud AKS
-deployment.
+This folder contains everything needed to run an
+[SFTP-WS server](https://github.com/Inveniem/sftp-ws) as part of a Nextcloud
+deployment. The SFTP-WS server can be used by browser-based applications other
+than Nextcloud to read files from and write files to the volumes that back a
+Nextcloud AKS deployment.
 
-## Using this Kit
-### Providing Settings to the Scripts
-All of the settings needed by scripts need to be provided in `config.env`
-and `config.restrictions.json`. Copy `config.example.env` to `config.env`,
-`config.origin_restrictions.example.json` to `config.origin_restrictions.json`, 
-and then customize both for your needs.
+## Folder Contents
+This folder contains:
+- The source code for the NodeJS-based server application.
+- Dockerfile and publishing script for releasing the application as a Docker 
+  image in an Azure Container Registry. 
+- A Kustomization add-on component for including the application in a Kustomize
+  deployment overlay.
 
-Some settings are pulled-in from the top-level `nextcloud-aks` `config.env` file 
-as well; make sure both have been configured. See top-level README.md for 
-details.
+## Using this Add-on
+### Enabling the Add-on
+In your overlay under `overlays/`, open `kustomization.yaml` and uncomment the
+following sections:
+
+```yaml
+components:
+  - ../../components/sftp-ws-server
+```
+
+```yaml
+configMapGenerator:
+  - name: sftp-ws
+    files:
+      - originRestrictions=configs/sftp-ws/origin-restrictions.json
+```
+
+```yaml
+transformers:
+  - configure-storage.sftp-ws.yaml
+```
+
+This will ensure that the add-on gets deployed to your cluster along with the
+rest of Nextcloud when you run:
+```
+./rigger deploy
+```
+
+If you've already deployed Nextcloud, you can also selectively deploy just the
+add-on and related shared components by running:
+```
+./rigger deploy sftp-ws-server --with-dependencies
+```
+
+### Providing Settings
+Settings for this add-on are provided inside the Nextcloud deployment overlay,
+in two files:
+
+- `configure-storage.sftp-ws.yaml` controls which volumes from the larger
+  Nextcloud deployment are available for access over SFTP-WS.
+- `configs/sftp-ws/origin-restrictions.json` controls which combination of RSA
+  public keys and CORS origins are allowed to access each of the file shares
+  that are exposed.
+
+These files are described in depth in later sections.
 
 ### Specifying which Volumes the SFTP-WS Server Has Access To
-This is controlled by the `SFTP_WS_FILE_SHARES` associative array in 
-`config.env`.
-
-See 
-[`config.example.env`](https://github.com/GuyPaddock/inveniem-nextcloud-azure/blob/master/addons/sftp-ws-server/config.example.env)
-for an example of how to expose a Nextcloud file share into the SFTP-WS Server
-pod. In the example file, the `client1` volume/share is exposed. It will appear 
-as `/files/client1` in the container.
+This is controlled by the `configure-storage.sftp-ws.yaml` file inside your
+overlay. Modify the `permutations` key to add or remove volumes from being
+exposed inside the SFTP-WS server.
 
 ### Generating Key Pairs for Authentication
-Run `generate_jwt_rs256_keypair.sh` to save the private key to `jwt_private.pem`
-and the public key to `jwt_public.pem`. The client should be configured with the
-private key, and the public key should be supplied to the SFTP-WS server via
-Origin restrictions (see next section).
+Run `./rigger sftp-ws-generate-keypair <name of keypair>` from within an
+overlay to generate a private key in the overlay as
+`generated-keys/<name of keypair>/jwt_private.pem` and the public key as 
+`generated-keys/<name of keypair>/jwt_public.pem`. The client should be
+configured to sign its JWTs with the private key, and the public key should be
+supplied to the SFTP-WS server via the origin restrictions configuration file
+(see next section).
 
 ### Specifying Origin Restrictions
 For security reasons -- in addition to the SFTP-WS server only having access to
@@ -38,10 +80,10 @@ only a subset of file shares over the SFTP-WS protocol based on information in
 the JWT presented during connection in the `token` query-string parameter of the
 UPGRADE HTTP request.
 
-This is controlled by the `config.origin_restrictions.json` file. The file
-specifies which origins are allowed to connect to the SFTP-WS server, what
-paths/shares a given origin is allowed to grant access to via the JWT, and what
-public key is used to validate JWTs from that origin.
+This is controlled by the `configs/sftp-ws/origin-restrictions.json` file inside
+your overlay. The file specifies which origins are allowed to connect to the
+SFTP-WS server, what paths/shares a given origin is allowed to grant access to
+via the JWT, and what public key is used to validate JWTs from that origin.
 
 For example, consider these origin restrictions:
 ```json
@@ -131,14 +173,3 @@ The decoded JWT payload of this second request contains:
 This request would be denied with a `403 Forbidden` since
 `some.remote.client.example.com` is not allowed to grant any of its users access
 to files from `client3`.
-
-### Deploying the SFTP Server
-You can now deploy the SFTP server to the cluster in the current Kubernetes 
-namespace by running the following command:
-
-```
-./deploy_sftp_ws_server_app.sh
-```
-
-This command is idempotent; you can tweak your deployment and run it again to
-make changes to the SFTP-WS server pod configuration.
