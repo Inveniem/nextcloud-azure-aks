@@ -32,7 +32,7 @@ generators:
 #    files:
 #      - originRestrictions=configs/sftp-ws/origin-restrictions.json
 
-namespace: nextcloud-dev
+namespace: nextcloud-sample
 
 images:
   - name: inveniem/nextcloud-fpm
