@@ -376,7 +376,9 @@ sub_show_manifests() {
     echo ""
     echo "When '--with-dependencies' is specified, all shared resources are"
     echo "also included."
-    exit 0;
+    echo ""
+
+    exit 0
   fi
 
   for secrets_file in "${secrets_files[@]}"; do
@@ -426,7 +428,8 @@ sub_deploy() {
     echo "When '--with-dependencies' is specified, all shared resources are"
     echo "also included."
     echo ""
-    exit 0;
+
+    exit 0
   fi
 
   sub_show_manifests "$@" | kubectl apply -f -
@@ -449,7 +452,8 @@ sub_undeploy() {
     echo "name of the specific deployment that should be un-deployed. If"
     echo "omitted, all resources are un-deployed."
     echo ""
-    exit 0;
+
+    exit 0
   fi
 
   sub_show_manifests "${deployment}" | kubectl delete -f -
@@ -473,7 +477,8 @@ sub_cycle_pods() {
     echo "name of the specific deployment that should be cycled. If omitted,"
     echo "all deployments are cycled."
     echo ""
-    exit 0;
+
+    exit 0
   fi
 
   if [[ -z "${deployment}" ]]; then
