@@ -23,9 +23,11 @@ data:
   trustedProxies: "10.0.0.0/8 172.16.0.0/12 192.168.0.0/16"
   primaryHostname: "example.com"
   trustedDomains: "example.com"
+
   # This comes from the "Key Identifier" field of the "version" of the key in
   # key vault.
   sopsKey: "https://your-kv.vault.azure.net/keys/your-key/c7e6f87f86e94ffdaabc226a92fa7810"
+
   azureFilesStorageAccounts: |
     {
       "your-nextcloud-storage-group": {
