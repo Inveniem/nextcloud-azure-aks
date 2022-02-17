@@ -17,7 +17,7 @@ data:
   # Set this to "false" during initial deployment and during upgrades. Set it
   # to true to prevent Nextcloud from trying to re-install in the event that
   # Azure Files is intermittently unavailable.
-  configReadOnly: "false"
+  configReadOnly: false
 
   enableFileLocking: "false"
   trustedProxies: "10.0.0.0/8 172.16.0.0/12 192.168.0.0/16"

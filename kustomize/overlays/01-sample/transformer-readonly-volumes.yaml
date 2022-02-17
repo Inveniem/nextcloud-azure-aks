@@ -1,0 +1,44 @@
+##
+# Inline transformer for making config optionally read-only.
+#
+# Based on guidance from:
+# https://github.com/kubernetes-sigs/kustomize/issues/4476
+#
+# Config can be made read-only by a setting in the config-environment.yaml file
+# of the environment overlay. For a high-availability and durable deployment of
+# Nextcloud, it is advised to make the config read-only except during upgrades.
+# Otherwise, Nextcloud is liable to overwrite the configuration file with a
+# blank/new config file whenever there is an error reading the configuration
+# from Azure Files (e.g., if throttled by Azure Files or AKS during high load).
+#
+# @author Guy Elsmore-Paddock (guy@inveniem.com)
+# @copyright Copyright (c) 2022, Inveniem
+# @license GNU AGPL version 3 or any later version
+#
+apiVersion: builtin
+kind: ReplacementTransformer
+
+metadata:
+  name: transformer-readonly-volumes
+
+replacements:
+  - source:
+      kind: ConfigMap
+      name: environment
+      fieldPath: data.configReadOnly
+    targets:
+      - select:
+          kind: Deployment
+          name: "nextcloud"
+        fieldPaths:
+          - spec.template.spec.containers.0.volumeMounts.3.readOnly
+        options:
+          create: true
+
+      - select:
+          kind: PersistentVolume
+          name: "pv-nextcloud-config"
+        fieldPaths:
+          - spec.azureFile.readOnly
+        options:
+          create: true

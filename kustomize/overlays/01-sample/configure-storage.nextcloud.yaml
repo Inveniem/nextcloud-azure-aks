@@ -1,0 +1,214 @@
+##
+# Kustomize plugin configuration for using KST to setup workspace storage for
+# each client.
+#
+# @author Guy Elsmore-Paddock (guy@inveniem.com)
+# @copyright Copyright (c) 2022, Inveniem
+# @license GNU AGPL version 3 or any later version
+#
+apiVersion: kubernetes.inveniem.com/storage-config-transformer/v1alpha
+kind: StorageConfigTransformer
+metadata:
+  name: configure-storage-nextcloud
+  annotations:
+    config.kubernetes.io/function: |
+      container:
+        image: inveniem/kustomize-storage-transformer:1.0.0
+spec:
+  - permutations:
+      values:
+        - config
+    persistentVolumeTemplate:
+      spec:
+        capacity:
+          storage: 512Mi
+        accessModes:
+          - ReadWriteMany
+        azureFile:
+          secretName: "nextcloud-azure-files-creds"
+          secretNamespace: "nextcloud-sample"
+          shareName: "<<INJECTED>>"
+        mountOptions:
+          - uid=33
+          - gid=33
+          - dir_mode=0770
+          - file_mode=0770
+          - actimeo=2
+      name:
+        prefix: "pv-nextcloud-sample-"
+        suffix: ~
+      injectedValues:
+        - field: "spec.azureFile.shareName"
+          prefix: "nextcloud-"
+          suffix: ~
+    persistentVolumeClaimTemplate:
+      spec:
+        storageClassName: ""
+        accessModes:
+          - ReadWriteMany
+        resources:
+          requests:
+            storage: 512Mi
+        volumeName: "<<INJECTED>>"
+      name:
+        prefix: "pvc-"
+        suffix: ~
+      namespace: nextcloud-sample
+      injectedValues:
+        - field: "spec.volumeName"
+          prefix: "pv-nextcloud-sample-"
+          suffix: ~
+    containerVolumeTemplates:
+      - containers:
+          - name: backend-nextcloud-fpm
+        volumeTemplates:
+          - mergeSpec:
+              persistentVolumeClaim:
+                claimName: "<<INJECTED>>"
+            name:
+              prefix: "vol-"
+              suffix: ~
+            injectedValues:
+              - field: "persistentVolumeClaim.claimName"
+                prefix: "pvc-"
+                suffix: ~
+        volumeMountTemplates:
+          - mergeSpec:
+              mountPath: "/var/www/html/config"
+            name:
+              prefix: "vol-"
+              suffix: ~
+
+  - permutations:
+      values:
+        - data
+    persistentVolumeTemplate:
+      spec:
+        capacity:
+          storage: 1Ti
+        accessModes:
+          - ReadWriteMany
+        azureFile:
+          secretName: "nextcloud-azure-files-creds"
+          secretNamespace: "nextcloud-sample"
+          shareName: "<<INJECTED>>"
+        mountOptions:
+          - uid=33
+          - gid=33
+          - dir_mode=0770
+          - file_mode=0770
+          - actimeo=2
+      name:
+        prefix: "pv-nextcloud-sample-"
+        suffix: ~
+      injectedValues:
+        - field: "spec.azureFile.shareName"
+          prefix: "nextcloud-"
+          suffix: ~
+    persistentVolumeClaimTemplate:
+      spec:
+        storageClassName: ""
+        accessModes:
+          - ReadWriteMany
+        resources:
+          requests:
+            storage: 1Ti
+        volumeName: "<<INJECTED>>"
+      name:
+        prefix: "pvc-"
+        suffix: ~
+      namespace: nextcloud-sample
+      injectedValues:
+        - field: "spec.volumeName"
+          prefix: "pv-nextcloud-sample-"
+          suffix: ~
+    containerVolumeTemplates:
+      - containers:
+          - name: backend-nextcloud-fpm
+        volumeTemplates:
+          - mergeSpec:
+              persistentVolumeClaim:
+                claimName: "<<INJECTED>>"
+            name:
+              prefix: "vol-"
+              suffix: ~
+            injectedValues:
+              - field: "persistentVolumeClaim.claimName"
+                prefix: "pvc-"
+                suffix: ~
+        volumeMountTemplates:
+          - mergeSpec:
+              mountPath: "/var/www/html/data"
+            name:
+              prefix: "vol-"
+              suffix: ~
+
+  - permutations:
+      values:
+        - client1
+        - client2
+        - client3
+    persistentVolumeTemplate:
+      spec:
+        capacity:
+          storage: 1Ti
+        accessModes:
+          - ReadWriteMany
+        azureFile:
+          secretName: "nextcloud-azure-files-creds"
+          secretNamespace: "nextcloud-sample"
+          shareName: "<<INJECTED>>"
+        mountOptions:
+          - uid=33
+          - gid=33
+          - dir_mode=0770
+          - file_mode=0770
+          - actimeo=2
+      name:
+        prefix: "pv-nextcloud-sample-"
+        suffix: ~
+      injectedValues:
+        - field: "spec.azureFile.shareName"
+          prefix: ~
+          suffix: ~
+    persistentVolumeClaimTemplate:
+      spec:
+        storageClassName: ""
+        accessModes:
+          - ReadWriteMany
+        resources:
+          requests:
+            storage: 1Ti
+        volumeName: "<<INJECTED>>"
+      name:
+        prefix: "pvc-"
+        suffix: ~
+      namespace: nextcloud-sample
+      injectedValues:
+        - field: "spec.volumeName"
+          prefix: "pv-nextcloud-sample-"
+          suffix: ~
+    containerVolumeTemplates:
+      - containers:
+          - name: backend-nextcloud-fpm
+        volumeTemplates:
+          - mergeSpec:
+              persistentVolumeClaim:
+                claimName: "<<INJECTED>>"
+            name:
+              prefix: "vol-"
+              suffix: ~
+            injectedValues:
+              - field: "persistentVolumeClaim.claimName"
+                prefix: "pvc-"
+                suffix: ~
+        volumeMountTemplates:
+          - mergeSpec:
+              mountPath: "<<INJECTED>>"
+            name:
+              prefix: "vol-"
+              suffix: ~
+            injectedValues:
+              - field: "mountPath"
+                prefix: "/mnt/share/"
+                suffix: ~
