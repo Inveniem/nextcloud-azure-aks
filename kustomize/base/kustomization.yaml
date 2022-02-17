@@ -13,4 +13,5 @@ resources:
   - manifests/app-nextcloud.yaml
   - manifests/app-redis.yaml
   - manifests/cert-manager-lets-encrypt-prod.yaml
+  - manifests/cronjob-nextcloud-file-scan.yaml
   - manifests/pod-disruption-budgets.yaml

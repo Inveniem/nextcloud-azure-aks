@@ -13,7 +13,7 @@ metadata:
   annotations:
     config.kubernetes.io/function: |
       container:
-        image: inveniem/kustomize-storage-transformer:1.0.0
+        image: inveniem/kustomize-storage-transformer:latest
 spec:
   - permutations:
       values:
@@ -61,6 +61,7 @@ spec:
     containerVolumeTemplates:
       - containers:
           - name: backend-nextcloud-fpm
+          - name: cron-nextcloud
         volumeTemplates:
           - mergeSpec:
               persistentVolumeClaim:
@@ -125,6 +126,7 @@ spec:
     containerVolumeTemplates:
       - containers:
           - name: backend-nextcloud-fpm
+          - name: cron-nextcloud
         volumeTemplates:
           - mergeSpec:
               persistentVolumeClaim:
@@ -191,6 +193,7 @@ spec:
     containerVolumeTemplates:
       - containers:
           - name: backend-nextcloud-fpm
+          - name: cron-nextcloud
         volumeTemplates:
           - mergeSpec:
               persistentVolumeClaim:

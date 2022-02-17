@@ -39,6 +39,10 @@ transformers:
 namespace: nextcloud-sample
 
 images:
+  - name: inveniem/nextcloud-cron
+    newName: your-acr-instance.azurecr.io/inveniem/nextcloud-cron
+    newTag: latest
+
   - name: inveniem/nextcloud-fpm
     newName: your-acr-instance.azurecr.io/inveniem/nextcloud-fpm
     newTag: latest
