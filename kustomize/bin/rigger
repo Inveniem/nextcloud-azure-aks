@@ -84,22 +84,26 @@ sub_help() {
   echo ""
   echo "Subcommands:"
   echo ""
-  echo "    publish                  Publishes Docker images for the checked-out version."
-  echo "    version-stamp            Updates the version that this overlay will pull down to match the checked-out version."
+  echo "    publish                            Publishes Docker images for the checked-out version."
+  echo "    version-stamp                      Updates the version that this overlay will pull down to match the checked-out"
+  echo "                                       version."
   echo ""
-  echo "    generate-storage-secrets Generates secrets files containing the access keys for storage accounts."
+  echo "    generate-storage-secrets           Generates secrets files containing the access keys for storage accounts."
   echo ""
-  echo "    encrypt-secrets          Encrypts secrets to manifests/secrets.enc.yaml."
-  echo "    decrypt-secrets          Decrypts secrets to manifests/secrets.yaml."
+  echo "    generate-sftp-ws-keypair <options> Generates a RS256 keypair for signing JWTs to authenticate with the SFTP-WS"
+  echo "                                       add-on."
   echo ""
-  echo "    show-manifests [options] Displays manifests for resources of this overlay."
-  echo "    deploy [options]         Deploys resources of this overlay to Kubernetes."
-  echo "    undeploy [options]       Removes resources of this overlay from Kubernetes."
-  echo "    cycle-pods [options]     Cycles deployments in this overlay's namespace on Kubernetes."
-  echo "    scale <options>          Scales a particular deployment up or down."
+  echo "    encrypt-secrets                    Encrypts secrets to manifests/secrets.enc.yaml."
+  echo "    decrypt-secrets                    Decrypts secrets to manifests/secrets.yaml."
   echo ""
-  echo "    launch-nc-sh-shell       Launches an sh shell on a Nextcloud worker pod."
-  echo "    launch-nc-db-shell       Launches a MySQL interactive shell connected to the Nextcloud database."
+  echo "    show-manifests [options]           Displays manifests for resources of this overlay."
+  echo "    deploy [options]                   Deploys resources of this overlay to Kubernetes."
+  echo "    undeploy [options]                 Removes resources of this overlay from Kubernetes."
+  echo "    cycle-pods [options]               Cycles deployments in this overlay's namespace on Kubernetes."
+  echo "    scale <options>                    Scales a particular deployment up or down."
+  echo ""
+  echo "    launch-nc-sh-shell                 Launches an sh shell on a Nextcloud worker pod."
+  echo "    launch-nc-db-shell                 Launches a MySQL interactive shell connected to the Nextcloud database."
   echo ""
 
   if [[ "${have_addon_commands}" -ne 0 ]]; then
@@ -155,6 +159,82 @@ sub_version_stamp() {
 
     kustomize edit set image "${docker_image}:${version_from_git}"
   done
+}
+
+##
+# Sub-command: "generate-sftp-ws-keypair"
+#
+# Generates a RS256 keypair for signing JWTs to authenticate with the SFTP-WS
+# add-on.
+#
+# The private key is used by the client to sign JWTs for connecting to the
+# server, while the public key is deployed on the server so that the server can
+# verify the client's authority. A client can only connect to the server if
+# the client presents a JWT that is signed by the same keypair as the one that
+# matches the HTTP "Origin" header, and the JWT does not reference any paths
+# outside of those allowed for that Origin.
+#
+sub_generate_sftp_ws_keypair() {
+  declare -g error_bad_arguments
+  declare -g error_bad_environment
+
+  local is_arg_missing=0
+  local keypair_name="${1:-}"
+
+  require_command "openssl"
+
+  if [[ -z "${keypair_name}" ]]; then
+    is_arg_missing=1
+  fi
+
+  if [[ "${is_arg_missing}" -eq "1" ]] || should_show_help "$@"; then
+    echo "Usage: ${program_name} generate-sftp-ws-keypair <name of keypair>"
+    echo ""
+    echo "Where <name of keypair> is a name that is of significance to the"
+    echo "administrator who is configuring the SFTP-WS client and server. It is"
+    echo "recommended that it be the hostname of the origin for which the key"
+    echo "is being generated (e.g., 'example.com')."
+    echo ""
+    echo "The private key will be generated in the overlay as"
+    echo "'generated-keys/<name of keypair>/jwt_private.pem' and the public key"
+    echo "will be generated as"
+    echo "'generated-keys/<name of keypair>/jwt_public.pem'."
+    echo ""
+
+    if [[ "${is_arg_missing}" -eq "1" ]]; then
+      exit "${error_bad_arguments}"
+    else
+      exit 0
+    fi
+  fi
+
+  local keypair_root="generated-keys/${keypair_name}"
+  local private_key_dest="${keypair_root}/jwt_private.pem"
+  local public_key_dest="${keypair_root}/jwt_public.pem"
+
+  local files_to_check=("${private_key_dest}" "${public_key_dest}")
+
+  for file_path in "${files_to_check[@]}"; do
+    if [[ -f "${file_path}" ]]; then
+      {
+        echo "[ERROR] Refusing to overwrite existing key under '${file_path}'."
+        echo ""
+      } >&2
+
+      exit "${error_bad_environment}"
+    fi
+  done
+
+  echo "Generating CA certificate and private key..."
+  echo ""
+
+  mkdir -p "${keypair_root}"
+
+  echo "Writing private RS256 key out to '${private_key_dest}'"
+  openssl genrsa -out "${private_key_dest}" 4096
+
+  echo "Writing public RS256 key out to '${public_key_dest}'"
+  openssl rsa -in "${private_key_dest}" -pubout -out "${public_key_dest}"
 }
 
 ##

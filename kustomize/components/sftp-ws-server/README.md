@@ -65,7 +65,7 @@ overlay. Modify the `permutations` key to add or remove volumes from being
 exposed inside the SFTP-WS server.
 
 ### Generating Key Pairs for Authentication
-Run `./rigger sftp-ws-generate-keypair <name of keypair>` from within an
+Run `./rigger generate-sftp-ws-keypair <name of keypair>` from within an
 overlay to generate a private key in the overlay as
 `generated-keys/<name of keypair>/jwt_private.pem` and the public key as 
 `generated-keys/<name of keypair>/jwt_public.pem`. The client should be
