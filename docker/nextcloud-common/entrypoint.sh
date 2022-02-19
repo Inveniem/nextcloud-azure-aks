@@ -147,6 +147,10 @@ deploy_nextcloud_release() {
         cp -v /usr/src/nextcloud/config/*.config.php /var/www/html/config/
         echo ""
     else
+        # Force environment variable to `true` in case it was not set but
+        # config is not readable.
+        export NEXTCLOUD_CONFIG_READ_ONLY="true"
+
         echo "'config' directory is not writable."
         echo "Configuration snippets will not be synced."
         echo ""
