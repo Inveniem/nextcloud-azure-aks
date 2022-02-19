@@ -34,11 +34,3 @@ replacements:
           - spec.template.spec.containers.0.volumeMounts.3.readOnly
         options:
           create: true
-
-      - select:
-          kind: PersistentVolume
-          name: "pv-nextcloud-config"
-        fieldPaths:
-          - spec.azureFile.readOnly
-        options:
-          create: true
