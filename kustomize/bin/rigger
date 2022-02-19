@@ -53,20 +53,23 @@ nextcloud_deployment_name="nextcloud"
 
 environment_config_path="manifests/config-environment.yaml"
 
-mysql_secrets_path="manifests/secrets-mysql.yaml"
-mysql_secrets_encrypted_path="manifests/secrets-mysql.enc.yaml"
+storage_secrets_generator_bin_path="generate_secrets_azure_files_storage.php"
+generated_storage_secrets_path="manifests/generated/secrets-azure_files.yaml"
 
-secrets_files=(
+mysql_secrets_path="manifests/secrets-mysql.yaml"
+
+
+required_secrets_files=(
   "${mysql_secrets_path}"
   "manifests/secrets-nextcloud.yaml"
   "manifests/secrets-redis.yaml"
 )
 
-publish_bin_path="../docker/publish_all.sh"
-storage_secrets_generator_bin_path="generate_secrets_azure_files_storage.php"
+all_secrets_files=(
+  "${required_secrets_files[@]}" \
+)
 
-generated_storage_secrets_path="manifests/generated/secrets-azure_files.yaml"
-encrypted_storage_secrets_path="manifests/generated/secrets-azure_files.enc.yaml"
+publish_bin_path="../docker/publish_all.sh"
 
 ################################################################################
 # Sub-commands
@@ -290,30 +293,20 @@ sub_generate_storage_secrets() {
 # The original files must NOT be checked-in to source control or shared.
 #
 sub_encrypt_secrets() {
-  declare -g secrets_files
-  declare -g generated_storage_secrets_path
-  declare -g encrypted_storage_secrets_path
+  declare -g all_secrets_files
 
   local at_least_one_exists=0
 
-  for secrets_file in "${secrets_files[@]}"; do
+  for secrets_file in "${all_secrets_files[@]}"; do
     if [[ -f "${secrets_file}" ]]; then
       at_least_one_exists=1
-      secrets_encrypted_path="${secrets_file/.yaml/.enc.yaml}"
+      secrets_encrypted_path=$(get_encrypted_secret_path "${secrets_file}")
 
       encrypt_secrets_file \
         "${secrets_file}" \
         "${secrets_encrypted_path}"
     fi
   done
-
-  if [[ -f "${generated_storage_secrets_path}" ]]; then
-    at_least_one_exists=1
-
-    encrypt_secrets_file \
-      "${generated_storage_secrets_path}" \
-      "${encrypted_storage_secrets_path}"
-  fi
 
   if [[ "${at_least_one_exists}" -eq 0 ]]; then
     {
@@ -335,22 +328,16 @@ sub_encrypt_secrets() {
 # safe to check-in.
 #
 sub_decrypt_secrets() {
-  declare -g secrets_files
-  declare -g encrypted_storage_secrets_path
-  declare -g generated_storage_secrets_path
+  declare -g all_secrets_files
 
-  for secrets_file in "${secrets_files[@]}"; do
+  for secrets_file in "${all_secrets_files[@]}"; do
     at_least_one_exists=1
-    secrets_encrypted_path="${secrets_file/.yaml/.enc.yaml}"
+    secrets_encrypted_path=$(get_encrypted_secret_path "${secrets_file}")
 
     decrypt_secrets_file \
       "${secrets_encrypted_path}" \
       "${secrets_file}"
   done
-
-  decrypt_secrets_file \
-    "${encrypted_storage_secrets_path}" \
-    "${generated_storage_secrets_path}"
 }
 
 ##
@@ -362,7 +349,7 @@ sub_decrypt_secrets() {
 sub_show_manifests() {
   declare -g program_name
   declare -g error_setup_required
-  declare -g secrets_files
+  declare -g required_secrets_files
 
   local deployment="${1:-}"
   local with_dependencies="${2:-}"
@@ -381,8 +368,8 @@ sub_show_manifests() {
     exit 0
   fi
 
-  for secrets_file in "${secrets_files[@]}"; do
-    secrets_encrypted_path="${secrets_file/.yaml/.enc.yaml}"
+  for secrets_file in "${required_secrets_files[@]}"; do
+    secrets_encrypted_path=$(get_encrypted_secret_path "${secrets_file}")
     require_encrypted_secrets_file "${secrets_encrypted_path}"
   done
 
@@ -570,14 +557,19 @@ sub_launch_nc_sh_shell() {
 #
 sub_launch_nc_db_shell() {
   declare -g error_setup_required
-  declare -g mysql_secrets_encrypted_path
+  declare -g mysql_secrets_path
 
+  local mysql_secrets_encrypted_path
   local db_credentials
   local db_hostname
   local db_port
   local db_schema
   local db_username
   local db_password
+
+  mysql_secrets_encrypted_path=$(
+    get_encrypted_secret_path "${mysql_secrets_path}"
+  )
 
   require_command "mysql"
   require_encrypted_secrets_file "${mysql_secrets_encrypted_path}"
@@ -595,11 +587,11 @@ sub_launch_nc_db_shell() {
   db_password=$(echo "${db_credentials}" | yq eval '.password' -)
 
   mysql \
-      --host="${db_hostname}" \
-      --database="${db_schema}" \
-      --port="${db_port}" \
-      --user="${db_username}" \
-      --password="${db_password}"
+    --host="${db_hostname}" \
+    --database="${db_schema}" \
+    --port="${db_port}" \
+    --user="${db_username}" \
+    --password="${db_password}"
   echo ""
 }
 
@@ -713,6 +705,25 @@ should_show_help() {
   done
 
   return 1
+}
+
+##
+# Gets the path to the encrypted version of the given secrets Yaml file.
+#
+# Neither file is required to exist; the path is generated through string
+# manipulation only.
+#
+# @param $1
+#   The path to the unencrypted YAML file for which an encrypted file path is
+#   desired.
+#
+# @return
+#   The path to the encrypted YAML secrets file.
+#
+get_encrypted_secret_path() {
+  local secrets_file="${1}"
+
+  echo "${secrets_file/.yaml/.enc.yaml}"
 }
 
 ##
