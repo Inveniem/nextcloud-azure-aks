@@ -15,138 +15,13 @@ metadata:
       container:
         image: inveniem/kustomize-storage-transformer:latest
 spec:
+  ##############################################################################
+  # Volumes for Client/Project Shares
+  ##############################################################################
   - permutations:
       values:
-        - config
-    persistentVolumeTemplate:
-      spec:
-        capacity:
-          storage: 512Mi
-        accessModes:
-          - ReadWriteMany
-        azureFile:
-          secretName: "nextcloud-azure-files-creds"
-          secretNamespace: "nextcloud-sample"
-          shareName: "<<INJECTED>>"
-        mountOptions:
-          - uid=33
-          - gid=33
-          - dir_mode=0770
-          - file_mode=0770
-          - actimeo=2
-      name:
-        prefix: "pv-nextcloud-sample-"
-        suffix: ~
-      injectedValues:
-        - field: "spec.azureFile.shareName"
-          prefix: "nextcloud-"
-          suffix: ~
-    persistentVolumeClaimTemplate:
-      spec:
-        storageClassName: ""
-        accessModes:
-          - ReadWriteMany
-        resources:
-          requests:
-            storage: 512Mi
-        volumeName: "<<INJECTED>>"
-      name:
-        prefix: "pvc-"
-        suffix: ~
-      namespace: nextcloud-sample
-      injectedValues:
-        - field: "spec.volumeName"
-          prefix: "pv-nextcloud-sample-"
-          suffix: ~
-    containerVolumeTemplates:
-      - containers:
-          - name: backend-nextcloud-fpm
-          - name: cron-nextcloud
-        volumeTemplates:
-          - mergeSpec:
-              persistentVolumeClaim:
-                claimName: "<<INJECTED>>"
-            name:
-              prefix: "vol-"
-              suffix: ~
-            injectedValues:
-              - field: "persistentVolumeClaim.claimName"
-                prefix: "pvc-"
-                suffix: ~
-        volumeMountTemplates:
-          - mergeSpec:
-              mountPath: "/var/www/html/config"
-            name:
-              prefix: "vol-"
-              suffix: ~
-
-  - permutations:
-      values:
-        - data
-    persistentVolumeTemplate:
-      spec:
-        capacity:
-          storage: 1Ti
-        accessModes:
-          - ReadWriteMany
-        azureFile:
-          secretName: "nextcloud-azure-files-creds"
-          secretNamespace: "nextcloud-sample"
-          shareName: "<<INJECTED>>"
-        mountOptions:
-          - uid=33
-          - gid=33
-          - dir_mode=0770
-          - file_mode=0770
-          - actimeo=2
-      name:
-        prefix: "pv-nextcloud-sample-"
-        suffix: ~
-      injectedValues:
-        - field: "spec.azureFile.shareName"
-          prefix: "nextcloud-"
-          suffix: ~
-    persistentVolumeClaimTemplate:
-      spec:
-        storageClassName: ""
-        accessModes:
-          - ReadWriteMany
-        resources:
-          requests:
-            storage: 1Ti
-        volumeName: "<<INJECTED>>"
-      name:
-        prefix: "pvc-"
-        suffix: ~
-      namespace: nextcloud-sample
-      injectedValues:
-        - field: "spec.volumeName"
-          prefix: "pv-nextcloud-sample-"
-          suffix: ~
-    containerVolumeTemplates:
-      - containers:
-          - name: backend-nextcloud-fpm
-          - name: cron-nextcloud
-        volumeTemplates:
-          - mergeSpec:
-              persistentVolumeClaim:
-                claimName: "<<INJECTED>>"
-            name:
-              prefix: "vol-"
-              suffix: ~
-            injectedValues:
-              - field: "persistentVolumeClaim.claimName"
-                prefix: "pvc-"
-                suffix: ~
-        volumeMountTemplates:
-          - mergeSpec:
-              mountPath: "/var/www/html/data"
-            name:
-              prefix: "vol-"
-              suffix: ~
-
-  - permutations:
-      values:
+        # Modify this list to reflect the names of the clients/projects you want
+        # to mount separately.
         - client1
         - client2
         - client3
@@ -215,3 +90,139 @@ spec:
               - field: "mountPath"
                 prefix: "/mnt/share/"
                 suffix: ~
+
+  ##############################################################################
+  # Nextcloud Configuration Volume
+  ##############################################################################
+  - permutations:
+      values:
+        - config
+    persistentVolumeTemplate:
+      spec:
+        capacity:
+          storage: 512Mi
+        accessModes:
+          - ReadWriteMany
+        azureFile:
+          secretName: "nextcloud-azure-files-creds"
+          secretNamespace: "nextcloud-sample"
+          shareName: "<<INJECTED>>"
+        mountOptions:
+          - uid=33
+          - gid=33
+          - dir_mode=0770
+          - file_mode=0770
+          - actimeo=2
+      name:
+        prefix: "pv-nextcloud-sample-"
+        suffix: ~
+      injectedValues:
+        - field: "spec.azureFile.shareName"
+          prefix: "nextcloud-"
+          suffix: ~
+    persistentVolumeClaimTemplate:
+      spec:
+        storageClassName: ""
+        accessModes:
+          - ReadWriteMany
+        resources:
+          requests:
+            storage: 512Mi
+        volumeName: "<<INJECTED>>"
+      name:
+        prefix: "pvc-"
+        suffix: ~
+      namespace: nextcloud-sample
+      injectedValues:
+        - field: "spec.volumeName"
+          prefix: "pv-nextcloud-sample-"
+          suffix: ~
+    containerVolumeTemplates:
+      - containers:
+          - name: backend-nextcloud-fpm
+          - name: cron-nextcloud
+        volumeTemplates:
+          - mergeSpec:
+              persistentVolumeClaim:
+                claimName: "<<INJECTED>>"
+            name:
+              prefix: "vol-"
+              suffix: ~
+            injectedValues:
+              - field: "persistentVolumeClaim.claimName"
+                prefix: "pvc-"
+                suffix: ~
+        volumeMountTemplates:
+          - mergeSpec:
+              mountPath: "/var/www/html/config"
+            name:
+              prefix: "vol-"
+              suffix: ~
+
+  ##############################################################################
+  # Volume for Nextcloud Home Folders
+  ##############################################################################
+  - permutations:
+      values:
+        - data
+    persistentVolumeTemplate:
+      spec:
+        capacity:
+          storage: 1Ti
+        accessModes:
+          - ReadWriteMany
+        azureFile:
+          secretName: "nextcloud-azure-files-creds"
+          secretNamespace: "nextcloud-sample"
+          shareName: "<<INJECTED>>"
+        mountOptions:
+          - uid=33
+          - gid=33
+          - dir_mode=0770
+          - file_mode=0770
+          - actimeo=2
+      name:
+        prefix: "pv-nextcloud-sample-"
+        suffix: ~
+      injectedValues:
+        - field: "spec.azureFile.shareName"
+          prefix: "nextcloud-"
+          suffix: ~
+    persistentVolumeClaimTemplate:
+      spec:
+        storageClassName: ""
+        accessModes:
+          - ReadWriteMany
+        resources:
+          requests:
+            storage: 1Ti
+        volumeName: "<<INJECTED>>"
+      name:
+        prefix: "pvc-"
+        suffix: ~
+      namespace: nextcloud-sample
+      injectedValues:
+        - field: "spec.volumeName"
+          prefix: "pv-nextcloud-sample-"
+          suffix: ~
+    containerVolumeTemplates:
+      - containers:
+          - name: backend-nextcloud-fpm
+          - name: cron-nextcloud
+        volumeTemplates:
+          - mergeSpec:
+              persistentVolumeClaim:
+                claimName: "<<INJECTED>>"
+            name:
+              prefix: "vol-"
+              suffix: ~
+            injectedValues:
+              - field: "persistentVolumeClaim.claimName"
+                prefix: "pvc-"
+                suffix: ~
+        volumeMountTemplates:
+          - mergeSpec:
+              mountPath: "/var/www/html/data"
+            name:
+              prefix: "vol-"
+              suffix: ~
