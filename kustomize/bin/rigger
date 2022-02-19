@@ -58,15 +58,20 @@ generated_storage_secrets_path="manifests/generated/secrets-azure_files.yaml"
 
 mysql_secrets_path="manifests/secrets-mysql.yaml"
 
+generated_sftp_host_keys_secrets_path="manifests/generated/secrets-sftp-host-keys.yaml"
+sftp_host_keys_secret_name="sftp-host-keys"
+sftp_users_config_path="configs/sftp/users.conf"
 
 required_secrets_files=(
   "${mysql_secrets_path}"
   "manifests/secrets-nextcloud.yaml"
   "manifests/secrets-redis.yaml"
+  "${generated_storage_secrets_path}"
 )
 
 all_secrets_files=(
   "${required_secrets_files[@]}" \
+  "${generated_sftp_host_keys_secrets_path}"
 )
 
 publish_bin_path="../docker/publish_all.sh"
@@ -92,6 +97,10 @@ sub_help() {
   echo "                                       version."
   echo ""
   echo "    generate-storage-secrets           Generates secrets files containing the access keys for storage accounts."
+  echo ""
+  echo "    add-sftp-user <options>            Adds a username and encrypted password to the 'users.conf' file for the"
+  echo "                                       SFTP add-on."
+  echo "    generate-sftp-host-keys            Generates the keys that the SFTP add-on uses for authentication."
   echo ""
   echo "    generate-sftp-ws-keypair <options> Generates a RS256 keypair for signing JWTs to authenticate with the SFTP-WS"
   echo "                                       add-on."
@@ -162,6 +171,128 @@ sub_version_stamp() {
 
     kustomize edit set image "${docker_image}:${version_from_git}"
   done
+}
+
+##
+# Sub-command: "add-sftp-user"
+#
+# Adds a username and encrypted password to the 'users.conf' file for the SFTP
+# add-on.
+#
+sub_add_sftp_user() {
+  declare -g error_bad_arguments
+  declare -g error_bad_environment
+  declare -g sftp_users_config_path
+
+  local is_arg_missing=0
+  local username="${1:-}"
+
+  require_command "cut"
+
+  if [[ -z "${username}" ]]; then
+    is_arg_missing=1
+  fi
+
+  if [[ "${is_arg_missing}" -eq "1" ]] || should_show_help "$@"; then
+    echo "Usage: ${program_name} add-sftp-user <username>"
+    echo ""
+    echo "Where <username> is the name of the SFTP login name to add to the"
+    echo "'users.conf' file. The user will be included in the settings for the"
+    echo "next deployment of the SFTP add-on."
+    echo ""
+    echo "You will be prompted for the password on standard input."
+    echo ""
+
+    if [[ "${is_arg_missing}" -eq "1" ]]; then
+      exit "${error_bad_arguments}"
+    else
+      exit 0
+    fi
+  fi
+
+  if grep -E "^${username}:" "${sftp_users_config_path}" >/dev/null 2>&1; then
+    {
+      echo "User already exists: ${username}"
+      echo ""
+    } >&2
+
+    exit "${error_bad_arguments}"
+  fi
+
+  # Make sure that the config folder exists in this overlay.
+  sftp_config_folder=$(dirname "${sftp_users_config_path}")
+  mkdir -p "${sftp_config_folder}"
+
+  read -r -s -p "Password (hidden for security): " password
+  echo ""
+
+  if [[ -z "${password}" ]]; then
+    {
+      echo "Password cannot be empty."
+      echo ""
+    } >&2
+
+    exit "${error_bad_arguments}"
+  fi
+
+  encrypted_password=$(
+    echo -n "${password}" | \
+      docker run -i --rm atmoz/makepasswd --crypt-md5 --clearfrom=- | \
+      awk '{ print $2 }'
+  )
+
+  echo ""
+  echo "${username}:${encrypted_password}:e:33" >> "${sftp_users_config_path}"
+
+  echo "Added '${username}' to '${sftp_users_config_path}'."
+  echo ""
+}
+
+##
+# Sub-command: "generate-sftp-host-keys"
+#
+# Generates the keys that the SFTP add-on uses for authentication.
+#
+sub_generate_sftp_host_keys() {
+  local ed25519_key_path="/tmp/ssh_host_ed25519_key"
+  local ssh_host_rsa_key_path="/tmp/ssh_host_rsa_key"
+  local secret_dir
+
+  require_command "ssh-keygen"
+
+  if [[ -f "${generated_sftp_host_keys_secrets_path}" ]]; then
+    {
+      echo "[ERROR] Refusing to overwrite existing SFTP host keys under '${generated_sftp_host_keys_secrets_path}'."
+      echo ""
+    } >&2
+
+    exit "${error_bad_environment}"
+  fi
+
+  echo "Generating DSA and RSA keys for SSH/SFTP host..."
+  echo ""
+
+  ssh-keygen -t ed25519 -f "${ed25519_key_path}" -N ''
+  ssh-keygen -t rsa -b 4096 -f "${ssh_host_rsa_key_path}" -N ''
+
+  secret_dir=$(dirname "${generated_sftp_host_keys_secrets_path}")
+
+  mkdir -p "${secret_dir}"
+
+  kubectl create secret generic \
+    "${sftp_host_keys_secret_name}" \
+    "--from-file=${ed25519_key_path}" \
+    "--from-file=${ssh_host_rsa_key_path}" \
+    --dry-run=client \
+    --output=yaml > "${generated_sftp_host_keys_secrets_path}"
+
+  rm "${ed25519_key_path}"
+  rm "${ssh_host_rsa_key_path}"
+
+  echo "Host keys secrets saved to '${generated_sftp_host_keys_secrets_path}'."
+  echo ""
+
+  sub_encrypt_secrets
 }
 
 ##

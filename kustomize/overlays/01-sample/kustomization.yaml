@@ -17,23 +17,37 @@ resources:
   - manifests/config-environment.yaml
   - manifests/namespace-nextcloud.yaml
 
-generators:
-  - decrypt-secrets.yaml
-
 components:
-  # You can pick and choose the optional components you'd like to include by
-  # uncommenting lines below.
+### You can pick and choose the optional components you'd like to include by
+### uncommenting lines below.
+  # - ../../components/sftp-server
   # - ../../components/sftp-ws-server
   - ../../components/ingress-dns
 
-# Uncomment this if using the "sftp-ws-server" component.
+generators:
+  - decrypt-secrets.nextcloud.yaml
+#### Uncomment this if using the "sftp-server" component:
+#  - decrypt-secrets.sftp.yaml
+
+# Uncomment this if using either the "sftp-server" or "sftp-ws-server"
+# components.
 #configMapGenerator:
+#### Uncomment this if using the "sftp-server" component:
+#  - name: sftp
+#    files:
+#      - configs/sftp/users.conf
+#
+#### Uncomment this if using the "sftp-ws-server" component:
 #  - name: sftp-ws
 #    files:
 #      - originRestrictions=configs/sftp-ws/origin-restrictions.json
 
 transformers:
   - configure-storage.nextcloud.yaml
+  # Uncomment this if using the "sftp-server" component:
+  #- configure-storage.sftp.yaml
+  # Uncomment this if using the "sftp-ws-server" component:
+  #- configure-storage.sftp-ws.yaml
 
 namespace: nextcloud-sample
 

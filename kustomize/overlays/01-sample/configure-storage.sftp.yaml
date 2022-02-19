@@ -1,0 +1,140 @@
+##
+# Kustomize plugin configuration for using KST to setup SFTP access for clients.
+#
+# This is an EXAMPLE file. Customize for your environment! If you have multiple
+# environments, you can create multiple copies of the containing, sample overlay
+# folder and customize manifests in each one to match your environments.
+#
+# Storage shares referenced in this file must first be defined in
+# `configure-storage.nextcloud.yaml` first. The shares referenced in THIS file
+# are expected to be a subset of the shares in that file, since it is assumed
+# that not all clients need SFTP access.
+#
+# @author Guy Elsmore-Paddock (guy@inveniem.com)
+# @copyright Copyright (c) 2022, Inveniem
+# @license GNU AGPL version 3 or any later version
+#
+apiVersion: kubernetes.inveniem.com/storage-config-transformer/v1alpha
+kind: StorageConfigTransformer
+metadata:
+  name: configure-storage-sftp
+  annotations:
+    config.kubernetes.io/function: |
+      container:
+        image: inveniem/kustomize-storage-transformer:latest
+
+spec:
+  ##############################################################################
+  # Shared Volume Configuration
+  ##############################################################################
+  # This section controls which Nextcloud volumes from Azure Files are exposed
+  # for access through SFTP by any user. This section does not control which
+  # users have access to the volumes, only what volumes are available for users
+  # to access.
+  #
+  # The "Per-user Configuration" section of this file controls which of these
+  # volumes are exposed for each user.
+  #
+  - permutations:
+      values:
+        # Modify this list to reflect the names of the clients/projects you want
+        # to mount for SFTP access. (Do NOT add Nextcloud's "data" volume to
+        # this list as it exposes access to home folders for ALL users).
+        - client1
+        - client2
+        - client3
+    containerVolumeTemplates:
+      - containers:
+          - name: frontend-sftp-server
+        volumeTemplates:
+          - mergeSpec:
+              persistentVolumeClaim:
+                claimName: "<<INJECTED>>"
+            name:
+              prefix: "vol-"
+              suffix: ~
+            injectedValues:
+              - field: "persistentVolumeClaim.claimName"
+                prefix: "pvc-"
+                suffix: ~
+
+  ##############################################################################
+  # Per-user Configuration
+  ##############################################################################
+  # This section enumerates which shares are exposed for access by each user.
+  # Each user gets their own section/list of shares.
+  #
+  # Customize the "mountPath" prefix for each user, so that it is of the format:
+  #   /home/<USERNAME>/
+  #
+  # Below are two examples, one for a user named "Bob" and "Alice".
+  #
+
+  ##
+  # Example 1: Shares to expose for access by "larry" (just "client1").
+  #
+  - permutations:
+      values:
+        # Modify this list to reflect the names of the clients/projects THIS
+        # user should have access to.
+        - client1
+    containerVolumeTemplates:
+      - containers:
+          - name: frontend-sftp-server
+        volumeMountTemplates:
+          - mergeSpec:
+              mountPath: "<<INJECTED>>"
+            name:
+              prefix: "vol-"
+              suffix: ~
+            injectedValues:
+              - field: "mountPath"
+                prefix: "/home/larry/"
+                suffix: ~
+
+  ##
+  # Example 2: Shares to expose for access by "moe" ("client1", "client2", and
+  # "client3").
+  #
+  - permutations:
+      values:
+        # Modify this list to reflect the names of the clients/projects THIS
+        # user should have access to.
+        - client1
+        - client2
+        - client3
+    containerVolumeTemplates:
+      - containers:
+          - name: frontend-sftp-server
+        volumeMountTemplates:
+          - mergeSpec:
+              mountPath: "<<INJECTED>>"
+            name:
+              prefix: "vol-"
+              suffix: ~
+            injectedValues:
+              - field: "mountPath"
+                prefix: "/home/moe/"
+                suffix: ~
+
+  ##
+  # Example 3: Shares to expose for access by "curly" (just "client3").
+  #
+  - permutations:
+      values:
+        # Modify this list to reflect the names of the clients/projects THIS
+        # user should have access to.
+        - client3
+    containerVolumeTemplates:
+      - containers:
+          - name: frontend-sftp-server
+        volumeMountTemplates:
+          - mergeSpec:
+              mountPath: "<<INJECTED>>"
+            name:
+              prefix: "vol-"
+              suffix: ~
+            injectedValues:
+              - field: "mountPath"
+                prefix: "/home/curly/"
+                suffix: ~
