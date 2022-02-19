@@ -1,6 +1,18 @@
 ##
-# Kustomize plugin configuration for using KST to setup workspace storage for
-# each client.
+# Kustomize plugin configuration for using KST to configure Nextcloud storage.
+#
+# This is an EXAMPLE file. Customize for your environment! If you have multiple
+# environments, you can create multiple copies of the containing, sample overlay
+# folder and customize manifests in each one to match your environments.
+#
+# This configures storage for each client/project, Nextcloud configuration, and
+# Nextcloud home folders.
+#
+# NOTE: For improved reliability and security in a production environment, you
+#       should mount the "config" volume for Nextcloud read-only *except* during
+#       initial setup or software upgrades.
+#
+#       See note in the "Nextcloud Configuration Volume" section below.
 #
 # @author Guy Elsmore-Paddock (guy@inveniem.com)
 # @copyright Copyright (c) 2022, Inveniem
@@ -155,6 +167,14 @@ spec:
         volumeMountTemplates:
           - mergeSpec:
               mountPath: "/var/www/html/config"
+              # This controls whether Nextcloud config is read-only or writable.
+              # - Set this to "true" to prevent Nextcloud from trying to
+              #   re-install itself in the event that Azure Files is
+              #   intermittently unavailable.
+              # - Set this to "false" ONLY during initial deployment and
+              #   upgrades.
+              #
+              readOnly: false
             name:
               prefix: "vol-"
               suffix: ~

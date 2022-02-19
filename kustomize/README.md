@@ -44,3 +44,33 @@
    ```sh
    az login
    ```
+
+## Protecting Configuration from Re-install/Modification in Production
+If Nextcloud believes that the `config.php` file is missing, it will create a
+new, blank `config.php` file. Unfortunately, this may trigger sporadically and
+accidentally if the volume hosting Nextcloud configuration becomes disconnected
+or unmounted at run-time, such as when a Kubernetes node is under significant
+memory or CPU pressure, or the Azure Files storage account hosting Nextcloud is
+throttling connections due to excessive IOPS or transfer throughput. Then, when
+connectivity is restored, the blank `config.php` file will overwrite the real
+copy of the file.
+
+The result for the end-user is that they will be redirected to the Nextcloud
+installer. Thankfully, after https://github.com/nextcloud/server/pull/14965, the
+user will see an error message rather than being given the ability to re-install
+Nextcloud and take full control of the installation. Regardless, this is not the
+greatest UX because the Nextcloud installation will continue to display an error
+message for all users until an admin restores the `config.php` from a backup
+(assuming the admin has a backup at all!).
+
+If you have a high-traffic or under-provisioned installation, or just want to
+harden your server from security vulnerabilities that could modify your
+Nextcloud configuration, it is recommended that you mount the `config` volume
+read-only _except_ during initial setup and upgrades.
+
+To do this, from within the overlay you are deploying, change the
+`containerVolumeTemplates.volumeMountTemplates.mergeSpec.readOnly` setting in
+the "Nextcloud Configuration Volume" section from `false` to `true` and then
+re-deploy your application. When doing maintenance or upgrades, you will need to
+change this setting back to `false` until you are done. Then, change it back to
+`true` to restore the installation to a hardened state.

@@ -51,11 +51,6 @@ spec:
             - name: volume-php-cache
               mountPath: /mnt/php-file-cache
           env:
-            - name: NEXTCLOUD_CONFIG_READ_ONLY
-              valueFrom:
-                configMapKeyRef:
-                  name: environment
-                  key: configReadOnly
             - name: NEXTCLOUD_FILE_LOCKING_ENABLED
               valueFrom:
                 configMapKeyRef:

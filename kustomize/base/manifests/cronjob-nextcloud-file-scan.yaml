@@ -26,11 +26,6 @@ spec:
                 - name: volume-nextcloud-app
                   mountPath: /var/www/html
               env:
-                - name: NEXTCLOUD_CONFIG_READ_ONLY
-                  valueFrom:
-                    configMapKeyRef:
-                      name: environment
-                      key: configReadOnly
                 - name: NEXTCLOUD_FILE_LOCKING_ENABLED
                   valueFrom:
                     configMapKeyRef:

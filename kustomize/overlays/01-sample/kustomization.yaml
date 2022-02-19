@@ -34,7 +34,6 @@ components:
 
 transformers:
   - configure-storage.nextcloud.yaml
-  - transformer-readonly-volumes.yaml
 
 namespace: nextcloud-sample
 
