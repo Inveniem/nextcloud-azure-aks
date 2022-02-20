@@ -40,6 +40,13 @@ script_dirname="$( cd "$( dirname "${script_path}" )" >/dev/null 2>&1 && pwd )"
 # them at run-time.
 
 ##
+# The name of the engine used for building and publishing images.
+#
+# The default is Docker, but Podman is also supported.
+#
+CONTAINER_ENGINE="${CONTAINER_ENGINE:-docker}"
+
+##
 # Additional arguments to pass to the Docker build.
 #
 # Overridable with BUILD_ARGS environment variable.
@@ -135,7 +142,7 @@ require_no_image_overwrite() {
 
   local remote_container_url="${1}"
 
-  if docker manifest inspect "${remote_container_url}" >/dev/null 2>&1; then
+  if "${CONTAINER_ENGINE}" manifest inspect "${remote_container_url}" >/dev/null 2>&1; then
     if [[ "${DOCKER_IMAGE_ALLOW_OVERWRITE:-0}" -eq 1 ]]; then
       {
         echo "The specified version of this Docker image"
@@ -174,7 +181,7 @@ if [[ "${container_tag}" != "latest" ]]; then
 fi
 
 # shellcheck disable=SC2086
-docker build -t "${container_name_and_tag}" -f Dockerfile .. ${build_args:-}
+"${CONTAINER_ENGINE}" build -t "${container_name_and_tag}" -f Dockerfile .. ${build_args:-}
 
-docker tag "${container_name_and_tag}" "${remote_container_url}"
-docker push "${remote_container_url}"
+"${CONTAINER_ENGINE}" tag "${container_name_and_tag}" "${remote_container_url}"
+"${CONTAINER_ENGINE}" push "${remote_container_url}"
