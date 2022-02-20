@@ -33,6 +33,12 @@ spec:
                     values:
                       - backend-nextcloud
               topologyKey: "kubernetes.io/hostname"
+      tolerations:
+        # Allow scheduling this job on burstable nodes.
+        - key: inveniem.com/workload-type
+          operator: Equal
+          value: burstable
+          effect: NoSchedule
 
       containers:
         # Container: The PHP-FPM-based Nextcloud backend
