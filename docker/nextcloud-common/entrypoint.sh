@@ -9,7 +9,7 @@
 # startup version check functions as required.
 #
 # @author Guy Elsmore-Paddock (guy@inveniem.com)
-# @copyright Copyright (c) 2019, Inveniem
+# @copyright Copyright (c) 2019-2022, Inveniem
 # @license GNU AGPL version 3 or any later version
 #
 
@@ -271,10 +271,20 @@ capture_install_options() {
         install_options=$install_options' --database-name "$SQLITE_DATABASE"'
         install_type="SQLite"
     elif [ -n "${MYSQL_DATABASE+x}" ] && [ -n "${MYSQL_USER+x}" ] && [ -n "${MYSQL_PASSWORD+x}" ] && [ -n "${MYSQL_HOST+x}" ]; then
+        if [ -n "${MYSQL_PORT+x}" ]; then
+          # Nextcloud bakes the port into the host for some reason.
+          MYSQL_HOST="${MYSQL_HOST}:${MYSQL_PORT}"
+        fi
+
         # shellcheck disable=SC2016
         install_options=$install_options' --database mysql --database-name "$MYSQL_DATABASE" --database-user "$MYSQL_USER" --database-pass "$MYSQL_PASSWORD" --database-host "$MYSQL_HOST"'
         install_type="MySQL"
     elif [ -n "${POSTGRES_DB+x}" ] && [ -n "${POSTGRES_USER+x}" ] && [ -n "${POSTGRES_PASSWORD+x}" ] && [ -n "${POSTGRES_HOST+x}" ]; then
+        if [ -n "${POSTGRES_PORT+x}" ]; then
+          # Nextcloud bakes the port into the host for some reason.
+          POSTGRES_HOST="${POSTGRES_HOST}:${POSTGRES_PORT}"
+        fi
+
         # shellcheck disable=SC2016
         install_options=$install_options' --database pgsql --database-name "$POSTGRES_DB" --database-user "$POSTGRES_USER" --database-pass "$POSTGRES_PASSWORD" --database-host "$POSTGRES_HOST"'
         install_type="PostgreSQL"
