@@ -33,6 +33,7 @@ RUN set -eux;\
     for key in \
         836489290BB6B70F99FFDA0556BCDB593020450F \
     ; do \
+        gpg --batch --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys "$key" || \
         gpg --batch --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys "$key" || \
         gpg --batch --keyserver hkp://ipv4.pool.sks-keyservers.net --recv-keys "$key" || \
         gpg --batch --keyserver hkp://pgp.mit.edu:80 --recv-keys "$key" ; \
