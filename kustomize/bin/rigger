@@ -76,7 +76,7 @@ all_secrets_files=(
   "${generated_sftp_host_keys_secrets_path}"
 )
 
-publish_env_path="./publish.env"
+publish_env_path="./publish.profile"
 publish_bin_path="../../docker/publish_all.sh"
 
 ################################################################################

@@ -78,3 +78,26 @@ NEW_RELIC_AGENT_URL="https://download.newrelic.com/php_agent/release/newrelic-ph
 # Leave blank if you do not use New Relic monitoring.
 #
 NEW_RELIC_APP="Nextcloud"
+
+################################################################################
+# Deployment Macros
+################################################################################
+# Use this section to declare any commands that need to be run when an image is
+# being built and published (e.g., authenticating with ACR).
+
+# Uncomment the command below to automate having Docker authenticate with ACR
+# before publishing an image.
+#
+#az acr login --name "${REGISTRY_NAME}"
+
+# Uncomment the command below to automate having Podman authenticate with ACR
+# before publishing an image.
+#acr_token=$(
+#  az acr login --name "${REGISTRY_NAME}" --expose-token | \
+#    jq .accessToken | \
+#    tr -d '"'
+#)
+#
+#podman login "${REGISTRY_HOST}" \
+#  -u "00000000-0000-0000-0000-000000000000" \
+#  -p "${acr_token}"

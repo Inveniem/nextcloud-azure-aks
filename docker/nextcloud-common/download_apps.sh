@@ -9,7 +9,7 @@
 #
 # - NEXTCLOUD_CUSTOM_APPS
 #
-# These variables are typically set via publish.env in an overlay, and then this
+# These variables are typically set via publish.profile in an overlay, and then this
 # script is invoked automatically by `./rigger publish` within the overlay.
 #
 # @author Guy Elsmore-Paddock (guy@inveniem.com)

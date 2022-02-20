@@ -11,7 +11,7 @@
 # - NEW_RELIC_KEY
 # - NEW_RELIC_APP
 #
-# These variables are typically set via publish.env in an overlay, and then this
+# These variables are typically set via publish.profile in an overlay, and then this
 # script is invoked automatically by `./rigger publish` within the overlay.
 #
 # @author Guy Elsmore-Paddock (guy@inveniem.com)
@@ -90,7 +90,7 @@ sed -i -e 's/\"REPLACE_WITH_REAL_KEY\"/\"${NEW_RELIC_KEY}\"/' \\
     /usr/local/etc/php/conf.d/newrelic.ini
 END
     else
-        echo "# New Relic Monitoring disabled in publish.env of overlay."
+        echo "# New Relic Monitoring disabled in publish.profile of overlay."
     fi
 } > "${outfile}"
 ###
