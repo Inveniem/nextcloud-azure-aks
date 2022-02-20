@@ -43,10 +43,12 @@ sub_command="${1:-}"
 
 kfilt_version_tag=v0.0.6
 
+# This just controls what images are version stamped, not what gets published.
 docker_image_names=(
   "inveniem/nextcloud-fpm"
   "inveniem/nextcloud-nginx-middleware"
   "inveniem/nextcloud-cron"
+  "inveniem/sftp-ws-server"
 )
 
 nextcloud_deployment_name="nextcloud"
@@ -74,7 +76,8 @@ all_secrets_files=(
   "${generated_sftp_host_keys_secrets_path}"
 )
 
-publish_bin_path="../docker/publish_all.sh"
+publish_env_path="./publish.env"
+publish_bin_path="../../docker/publish_all.sh"
 
 ################################################################################
 # Sub-commands
@@ -142,15 +145,47 @@ sub_help() {
 # Publishes Docker images for the checked-out version.
 #
 sub_publish() {
+  declare -g error_setup_required
   declare -g script_dir
   declare -g publish_bin_path
+
+  local version_from_git
+
+  if [[ ! -f "${publish_env_path}" ]]; then
+    echo "[ERROR] Publishing environment file '${publish_env_path}' was not found. Has this overlay been configured?"
+    echo ""
+
+    exit "${error_setup_required}"
+  fi
+
+  # shellcheck disable=SC1090
+  source "${publish_env_path}"
+
+  if [[ -z "${REGISTRY_HOST:-}" ]]; then
+    echo "[ERROR] Publishing environment file '${publish_env_path}' is missing a REGISTRY_HOST. Has this overlay been configured?"
+    echo ""
+
+    exit "${error_setup_required}"
+  fi
 
   version_from_git=$(detect_checked_out_version)
 
   echo "Building and publishing Nextcloud image '${version_from_git}'..."
   echo ""
 
-  "${script_dir}/${publish_bin_path}" "${version_from_git}"
+  export REGISTRY_NAME
+  export REGISTRY_HOST
+  export NEW_RELIC_KEY
+  export NEW_RELIC_AGENT_URL
+  export NEW_RELIC_APP
+
+  # Export the app list as a string, since we cannot export an array to
+  # environment.
+  app_list="${NEXTCLOUD_CUSTOM_APPS[*]}"
+  unset NEXTCLOUD_CUSTOM_APPS
+  export NEXTCLOUD_CUSTOM_APPS="${app_list}"
+
+  "${script_dir}/${publish_bin_path}" "${REGISTRY_HOST}" "${version_from_git}"
 
   echo ""
 
@@ -163,7 +198,29 @@ sub_publish() {
 # Updates the version in the generated 'version.properties' file.
 #
 sub_version_stamp() {
+  declare -g error_setup_required
+  declare -g script_dir
+  declare -g publish_bin_path
   declare -g docker_image_names
+
+  local version_from_git
+
+  if [[ ! -f "${publish_env_path}" ]]; then
+    echo "[ERROR] Publishing environment file '${publish_env_path}' was not found. Has this overlay been configured?"
+    echo ""
+
+    exit "${error_setup_required}"
+  fi
+
+  # shellcheck disable=SC1090
+  source "${publish_env_path}"
+
+  if [[ -z "${REGISTRY_HOST:-}" ]]; then
+    echo "[ERROR] Publishing environment file '${publish_env_path}' is missing a REGISTRY_HOST. Has this overlay been configured?"
+    echo ""
+
+    exit "${error_setup_required}"
+  fi
 
   version_from_git=$(detect_checked_out_version)
 
@@ -171,7 +228,7 @@ sub_version_stamp() {
     echo "Updating '${docker_image}' version to '${version_from_git}'..."
     echo ""
 
-    kustomize edit set image "${docker_image}:${version_from_git}"
+    kustomize edit set image "${REGISTRY_HOST}/${docker_image}:${version_from_git}"
   done
 }
 

@@ -6,12 +6,8 @@ than Nextcloud to read files from and write files to the volumes that back a
 Nextcloud AKS deployment.
 
 ## Folder Contents
-This folder contains:
-- The source code for the NodeJS-based server application.
-- Dockerfile and publishing script for releasing the application as a Docker 
-  image in an Azure Container Registry. 
-- A Kustomization add-on component for including the application in a Kustomize
-  deployment overlay.
+This folder contains a Kustomization add-on component for including the 
+application in a Kustomize deployment overlay.
 
 ## Using this Add-on
 ### Enabling the Add-on

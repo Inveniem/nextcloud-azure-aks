@@ -7,7 +7,7 @@
 # This is a multi-stage build.
 #
 # @author Guy Elsmore-Paddock (guy@inveniem.com)
-# @copyright Copyright (c) 2019, Inveniem
+# @copyright Copyright (c) 2019-2022, Inveniem
 # @license GNU AGPL version 3 or any later version
 #
 

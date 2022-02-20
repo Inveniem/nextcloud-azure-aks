@@ -2,11 +2,11 @@
 
 ##
 # @file
-# This script publishes the PHP-FPM-based version of Nextcloud to a Container
+# This script publishes the SFTP-WS Server Nextcloud Add-on to a Container
 # Registry.
 #
 # Usage:
-#   ./publish.sh <container registry> [docker image tag] [--with-xdebug]
+#   ./publish.sh <container registry> [docker image tag]
 #
 # @author Guy Elsmore-Paddock (guy@inveniem.com)
 # @copyright Copyright (c) 2019-2022, Inveniem
@@ -28,7 +28,7 @@ error_bad_arguments=1
 ##
 # The name of the container that this script publishes.
 #
-container_name="inveniem/nextcloud-fpm"
+container_name="inveniem/sftp-ws-server"
 
 script_path="${BASH_SOURCE[0]}"
 script_dirname="$( cd "$( dirname "${script_path}" )" >/dev/null 2>&1 && pwd )"
@@ -104,11 +104,8 @@ parse_args() {
   fi
 
   for argument in "$@"; do
-    if [[ "${argument}" == "--with-xdebug" ]]; then
-      build_args="${build_args} --build-arg XDEBUG_ENABLED=true"
-
-    elif [[ "${argument}" == "--help" || "${argument}" == "--h" ||
-            "${argument}" == --* ]]; then
+    if [[ "${argument}" == "--help" || "${argument}" == "--h" ||
+          "${argument}" == --* ]]; then
       print_usage_and_exit
 
     elif [[ -z "${container_repository}" ]]; then
@@ -123,13 +120,6 @@ parse_args() {
   done
 
   container_tag="${container_tag:-latest}"
-}
-
-##
-# Prepares Nextcloud containers to run Newrelic for profiling.
-#
-configure_new_relic() {
-  ../nextcloud-common/generate_nr_setup_command.sh
 }
 
 ##
@@ -176,7 +166,6 @@ require_no_image_overwrite() {
 cd "${script_dirname}"
 
 parse_args "$@"
-configure_new_relic
 
 container_name_and_tag="${container_name}:${container_tag}"
 remote_container_url="${container_repository}/${container_name_and_tag}"
@@ -186,7 +175,7 @@ if [[ "${container_tag}" != "latest" ]]; then
 fi
 
 # shellcheck disable=SC2086
-docker build -t "${container_name_and_tag}" -f Dockerfile .. ${build_args:-}
+docker build -t "${container_name_and_tag}" . ${build_args:-}
 
 docker tag "${container_name_and_tag}" "${remote_container_url}"
 docker push "${remote_container_url}"
