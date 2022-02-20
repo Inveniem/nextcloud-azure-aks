@@ -29,7 +29,7 @@ spec:
     spec:
       containers:
         - name: backend-clamav
-          image: "mkodockx/docker-clamav@sha256:09faf0d32b3f6f1169d2428e8226f2ea12bbb8fc3d96acc95ee1278f1a9f39c4"
+          image: "mkodockx/docker-clamav:latest"
           ports:
             - containerPort: 3310
           resources:
