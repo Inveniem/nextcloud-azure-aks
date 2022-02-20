@@ -117,6 +117,8 @@ sub_help() {
   echo "    launch-nc-sh-shell                 Launches an sh shell on a Nextcloud worker pod."
   echo "    launch-nc-db-shell                 Launches a MySQL interactive shell connected to the Nextcloud database."
   echo ""
+  echo "    dump-nc-db                         Dumps the contents of the Nextcloud MySQL database to standard output."
+  echo ""
 
   if [[ "${have_addon_commands}" -ne 0 ]]; then
     sub_addon_help
@@ -722,6 +724,54 @@ sub_launch_nc_db_shell() {
   mysql \
     --host="${db_hostname}" \
     --database="${db_schema}" \
+    --port="${db_port}" \
+    --user="${db_username}" \
+    --password="${db_password}"
+  echo ""
+}
+
+##
+# Sub-command: "dump-nc-db"
+#
+# Dumps the contents of the Nextcloud MySQL database to standard output.
+#
+sub_dump_nc_db() {
+  declare -g error_setup_required
+  declare -g mysql_secrets_path
+
+  local mysql_secrets_encrypted_path
+  local db_credentials
+  local db_hostname
+  local db_port
+  local db_schema
+  local db_username
+  local db_password
+
+  mysql_secrets_encrypted_path=$(
+    get_encrypted_secret_path "${mysql_secrets_path}"
+  )
+
+  require_command "mysql"
+  require_encrypted_secrets_file "${mysql_secrets_encrypted_path}"
+
+  db_credentials=$(
+    sops --decrypt "${mysql_secrets_encrypted_path}" | \
+    yq eval \
+      '. | select(.metadata.name == "nextcloud-mysql-creds") | .stringData' -
+  )
+
+  db_hostname=$(echo "${db_credentials}" | yq eval '.hostname' -)
+  db_port=$(echo "${db_credentials}" | yq eval '.port' -)
+  db_schema=$(echo "${db_credentials}" | yq eval '.database' -)
+  db_username=$(echo "${db_credentials}" | yq eval '.username' -)
+  db_password=$(echo "${db_credentials}" | yq eval '.password' -)
+
+  mysqldump \
+    --no-tablespaces \
+    --skip-extended-insert \
+    --order-by-primary \
+    --host="${db_hostname}" \
+    --databases "${db_schema}" \
     --port="${db_port}" \
     --user="${db_username}" \
     --password="${db_password}"
