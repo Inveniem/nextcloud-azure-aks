@@ -414,6 +414,8 @@ sub_generate_storage_secrets() {
 
   echo "Storage account secrets written out to '${generated_storage_secrets_path}'."
   echo ""
+
+  sub_encrypt_secrets
 }
 
 ##
