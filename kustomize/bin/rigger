@@ -72,8 +72,11 @@ required_secrets_files=(
 )
 
 all_secrets_files=(
-  "${required_secrets_files[@]}" \
+  "${required_secrets_files[@]}"
   "${generated_sftp_host_keys_secrets_path}"
+
+  # Private secrets specific to the environment.
+  "manifests/secrets-private.yaml"
 )
 
 publish_env_path="./publish.profile"
