@@ -140,7 +140,7 @@ deploy_nextcloud_release() {
     # Explicitly sync 'custom_apps' in this Docker image
     rsync $rsync_options --delete /usr/src/nextcloud/custom_apps/ /var/www/html/custom_apps/
 
-    if [ -w "/var/www/html/config" ] && \
+    if touch "/var/www/html/config/.writable" 1>/dev/null 2>&1 && \
        [ "${NEXTCLOUD_CONFIG_READ_ONLY:-false}" = "false" ]; then
         echo "'config' directory is writable."
         echo "Sync-ing configuration snippets:"
