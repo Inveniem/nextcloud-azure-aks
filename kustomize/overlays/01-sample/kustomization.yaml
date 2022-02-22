@@ -49,6 +49,16 @@ transformers:
   # Uncomment this if using the "sftp-ws-server" component:
   #- configure-storage.sftp-ws.yaml
 
+patches:
+  # Below, fill in the email address you'd like to use for certificate requests.
+  - patch: |-
+      apiVersion: cert-manager.io/v1
+      kind: Issuer
+      metadata:
+        name: letsencrypt-production
+      spec:
+        acme:
+          email: support@yourcompany.com
 namespace: nextcloud-sample
 
 images:
