@@ -156,6 +156,10 @@ deploy_nextcloud_release() {
         echo ""
     fi
 
+    mkdir -p /var/www/html/themes/
+    chmod 0750 /var/www/html/themes/
+    chown root:www-data /var/www/html/themes/
+
     echo "Deployment finished."
     echo ""
 }
