@@ -57,7 +57,7 @@ RUN set -eux;\
 ################################################################################
 # This is the container that actually gets pushed.
 #
-FROM nextcloud:20.0.12-fpm-alpine
+FROM nextcloud:20.0.14-fpm-alpine
 
 ENV NEXTCLOUD_CONFIG_READ_ONLY "false"
 
