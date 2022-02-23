@@ -1,0 +1,31 @@
+##
+# @file
+# Kubernetes deployment manifest for the "Buypass" Production issuer.
+#
+# From:
+# https://community.buypass.com/t/63d4ay/buypass-go-ssl-endpoints-updated-14-05-2020
+#
+# This is standard boilerplate for any application that has ingress protected by
+# Buypass SSL/TLS certificates. To increase application portability, this
+# is defined as an Issuer rather than a ClusterIssuer, which avoids a
+# requirement that every cluster must name this Issuer the same.
+#
+# @author Guy Elsmore-Paddock (guy@inveniem.com)
+# @copyright Copyright (c) 2019-2022, Inveniem
+# @license GNU AGPL version 3 or any later version
+#
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: buypass-production
+spec:
+  acme:
+    # The email gets replaced by the overlay.
+    email: support@yourcompany.com
+    server: https://api.buypass.com/acme/directory
+    privateKeySecretRef:
+      name: letsencrypt-production
+    solvers:
+      - http01:
+          ingress:
+            class: nginx

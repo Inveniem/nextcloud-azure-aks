@@ -22,6 +22,7 @@ components:
 ### uncommenting lines below.
   # - ../../components/sftp-server
   # - ../../components/sftp-ws-server
+  - ../../components/cert-manager-lets-encrypt
   - ../../components/ingress-dns
 
 generators:
@@ -51,6 +52,8 @@ transformers:
 
 patches:
   # Below, fill in the email address you'd like to use for certificate requests.
+  # If you are using Buypass, change "letsencrypt-production" to
+  # "buypass-encrypt".
   - patch: |-
       apiVersion: cert-manager.io/v1
       kind: Issuer
@@ -59,6 +62,7 @@ patches:
       spec:
         acme:
           email: support@yourcompany.com
+
 namespace: nextcloud-sample
 
 images:
