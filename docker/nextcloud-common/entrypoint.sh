@@ -15,6 +15,14 @@
 
 set -eu
 
+initialize_environment_vars() {
+  if ! touch "/var/www/html/config/.writable" 1>/dev/null 2>&1; then
+    # Force environment variable to `true` whenever the config folder is mounted
+    # read-only, even if the var was not explicitly set as such.
+    export NEXTCLOUD_CONFIG_READ_ONLY="true"
+  fi
+}
+
 initialize_container() {
     container_type="${1}"
 
@@ -140,17 +148,12 @@ deploy_nextcloud_release() {
     # Explicitly sync 'custom_apps' in this Docker image
     rsync $rsync_options --delete /usr/src/nextcloud/custom_apps/ /var/www/html/custom_apps/
 
-    if touch "/var/www/html/config/.writable" 1>/dev/null 2>&1 && \
-       [ "${NEXTCLOUD_CONFIG_READ_ONLY:-false}" = "false" ]; then
+    if [ "${NEXTCLOUD_CONFIG_READ_ONLY:-false}" = "false" ]; then
         echo "'config' directory is writable."
         echo "Sync-ing configuration snippets:"
         cp -v /usr/src/nextcloud/config/*.config.php /var/www/html/config/
         echo ""
     else
-        # Force environment variable to `true` in case it was not set but
-        # config is not readable.
-        export NEXTCLOUD_CONFIG_READ_ONLY="true"
-
         echo "'config' directory is not writable."
         echo "Configuration snippets will not be synced."
         echo ""
@@ -390,6 +393,8 @@ run_as() {
 }
 
 container_type="${1:-none}"
+
+initialize_environment_vars
 initialize_container "${container_type}"
 start_log_capture
 
