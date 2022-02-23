@@ -16,7 +16,7 @@
 set -eu
 
 initialize_container() {
-    local container_type="${1}"
+    container_type="${1}"
 
     if expr "${container_type}" : "apache" 1>/dev/null \
         || [ "${container_type}" = "php-fpm" ] \
@@ -54,8 +54,8 @@ initialize_container() {
 }
 
 ensure_compatible_image() {
-    local installed_version="${1}"
-    local image_version="${2}"
+    installed_version="${1}"
+    image_version="${2}"
 
     if version_greater "$installed_version" "$image_version"; then
         echo "This image of Nextcloud cannot be used because the data was last used with version ($installed_version)," >&2
@@ -161,7 +161,7 @@ deploy_nextcloud_release() {
 }
 
 capture_existing_app_list() {
-    local installed_version="${1}"
+    installed_version="${1}"
 
     if [ "$installed_version" != "0.0.0.0" ]; then
         run_as 'php /var/www/html/occ app:list' | sed -n "/Enabled:/,/Disabled:/p" > /tmp/list_before
@@ -183,7 +183,7 @@ capture_instance_state() {
 }
 
 install_nextcloud() {
-    local image_version="${1}"
+    image_version="${1}"
 
     echo "This is a new installation of Nextcloud."
     echo ""
@@ -225,8 +225,8 @@ install_nextcloud() {
 }
 
 upgrade_nextcloud() {
-    local installed_version="${1}"
-    local image_version="${2}"
+    installed_version="${1}"
+    image_version="${2}"
 
     echo "Nextcloud will be upgraded from $installed_version to $image_version."
     echo ""
@@ -298,7 +298,7 @@ capture_install_options() {
 }
 
 run_installer() {
-    local install_options="${1}"
+    install_options="${1}"
 
     run_as "php /var/www/html/occ maintenance:install ${install_options}" \
     && configure_trusted_domains
@@ -328,8 +328,8 @@ update_htaccess() {
 }
 
 start_log_capture() {
-    local app_log="/var/log/nextcloud.log"
-    local audit_log="/var/log/nextcloud-audit.log"
+    app_log="/var/log/nextcloud.log"
+    audit_log="/var/log/nextcloud-audit.log"
 
     # Application log
     touch "${app_log}"
