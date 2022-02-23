@@ -120,7 +120,7 @@ deploy_nextcloud_release() {
     echo "Deploying Nextcloud ${image_version}..."
 
     if [ "$(id -u)" = 0 ]; then
-        rsync_options="-rlDog --chown www-data:root"
+        rsync_options="-rlDog --chown root:www-data"
     else
         rsync_options="-rlD"
     fi
@@ -312,9 +312,13 @@ configure_trusted_domains() {
 }
 
 update_htaccess() {
+    chown www-data /var/www/html/.htaccess
+
     # From https://help.nextcloud.com/t/apache-rewrite-to-remove-index-php/658
     echo "Updating .htaccess for proper rewrites..."
     run_as "php /var/www/html/occ maintenance:update:htaccess"
+
+    chown root /var/www/html/.htaccess
 }
 
 start_log_capture() {
