@@ -31,6 +31,11 @@ error_bad_arguments=1
 script_path="${BASH_SOURCE[0]}"
 script_dirname="$( cd "$( dirname "${script_path}" )" >/dev/null 2>&1 && pwd )"
 
+##
+# File for caching the hash of the app list to avoid re-downloading.
+#
+app_list_hash_file="./custom_apps/.list_hash"
+
 ################################################################################
 # Overridable Environment Variables
 ################################################################################
@@ -54,6 +59,19 @@ fi
 ################################################################################
 cd "${script_dirname}"
 
+current_apps_hash=$(echo "${NEXTCLOUD_CUSTOM_APPS[@]}" | sha1sum)
+
+if [[ -f "${app_list_hash_file}" ]]; then
+  last_hash=$(cat "${app_list_hash_file}")
+
+  if [[ "${current_apps_hash}" == "${last_hash}" ]]; then
+    echo "App list is unchanged; skipping download." >&2
+    echo ""
+
+    exit 0
+  fi
+fi
+
 rm -rf ./custom_apps
 mkdir -p ./custom_apps
 
@@ -74,6 +92,8 @@ for custom_app_url in "${NEXTCLOUD_CUSTOM_APPS[@]}"; do
     exit "${error_bad_arguments}"
   fi
 done
+
+echo "${current_apps_hash}" >"${app_list_hash_file}"
 
 echo ""
 echo "Done. Custom apps are in '${script_dirname}/custom_apps'."
