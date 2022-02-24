@@ -120,10 +120,10 @@ sub_help() {
   echo "    cycle-pods [options]               Cycles deployments in this overlay's namespace on Kubernetes."
   echo "    scale <options>                    Scales a particular deployment up or down."
   echo ""
-  echo "    launch-nc-sh-shell                 Launches an sh shell on a Nextcloud worker pod."
-  echo "    launch-nc-db-shell                 Launches a MySQL interactive shell connected to the Nextcloud database."
+  echo "    launch-shell                       Launches an sh shell on a Nextcloud pod."
+  echo "    launch-db-shell                    Launches a MySQL interactive shell connected to the Nextcloud database."
   echo ""
-  echo "    dump-nc-db                         Dumps the contents of the Nextcloud MySQL database to standard output."
+  echo "    dump-db                            Dumps the contents of the Nextcloud MySQL database to standard output."
   echo ""
 
   if [[ "${have_addon_commands}" -ne 0 ]]; then
@@ -720,11 +720,11 @@ sub_scale() {
 }
 
 ##
-# Sub-command: "launch-nc-sh-shell"
+# Sub-command: "launch-shell"
 #
 # Launches an SH shell on a Nextcloud pod.
 #
-sub_launch_nc_sh_shell() {
+sub_launch_shell() {
   declare -g nextcloud_deployment_name
   declare -g error_bad_environment
 
@@ -746,11 +746,11 @@ sub_launch_nc_sh_shell() {
 }
 
 ##
-# Sub-command: "launch-pm-db-shell"
+# Sub-command: "launch-db-shell"
 #
 # Launches a MySQL interactive shell connected to the Nextcloud database.
 #
-sub_launch_nc_db_shell() {
+sub_launch_db_shell() {
   declare -g error_setup_required
   declare -g mysql_secrets_path
 
@@ -791,11 +791,11 @@ sub_launch_nc_db_shell() {
 }
 
 ##
-# Sub-command: "dump-nc-db"
+# Sub-command: "dump-db"
 #
 # Dumps the contents of the Nextcloud MySQL database to standard output.
 #
-sub_dump_nc_db() {
+sub_dump_db() {
   declare -g error_setup_required
   declare -g mysql_secrets_path
 
