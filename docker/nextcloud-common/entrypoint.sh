@@ -15,8 +15,16 @@
 
 set -eu
 
+initialize_environment_vars() {
+  if ! touch "/var/www/html/config/.writable" 1>/dev/null 2>&1; then
+    # Force environment variable to `true` whenever the config folder is mounted
+    # read-only, even if the var was not explicitly set as such.
+    export NEXTCLOUD_CONFIG_READ_ONLY="true"
+  fi
+}
+
 initialize_container() {
-    local container_type="${1}"
+    container_type="${1}"
 
     if expr "${container_type}" : "apache" 1>/dev/null \
         || [ "${container_type}" = "php-fpm" ] \
@@ -54,8 +62,8 @@ initialize_container() {
 }
 
 ensure_compatible_image() {
-    local installed_version="${1}"
-    local image_version="${2}"
+    installed_version="${1}"
+    image_version="${2}"
 
     if version_greater "$installed_version" "$image_version"; then
         echo "This image of Nextcloud cannot be used because the data was last used with version ($installed_version)," >&2
@@ -89,14 +97,14 @@ setup_redis() {
         echo 'session.lazy_write = 0'
         echo ''
 
-        # Locks are only allowed for up to 60 seconds.
-        echo 'redis.session.locking_enabled = 0'
-        echo 'redis.session.lock_expire = 60'
+        # From:
+        # https://github.com/nextcloud/docker/commit/9b057aafb0c41bab63870277c53307d3d6dc572b
+        echo 'redis.session.locking_enabled = 1'
+        echo 'redis.session.lock_retries = -1'
 
-        # Wait up to 5 seconds for a lock before giving up.
-        # NOTE: lock_wait_time is in usecs, not msecs.
-        echo 'redis.session.lock_wait_time = 100000'
-        echo 'redis.session.lock_retries = 50'
+        # redis.session.lock_wait_time is specified in microseconds.
+        # Wait 10ms before retrying the lock rather than the default 2ms.
+        echo "redis.session.lock_wait_time = 10000"
     } > /usr/local/etc/php/conf.d/redis-sessions.ini
 }
 
@@ -120,7 +128,7 @@ deploy_nextcloud_release() {
     echo "Deploying Nextcloud ${image_version}..."
 
     if [ "$(id -u)" = 0 ]; then
-        rsync_options="-rlDog --chown www-data:root"
+        rsync_options="-rlDog --chown root:www-data"
     else
         rsync_options="-rlD"
     fi
@@ -140,8 +148,7 @@ deploy_nextcloud_release() {
     # Explicitly sync 'custom_apps' in this Docker image
     rsync $rsync_options --delete /usr/src/nextcloud/custom_apps/ /var/www/html/custom_apps/
 
-    if [ -w "/var/www/html/config" ] && \
-       [ "${NEXTCLOUD_CONFIG_READ_ONLY:-false}" == "false" ]; then
+    if [ "${NEXTCLOUD_CONFIG_READ_ONLY:-false}" = "false" ]; then
         echo "'config' directory is writable."
         echo "Sync-ing configuration snippets:"
         cp -v /usr/src/nextcloud/config/*.config.php /var/www/html/config/
@@ -152,12 +159,16 @@ deploy_nextcloud_release() {
         echo ""
     fi
 
+    mkdir -p /var/www/html/themes/
+    chmod 0750 /var/www/html/themes/
+    chown root:www-data /var/www/html/themes/
+
     echo "Deployment finished."
     echo ""
 }
 
 capture_existing_app_list() {
-    local installed_version="${1}"
+    installed_version="${1}"
 
     if [ "$installed_version" != "0.0.0.0" ]; then
         run_as 'php /var/www/html/occ app:list' | sed -n "/Enabled:/,/Disabled:/p" > /tmp/list_before
@@ -179,7 +190,7 @@ capture_instance_state() {
 }
 
 install_nextcloud() {
-    local image_version="${1}"
+    image_version="${1}"
 
     echo "This is a new installation of Nextcloud."
     echo ""
@@ -221,8 +232,8 @@ install_nextcloud() {
 }
 
 upgrade_nextcloud() {
-    local installed_version="${1}"
-    local image_version="${2}"
+    installed_version="${1}"
+    image_version="${2}"
 
     echo "Nextcloud will be upgraded from $installed_version to $image_version."
     echo ""
@@ -284,7 +295,7 @@ capture_install_options() {
 }
 
 run_installer() {
-    local install_options="${1}"
+    install_options="${1}"
 
     run_as "php /var/www/html/occ maintenance:install ${install_options}" \
     && configure_trusted_domains
@@ -308,14 +319,18 @@ configure_trusted_domains() {
 }
 
 update_htaccess() {
+    chown www-data /var/www/html/.htaccess
+
     # From https://help.nextcloud.com/t/apache-rewrite-to-remove-index-php/658
     echo "Updating .htaccess for proper rewrites..."
     run_as "php /var/www/html/occ maintenance:update:htaccess"
+
+    chown root /var/www/html/.htaccess
 }
 
 start_log_capture() {
-    local app_log="/var/log/nextcloud.log"
-    local audit_log="/var/log/nextcloud-audit.log"
+    app_log="/var/log/nextcloud.log"
+    audit_log="/var/log/nextcloud-audit.log"
 
     # Application log
     touch "${app_log}"
@@ -368,6 +383,8 @@ run_as() {
 }
 
 container_type="${1:-none}"
+
+initialize_environment_vars
 initialize_container "${container_type}"
 start_log_capture
 
