@@ -106,6 +106,8 @@ COPY nextcloud-common/custom_apps/. /usr/src/nextcloud/custom_apps/
 COPY --from="musl_compile" /usr/local/musl/lib/libc.so /lib/ld-musl-x86_64.so.1
 
 # Apply custom patches
+RUN set -eu; \
+    apk add --update --no-cache patch
 COPY nextcloud-common/apply_patches.sh /
 COPY nextcloud-common/bundled-patches/ /usr/src/nextcloud/bundled-patches
 RUN /apply_patches.sh
