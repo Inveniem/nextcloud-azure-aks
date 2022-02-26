@@ -7,7 +7,7 @@
 # @copyright Copyright (c) 2019-2020, Inveniem
 # @license GNU AGPL version 3 or any later version
 #
-FROM nextcloud:20.0.14-apache
+FROM nextcloud:21.0.9-apache
 
 ENV NEXTCLOUD_CONFIG_READ_ONLY "true"
 
