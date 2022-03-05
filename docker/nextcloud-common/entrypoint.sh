@@ -259,13 +259,6 @@ capture_install_options() {
     # shellcheck disable=SC2016
     install_options='-n --admin-user "$NEXTCLOUD_ADMIN_USER" --admin-pass "$NEXTCLOUD_ADMIN_PASSWORD"'
 
-    if [ -n "${NEXTCLOUD_TABLE_PREFIX+x}" ]; then
-        # shellcheck disable=SC2016
-        install_options=$install_options' --database-table-prefix "$NEXTCLOUD_TABLE_PREFIX"'
-    else
-        install_options=$install_options' --database-table-prefix ""'
-    fi
-
     if [ -n "${NEXTCLOUD_DATA_DIR+x}" ]; then
         # shellcheck disable=SC2016
         install_options=$install_options' --data-dir "$NEXTCLOUD_DATA_DIR"'
