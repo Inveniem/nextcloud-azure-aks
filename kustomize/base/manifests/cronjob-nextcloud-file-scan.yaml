@@ -51,6 +51,11 @@ spec:
                     secretKeyRef:
                       name: "nextcloud-mysql-creds"
                       key: hostname
+                - name: MYSQL_PORT
+                  valueFrom:
+                    secretKeyRef:
+                      name: "nextcloud-mysql-creds"
+                      key: port
                 - name: MYSQL_DATABASE
                   valueFrom:
                     secretKeyRef:

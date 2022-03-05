@@ -7,7 +7,7 @@
 # @copyright Copyright (c) 2019-2020, Inveniem
 # @license GNU AGPL version 3 or any later version
 #
-FROM nextcloud:20.0.14-apache
+FROM nextcloud:20.0.14-fpm
 
 ENV NEXTCLOUD_CONFIG_READ_ONLY "true"
 
@@ -25,4 +25,3 @@ COPY nextcloud-common/bundled-patches/ /usr/src/nextcloud/bundled-patches
 RUN /apply_patches.sh
 
 ENTRYPOINT ["/entrypoint.sh"]
-CMD ["apache2-foreground"]
