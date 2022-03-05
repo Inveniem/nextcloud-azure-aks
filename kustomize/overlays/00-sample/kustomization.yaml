@@ -22,6 +22,7 @@ components:
 ### uncommenting lines below.
   # - ../../components/sftp-server
   # - ../../components/sftp-ws-server
+  # - ../../components/cert-manager-buypass
   - ../../components/cert-manager-lets-encrypt
   - ../../components/ingress-dns
 
