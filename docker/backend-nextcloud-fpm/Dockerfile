@@ -87,10 +87,8 @@ RUN set -eu; \
         echo 'pm.max_requests = 50'; \
     } >/usr/local/etc/php-fpm.d/www.pm-tuning.conf
 
-# Eliminate default APCu configuration (we're using Redis)
-# and stock Redis config (we provide our own config)
-RUN rm /usr/src/nextcloud/config/apcu.config.php && \
-    rm /usr/src/nextcloud/config/redis.config.php
+# Eliminate stock Redis config (we provide our own config)
+RUN rm /usr/src/nextcloud/config/redis.config.php
 
 # Setup New Relic (if configured)
 COPY nextcloud-common/generated/setup_newrelic.sh /

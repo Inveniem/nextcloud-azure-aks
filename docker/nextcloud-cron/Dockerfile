@@ -11,11 +11,6 @@ FROM nextcloud:20.0.14-apache
 
 ENV NEXTCLOUD_CONFIG_READ_ONLY "true"
 
-# Eliminate default APCu configuration (we're using Redis)
-#
-# NOTE: This removes a config added by the base image.
-RUN rm /usr/src/nextcloud/config/apcu.config.php
-
 # Eliminate stock Redis config (we provide our own config)
 #
 # NOTE: This removes a config added by the base image.

@@ -9,7 +9,6 @@ if ($redis_port === FALSE) {
 
 if ($redis_hostname !== FALSE) {
 	$CONFIG = array(
-		'memcache.local' => '\OC\Memcache\APCu',
 		'memcache.distributed' => '\OC\Memcache\Redis',
 		'memcache.locking' => '\OC\Memcache\Redis',
 		'redis' => array(
@@ -22,9 +21,4 @@ if ($redis_hostname !== FALSE) {
 	if ($redis_key !== FALSE) {
 		$CONFIG['redis']['password'] = $redis_key;
 	}
-} else {
-	# Fallback to APCu if we have to.
-	$CONFIG = array(
-		'memcache.local' => '\OC\Memcache\APCu',
-	);
 }
