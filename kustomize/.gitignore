@@ -1,9 +1,7 @@
 secrets.yaml
 secrets-*.yaml
 
-overlays/private/
-
-overlays/*/generated-keys/
-
-!overlays/00-local-dev/manifests/secrets.yaml
+!overlays/00-sample/manifests/secrets-*.yaml
 !*.enc.yaml
+
+overlays/private/
