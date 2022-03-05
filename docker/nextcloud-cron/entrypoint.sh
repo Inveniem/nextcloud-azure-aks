@@ -113,4 +113,4 @@ uri_encode() {
 initialize_container
 
 set -x
-su -p www-data -s /var/www/html/occ -- "$@"
+su -p www-data "$@"

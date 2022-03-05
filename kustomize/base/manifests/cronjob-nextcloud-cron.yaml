@@ -1,9 +1,9 @@
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: nextcloud-file-scan
+  name: nextcloud-cron
 spec:
-  schedule: "0 12,20 * * *"
+  schedule: "*/5 * * * *"
   jobTemplate:
     spec:
       template:
@@ -14,10 +14,10 @@ spec:
               image: "inveniem/nextcloud-cron:latest"
               args:
                 - '-s'
-                - '/var/www/html/occ'
+                - '/usr/local/bin/php'
                 - '--'
-                - 'files:scan'
-                - '--all'
+                - '-f'
+                - '/var/www/html/cron.php'
               resources:
                 requests:
                   cpu: 25m
