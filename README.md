@@ -111,9 +111,13 @@ You will want to customize:
   the README.md files under each of the folders in the `components/` folder. Not
   all components are optional. You can also choose between either
   "Let's encrypt" or "Buypass" for SSL certificate issuance.
-- The `patches` section, so that it references the appropriate certificate
-  issuer and includes an email address on your domain to notify about SSL
-  certificate expiry.
+- The `patches` section:
+  - So that it references the appropriate certificate issuer and includes an
+    email address on your domain to notify about SSL certificate expiry.
+  - (After deployment) You can configure the starting number of replicas to use
+    for a higher-availability deployment of Nextcloud. This must be `1` during
+    install/upgrade, and you could start with `1` and then setup auto-scaling or
+    use the `./rigger scale` command instead.
 - The `namespace` value, so that it references your desired, target namespace.
   Customize `manifests/namespace-nextcloud.yaml` so it matches the name you put
   here.

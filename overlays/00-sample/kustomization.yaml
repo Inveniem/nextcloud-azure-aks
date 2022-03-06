@@ -63,7 +63,22 @@ patches:
       spec:
         acme:
           email: support@yourcompany.com
-
+  - patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: nextcloud
+      spec:
+        # The number of instances of Nextcloud to have running concurrently, to
+        # maximize availability.
+        #
+        # NOTE: This MUST be set to `1` during initial install and during
+        # upgrades, so that only one instance is attempting to perform 
+        # an installation or a database upgrade. Then, once Nextcloud is running
+        # and stable, you can either adjust this to 2+ and re-deploy, or use 
+        # `./rigger scale` to increase availability.
+        replicas: 1
+        
 namespace: nextcloud-sample
 
 images:
