@@ -1,7 +1,0 @@
-secrets.yaml
-secrets-*.yaml
-
-!overlays/00-sample/manifests/secrets-*.yaml
-!*.enc.yaml
-
-overlays/private/

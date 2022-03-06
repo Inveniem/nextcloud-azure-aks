@@ -80,7 +80,7 @@ all_secrets_files=(
 )
 
 publish_env_path="./publish.profile"
-publish_bin_path="../../docker/publish_all.sh"
+publish_bin_path="../docker/publish_all.sh"
 
 ################################################################################
 # Sub-commands
