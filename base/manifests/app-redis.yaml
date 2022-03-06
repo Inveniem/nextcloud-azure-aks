@@ -47,7 +47,7 @@ spec:
           command: ["sh", "-c", "echo 1024 > /host-proc/sys/net/core/somaxconn"]
       containers:
         - name: redis
-          image: "redis:5.0.10-alpine"
+          image: "redis:latest"
           command:
             - redis-server
             - "/usr/local/etc/redis/redis.conf"
