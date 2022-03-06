@@ -65,12 +65,12 @@ NEW_RELIC_KEY=""
 ##
 # The URL to the New Relic PHP agent (optional).
 #
-# The default downloads NR PHP agent 9.17.1.301 for PHP 5+. Use the latest shown
+# The default downloads NR PHP agent 9.19.0.309 for PHP 5+. Use the latest shown
 # here: https://download.newrelic.com/php_agent/release/
 #
 # Leave blank if you do not use New Relic monitoring.
 #
-NEW_RELIC_AGENT_URL="https://download.newrelic.com/php_agent/release/newrelic-php5-9.18.1.303-linux.tar.gz"
+NEW_RELIC_AGENT_URL="https://download.newrelic.com/php_agent/release/newrelic-php5-9.19.0.309-linux.tar.gz"
 
 ##
 # The name by which you would like Nextcloud to identify itself in New Relic.
