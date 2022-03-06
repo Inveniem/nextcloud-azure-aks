@@ -1,0 +1,12 @@
+##
+# Kustomization component for using Apache with mod_php to run Nextcloud.
+#
+# @author Guy Elsmore-Paddock (guy@inveniem.com)
+# @copyright Copyright (c) 2022, Inveniem
+# @license GNU AGPL version 3 or any later version
+#
+apiVersion: kustomize.config.k8s.io/v1alpha1
+kind: Component
+
+resources:
+  - manifests/app-nextcloud.apache.yaml

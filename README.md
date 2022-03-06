@@ -190,8 +190,9 @@ You will want to customize:
 - The `components`, `generators`, `configMapGenerator`, and `transformers`
   sections based on which optional add-on components you want to include. See 
   the README.md files under each of the folders in the `components/` folder. Not
-  all components are optional. You can also choose between either
-  "Let's encrypt" or "Buypass" for SSL certificate issuance.
+  all components are optional. You can also choose between:
+  - Using either "Apache + mod_php" or "nginx + PHP-FPM" for hosting Nextcloud.
+  - Using either "Let's Encrypt" or "Buypass" for SSL certificate issuance.
 - The `patches` section:
   - So that it references the appropriate certificate issuer and includes an
     email address on your domain to notify about SSL certificate expiry.

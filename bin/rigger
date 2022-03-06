@@ -45,6 +45,7 @@ kfilt_version_tag=v0.0.6
 
 # This just controls what images are version stamped, not what gets published.
 docker_image_names=(
+  "inveniem/nextcloud-apache"
   "inveniem/nextcloud-fpm"
   "inveniem/nextcloud-nginx-middleware"
   "inveniem/nextcloud-cron"

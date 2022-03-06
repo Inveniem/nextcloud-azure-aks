@@ -10,7 +10,6 @@ kind: Kustomization
 
 resources:
   - manifests/app-clamav.yaml
-  - manifests/app-nextcloud.yaml
   - manifests/app-redis.yaml
   - manifests/cronjob-nextcloud-cron.yaml
   - manifests/cronjob-nextcloud-file-scan.yaml

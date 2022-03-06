@@ -79,6 +79,7 @@ spec:
           suffix: ~
     containerVolumeTemplates:
       - containers:
+          - name: backend-nextcloud-apache
           - name: backend-nextcloud-fpm
           - name: cron-nextcloud
         volumeTemplates:
@@ -151,6 +152,7 @@ spec:
           suffix: ~
     containerVolumeTemplates:
       - containers:
+          - name: backend-nextcloud-apache
           - name: backend-nextcloud-fpm
           - name: cron-nextcloud
         volumeTemplates:
@@ -227,6 +229,7 @@ spec:
           suffix: ~
     containerVolumeTemplates:
       - containers:
+          - name: backend-nextcloud-apache
           - name: backend-nextcloud-fpm
           - name: cron-nextcloud
         volumeTemplates:

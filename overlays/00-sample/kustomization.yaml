@@ -20,8 +20,14 @@ resources:
 components:
 ### You can pick and choose the optional components you'd like to include by
 ### uncommenting lines below.
+###
+### Some components are mutually exclusive:
+###   - "http-apache" and "http-nginx-fpm".
+###   - "cert-manager-buypass" and "cert-manager-lets-encrypt".
   # - ../../components/sftp-server
   # - ../../components/sftp-ws-server
+  # - ../../components/http-apache
+  - ../../components/http-nginx-fpm
   # - ../../components/cert-manager-buypass
   - ../../components/cert-manager-lets-encrypt
   - ../../components/ingress-dns
@@ -87,6 +93,10 @@ images:
 
   - name: inveniem/nextcloud-cron
     newName: your-acr-instance.azurecr.io/inveniem/nextcloud-cron
+    newTag: latest
+
+  - name: inveniem/nextcloud-apache
+    newName: your-acr-instance.azurecr.io/inveniem/nextcloud-apache
     newTag: latest
 
   - name: inveniem/nextcloud-fpm
