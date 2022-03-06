@@ -84,7 +84,7 @@ RUN set -eu; \
         echo 'pm.start_servers = 10'; \
         echo 'pm.min_spare_servers = 5'; \
         echo 'pm.max_spare_servers = 10'; \
-        echo 'pm.max_requests = 50'; \
+        echo 'pm.max_requests = 500'; \
     } >/usr/local/etc/php-fpm.d/www.pm-tuning.conf
 
 # Eliminate stock Redis config (we provide our own config)
