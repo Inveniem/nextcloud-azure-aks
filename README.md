@@ -5,6 +5,87 @@ getting Nextcloud to run  on an Azure Kubernetes Service.
 This approach offers significantly more flexibility for storage than trying to
 run Nextcloud on Azure Container Instances.
 
+## Upgrading an Existing Nextcloud Deployment on AKS
+If you have previously deployed this kit to AKS, exercise caution and follow the
+steps in this section when upgrading to the latest version. 
+
+### Prerequisites
+Before upgrading, we recommend you:
+1. Schedule a maintenance window with your organization that lasts at least 30
+   minutes. Nextcloud will not be reachable during upgrades.
+2. Backup your Nextcloud database.
+3. Ensure that you have a backup copy of all files that are managed by
+   Nextcloud. We recommend the best practice of following the 
+   [3-2-1 Backup Strategy](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/),
+   which ensures your data is protected from risks even during normal operation
+   (e.g., viruses, encryption-ware, accidental deletion, etc.).
+
+### Upgrading between Major Versions of Nextcloud
+Each major version of this kit works with a specific major version of Nextcloud. In
+addition, Nextcloud does not support skipping major versions during upgrades, so
+if you are several versions of Nextcloud behind, you will want to publish and
+deploy this kit several times until your deployment has been upgraded to run the
+latest version of Nextcloud.
+
+Here is a list of which versions of Nextcloud are supported by each version of
+this kit:
+
+| nextcloud-azure-aks | Kubernetes Version Compatibility* | Nextcloud Version | Deployment Mechanism        |
+|---------------------|-----------------------------------|-------------------|-----------------------------|
+| 1.x                 | 1.15-1.21                         | 15.x              | Shell scripts and templates |
+| 2.x                 | 1.15-1.21                         | 16.x              | Shell scripts and templates |
+| 3.x                 | 1.15-1.21                         | 17.x              | Shell scripts and templates |
+| 4.x                 | 1.15-1.21                         | 18.x              | Shell scripts and templates |
+| 5.x                 | 1.15-1.21                         | 19.x              | Shell scripts and templates |
+| 6.x                 | 1.16-1.22+                        | 19.x              | Shell scripts and templates |
+| 7.x                 | 1.16-1.22+                        | 20.x              | Kustomize and Rigger        |
+
+### Switching from "Shell Script" Deployment to "Kustomize" Deployment
+If you are running version 1.x through 6.x of this kit and are now upgrading to
+version 7.x, we recommend taking the following steps:
+
+1. Clone this project to a new folder on your machine.
+2. Ensure that all the dependencies listed under "Dependencies" in the
+   "Deploying Nextcloud to AKS" section below are installed on your machine.
+3. In the new copy of the project, copy `overlays/00-sample` to a new overlay in
+   the same folder (e.g., `overlays/03-live`).
+4. Migrate the settings you previously defined in `config.env` of your old copy
+   into corresponding settings in the `.yaml` files of the overlay you created
+   in the new copy of the project in step 3. See "Providing Settings and 
+   Secrets" under the "Deploying Nextcloud to AKS" section below for information
+   about the function of each file in the overlay.
+5. Ensure that you are running at least Nextcloud 19 (version 5.x or 6.x of this 
+   kit). If you are not, use your old copy of the project to publish and deploy
+   each major version of this kit in succession until you've reached at least
+   version 5.x of this kit).
+6. Ensure your Kubernetes cluster is running at least AKS 1.16. As of this
+   writing, the oldest version of Kubernetes that
+   [Azure officially supports](https://docs.microsoft.com/en-us/azure/aks/supported-kubernetes-versions#kubernetes-version-support-policy)
+   is 1.20.14.
+7. Create a `02-test` overlay for Nextcloud that deploys to a separate
+   `nextcloud-test` namespace within your cluster. Ideally, you will want this
+   test copy to use a separate Azure Files account, separate MySQL/MariaDB
+   database, and separate Key Vault from your production copy, in case something
+   goes wrong during the Nextcloud upgrade. Deploy this overlay to your cluster 
+   and use it to do a trial run of the upgrade process. Do not proceed until you
+   have everything working on the test environment.
+8. Dump a Yaml version of your current Nextcloud deployment manifest in case you
+   need to reference it (e.g.,
+   `kubectl get deployment --output=yaml -n nextcloud-live nextcloud > nextcloud.bak.yaml`).
+9. Using the old copy of the project, undeploy all of Nextcloud, including its
+   PVs, PVCs, secrets, services, and ingresses. If possible, delete the entire
+   namespace that contains your Nextcloud deployment (e.g.,
+   `kubectl delete namespace nextcloud-live`).
+10. Ensure that you are starting with a replica count of `1` within your
+    `kustomization.yaml` file so that multiple pods do not attempt to perform a
+    database upgrade at the same time.
+11. Use the new `03-live` overlay within the new copy of the project to
+    re-deploy Nextcloud.
+12. Use `kubectl get pods -n nextcloud-live` and `stern` or `kubectl logs` to 
+    monitor the Nextcloud rollout and the database upgrade.
+13. After the upgrade, sign in to Nextcloud and visit "Settings" > "Overview" to
+    check on the health of your Nextcloud deployment.
+
 ## Deploying Nextcloud to AKS
 ### Dependencies
 You will need to do the following before you can use this resource kit:
@@ -25,7 +106,7 @@ You will need to do the following before you can use this resource kit:
      - PHP 7.4+ (`php`)
      - yq (`yq`)
 7. After installing the Azure CLI, 
-   [sign-in to your Azure account](https://docs.microsoft.com/en-us/cli/azure/authenticate-azure-cli).
+   [sign in to your Azure account](https://docs.microsoft.com/en-us/cli/azure/authenticate-azure-cli).
 8. Ensure that your account has the
    [the "Global administrator" role](https://docs.microsoft.com/en-us/azure/active-directory/users-groups-roles/directory-assign-admin-roles) 
    within your Azure AD tenant, for best results.
