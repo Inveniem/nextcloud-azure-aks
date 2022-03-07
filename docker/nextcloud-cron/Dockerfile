@@ -19,6 +19,10 @@ RUN rm -f /usr/src/nextcloud/config/redis.config.php
 COPY nextcloud-cron/entrypoint.sh /
 COPY nextcloud-common/config/* /usr/src/nextcloud/config/
 
+# Ensure custom apps are available during cron runs.
+# We supply all custom apps via Docker image; app store is disabled
+COPY nextcloud-common/custom_apps/. /usr/src/nextcloud/custom_apps/
+
 # Apply custom patches
 COPY nextcloud-common/apply_patches.sh /
 COPY nextcloud-common/bundled-patches/ /usr/src/nextcloud/bundled-patches
