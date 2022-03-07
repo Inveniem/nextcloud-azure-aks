@@ -1,4 +1,4 @@
-# Resources for Running Nextcloud on an Azure Kubernetes Service (AKS)
+# Resources for Running Nextcloud on Azure Kubernetes Service (AKS)
 This repository contains docker images, configurations, and scripts to assist in 
 getting Nextcloud to run  on an Azure Kubernetes Service.
 
