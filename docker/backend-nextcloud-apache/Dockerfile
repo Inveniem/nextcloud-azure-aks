@@ -52,7 +52,7 @@ RUN /setup_newrelic.sh && rm /setup_newrelic.sh
 COPY nextcloud-common/entrypoint.sh /
 COPY nextcloud-common/config/* /usr/src/nextcloud/config/
 
-# Supply all custom apps via Docker image; app store is disabled
+# We supply all custom apps via Docker image; app store is disabled
 COPY nextcloud-common/custom_apps/. /usr/src/nextcloud/custom_apps/
 
 # Apply custom patches
