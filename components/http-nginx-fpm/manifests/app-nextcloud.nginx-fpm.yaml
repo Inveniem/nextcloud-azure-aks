@@ -1,6 +1,6 @@
 ##
-# Kubernetes deployment configuration for running Nextcloud on PHP FPM with
-# an Nginx reverse proxy.
+# Kubernetes deployment manifest for running Nextcloud on PHP FPM with an Nginx
+# reverse proxy.
 #
 # @author Guy Elsmore-Paddock (guy@inveniem.com)
 # @copyright Copyright (c) 2019-2022, Inveniem

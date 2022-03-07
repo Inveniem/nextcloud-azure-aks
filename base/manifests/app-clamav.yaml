@@ -1,5 +1,5 @@
 ##
-# Kubernetes deployment configuration for running a ClamAV daemon as an internal
+# Kubernetes deployment manifest for running a ClamAV daemon as an internal
 # service, for use by Nextcloud's Antivirus app.
 #
 # With this configuration, Nextcloud can reach ClamAV on port 3310 at hostname

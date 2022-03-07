@@ -1,6 +1,6 @@
 ##
-# Kubernetes deployment configuration for running Redis as an internal service,
-# for use by Nextcloud.
+# Kubernetes deployment manifest for running Redis as an internal service for
+# storing Nextcloud sessions.
 #
 # With this configuration, Nextcloud can reach Redis on port 6379 at hostname
 # "internal-redis.NAMESPACE.svc.cluster.local" (aka "internal-redis.NAMESPACE"

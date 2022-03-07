@@ -1,3 +1,10 @@
+##
+# Kubernetes deployment manifest for refreshing files in Nextcloud twice a day.
+#
+# @author Guy Elsmore-Paddock (guy@inveniem.com)
+# @copyright Copyright (c) 2022, Inveniem
+# @license GNU AGPL version 3 or any later version
+#
 apiVersion: batch/v1
 kind: CronJob
 metadata:
