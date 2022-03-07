@@ -7,14 +7,9 @@
 # @copyright Copyright (c) 2019-2020, Inveniem
 # @license GNU AGPL version 3 or any later version
 #
-FROM nextcloud:18.0.14-apache
+FROM nextcloud:20.0.14-fpm
 
 ENV NEXTCLOUD_CONFIG_READ_ONLY "true"
-
-# Eliminate default APCu configuration (we're using Redis)
-#
-# NOTE: This removes a config added by the base image.
-RUN rm /usr/src/nextcloud/config/apcu.config.php
 
 # Eliminate stock Redis config (we provide our own config)
 #
@@ -30,4 +25,3 @@ COPY nextcloud-common/bundled-patches/ /usr/src/nextcloud/bundled-patches
 RUN /apply_patches.sh
 
 ENTRYPOINT ["/entrypoint.sh"]
-CMD ["apache2-foreground"]

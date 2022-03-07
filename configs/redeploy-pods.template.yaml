@@ -1,9 +1,0 @@
-apiVersion: v1
-spec:
-  template:
-    spec:
-      containers:
-        - name: "backend-nextcloud-${POD_SUFFIX}"
-          env:
-            - name: "LAST_MANUAL_RESTART"
-              value: "${LAST_RESTART}"

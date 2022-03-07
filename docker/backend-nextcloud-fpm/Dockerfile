@@ -7,7 +7,7 @@
 # This is a multi-stage build.
 #
 # @author Guy Elsmore-Paddock (guy@inveniem.com)
-# @copyright Copyright (c) 2019, Inveniem
+# @copyright Copyright (c) 2019-2022, Inveniem
 # @license GNU AGPL version 3 or any later version
 #
 
@@ -33,6 +33,7 @@ RUN set -eux;\
     for key in \
         836489290BB6B70F99FFDA0556BCDB593020450F \
     ; do \
+        gpg --batch --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys "$key" || \
         gpg --batch --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys "$key" || \
         gpg --batch --keyserver hkp://ipv4.pool.sks-keyservers.net --recv-keys "$key" || \
         gpg --batch --keyserver hkp://pgp.mit.edu:80 --recv-keys "$key" ; \
@@ -56,7 +57,7 @@ RUN set -eux;\
 ################################################################################
 # This is the container that actually gets pushed.
 #
-FROM nextcloud:19.0.13-fpm-alpine
+FROM nextcloud:20.0.14-fpm-alpine
 
 ENV NEXTCLOUD_CONFIG_READ_ONLY "false"
 
@@ -83,13 +84,11 @@ RUN set -eu; \
         echo 'pm.start_servers = 10'; \
         echo 'pm.min_spare_servers = 5'; \
         echo 'pm.max_spare_servers = 10'; \
-        echo 'pm.max_requests = 50'; \
+        echo 'pm.max_requests = 500'; \
     } >/usr/local/etc/php-fpm.d/www.pm-tuning.conf
 
-# Eliminate default APCu configuration (we're using Redis)
-# and stock Redis config (we provide our own config)
-RUN rm /usr/src/nextcloud/config/apcu.config.php && \
-    rm /usr/src/nextcloud/config/redis.config.php
+# Eliminate stock Redis config (we provide our own config)
+RUN rm /usr/src/nextcloud/config/redis.config.php
 
 # Setup New Relic (if configured)
 COPY nextcloud-common/generated/setup_newrelic.sh /
@@ -105,6 +104,8 @@ COPY nextcloud-common/custom_apps/. /usr/src/nextcloud/custom_apps/
 COPY --from="musl_compile" /usr/local/musl/lib/libc.so /lib/ld-musl-x86_64.so.1
 
 # Apply custom patches
+RUN set -eu; \
+    apk add --update --no-cache patch
 COPY nextcloud-common/apply_patches.sh /
 COPY nextcloud-common/bundled-patches/ /usr/src/nextcloud/bundled-patches
 RUN /apply_patches.sh

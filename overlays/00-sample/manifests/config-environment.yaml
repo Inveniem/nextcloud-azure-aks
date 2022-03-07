@@ -1,0 +1,31 @@
+##
+# Config map for environment-specific values and settings.
+#
+# This is an EXAMPLE file. Customize for your environment! If you have multiple
+# environments, you can create multiple copies of the containing, sample overlay
+# folder and customize manifests in each one to match your environments.
+#
+# @author Guy Elsmore-Paddock (guy@inveniem.com)
+# @copyright Copyright (c) 2022, Inveniem
+# @license GNU AGPL version 3 or any later version
+#
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: environment
+data:
+  enableFileLocking: "false"
+  trustedProxies: "10.0.0.0/8 172.16.0.0/12 192.168.0.0/16"
+  primaryHostname: "example.com"
+  trustedDomains: "example.com"
+
+  # This comes from the "Key Identifier" field of the "version" of the key in
+  # key vault.
+  sopsKey: "https://your-kv.vault.azure.net/keys/your-key/c7e6f87f86e94ffdaabc226a92fa7810"
+
+  azureFilesStorageAccounts: |
+    {
+      "your-nextcloud-storage-group": {
+        "mynextcloudstorageaccount": "nextcloud-azure-files-creds"
+      }
+    }

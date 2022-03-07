@@ -1,0 +1,115 @@
+##
+# Kustomization overlay for deploying Nextcloud to a Kubernetes environment.
+#
+# This is an EXAMPLE file. Customize for your environment! If you have multiple
+# environments, you can create multiple copies of the containing, sample overlay
+# folder and customize manifests in each one to match your environments.
+#
+# @author Guy Elsmore-Paddock (guy@inveniem.com)
+# @copyright Copyright (c) 2022, Inveniem
+# @license GNU AGPL version 3 or any later version
+#
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../../base
+  - manifests/config-environment.yaml
+  - manifests/namespace-nextcloud.yaml
+
+components:
+### You can pick and choose the optional components you'd like to include by
+### uncommenting lines below.
+###
+### Some components are mutually exclusive:
+###   - "http-apache" and "http-nginx-fpm".
+###   - "cert-manager-buypass" and "cert-manager-lets-encrypt".
+  # - ../../components/sftp-server
+  # - ../../components/sftp-ws-server
+  # - ../../components/http-apache
+  - ../../components/http-nginx-fpm
+  # - ../../components/cert-manager-buypass
+  - ../../components/cert-manager-lets-encrypt
+  - ../../components/ingress-dns
+
+generators:
+  - decrypt-secrets.nextcloud.yaml
+#### Uncomment this if using the "sftp-server" component:
+#  - decrypt-secrets.sftp.yaml
+
+# Uncomment this if using either the "sftp-server" or "sftp-ws-server"
+# components.
+#configMapGenerator:
+#### Uncomment this if using the "sftp-server" component:
+#  - name: sftp
+#    files:
+#      - configs/sftp/users.conf
+#
+#### Uncomment this if using the "sftp-ws-server" component:
+#  - name: sftp-ws
+#    files:
+#      - originRestrictions=configs/sftp-ws/origin-restrictions.json
+
+transformers:
+  - configure-storage.nextcloud.yaml
+  # Uncomment this if using the "sftp-server" component:
+  #- configure-storage.sftp.yaml
+  # Uncomment this if using the "sftp-ws-server" component:
+  #- configure-storage.sftp-ws.yaml
+
+patches:
+  # Below, fill in the email address you'd like to use for certificate requests.
+  # If you are using Buypass, change "letsencrypt-production" to
+  # "buypass-encrypt".
+  - patch: |-
+      apiVersion: cert-manager.io/v1
+      kind: Issuer
+      metadata:
+        name: letsencrypt-production
+      spec:
+        acme:
+          email: support@yourcompany.com
+  # The `patch.spec.replicas` setting below controls the number of instances of
+  # Nextcloud to have running concurrently, to maximize availability.
+  #
+  # NOTE: This MUST be set to `1` during initial install and during
+  # upgrades, so that only one instance is attempting to perform
+  # an installation or a database upgrade. Then, once Nextcloud is running
+  # and stable, you can either adjust this to 2+ and re-deploy, or use
+  # `./rigger scale` to increase availability.
+  - patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: nextcloud
+      spec:
+        replicas: 1
+        
+namespace: nextcloud-sample
+
+images:
+  - name: mkodockx/docker-clamav
+    digest: "sha256:09faf0d32b3f6f1169d2428e8226f2ea12bbb8fc3d96acc95ee1278f1a9f39c4"
+
+  - name: redis
+    newTag: "6.2.6-alpine"
+
+  - name: inveniem/nextcloud-cron
+    newName: your-acr-instance.azurecr.io/inveniem/nextcloud-cron
+    newTag: "7.0.0"
+
+  - name: inveniem/nextcloud-apache
+    newName: your-acr-instance.azurecr.io/inveniem/nextcloud-apache
+    newTag: "7.0.0"
+
+  - name: inveniem/nextcloud-fpm
+    newName: your-acr-instance.azurecr.io/inveniem/nextcloud-fpm
+    newTag: "7.0.0"
+
+  - name: inveniem/nextcloud-nginx-middleware
+    newName: your-acr-instance.azurecr.io/inveniem/nextcloud-nginx-middleware
+    newTag: "7.0.0"
+
+  - name: inveniem/sftp-ws-server
+    newName: your-acr-instance.azurecr.io/inveniem/sftp-ws-server
+    newTag: "7.0.0"

@@ -1,0 +1,96 @@
+##
+# Kubernetes deployment manifest for refreshing files in Nextcloud twice a day.
+#
+# @author Guy Elsmore-Paddock (guy@inveniem.com)
+# @copyright Copyright (c) 2022, Inveniem
+# @license GNU AGPL version 3 or any later version
+#
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: nextcloud-file-scan
+spec:
+  schedule: "0 12,20 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: Never
+          containers:
+            - name: cron-nextcloud
+              image: "inveniem/nextcloud-cron:latest"
+              args:
+                - '-s'
+                - '/var/www/html/occ'
+                - '--'
+                - 'files:scan'
+                - '--all'
+              resources:
+                requests:
+                  cpu: 25m
+                  memory: 128Mi
+                limits:
+                  cpu: 1500m
+                  memory: 512Mi
+              volumeMounts:
+                - name: volume-nextcloud-app
+                  mountPath: /var/www/html
+              env:
+                - name: NEXTCLOUD_FILE_LOCKING_ENABLED
+                  valueFrom:
+                    configMapKeyRef:
+                      name: environment
+                      key: enableFileLocking
+                - name: NEXTCLOUD_TRUSTED_DOMAINS
+                  valueFrom:
+                    configMapKeyRef:
+                      name: environment
+                      key: trustedDomains
+                - name: NEXTCLOUD_ADMIN_USER
+                  valueFrom:
+                    secretKeyRef:
+                      name: "nextcloud-admin-creds"
+                      key: username
+                - name: NEXTCLOUD_ADMIN_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: "nextcloud-admin-creds"
+                      key: password
+                - name: MYSQL_HOST
+                  valueFrom:
+                    secretKeyRef:
+                      name: "nextcloud-mysql-creds"
+                      key: hostname
+                - name: MYSQL_PORT
+                  valueFrom:
+                    secretKeyRef:
+                      name: "nextcloud-mysql-creds"
+                      key: port
+                - name: MYSQL_DATABASE
+                  valueFrom:
+                    secretKeyRef:
+                      name: "nextcloud-mysql-creds"
+                      key: database
+                - name: MYSQL_USER
+                  valueFrom:
+                    secretKeyRef:
+                      name: "nextcloud-mysql-creds"
+                      key: username
+                - name: MYSQL_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: "nextcloud-mysql-creds"
+                      key: password
+                - name: REDIS_HOST
+                  value: "internal-redis"
+                - name: REDIS_PORT
+                  value: "6379"
+                - name: REDIS_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: "nextcloud-redis-creds"
+                      key: password
+          volumes:
+            # Ephemeral volume that contains the loaded Nextcloud software
+            - name: volume-nextcloud-app
+              emptyDir: {}
