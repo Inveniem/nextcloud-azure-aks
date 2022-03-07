@@ -38,17 +38,16 @@ CONTAINER_ENGINE="docker"
 # available in the deployed image.
 #
 NEXTCLOUD_CUSTOM_APPS=(
-    'https://github.com/westberliner/checksum/releases/download/v1.1.2/checksum.tar.gz'
+    'https://github.com/westberliner/checksum/releases/download/v1.1.3/checksum.tar.gz'
     'https://github.com/nextcloud/files_antivirus/releases/download/v3.2.2/files_antivirus.tar.gz'
-    'https://github.com/nextcloud/files_automatedtagging/releases/download/v1.10.1/files_automatedtagging-1.10.1.tar.gz'
-    'https://github.com/nextcloud/files_downloadactivity/releases/download/v1.9.0/files_downloadactivity-1.9.0.tar.gz'
+    'https://github.com/nextcloud/files_automatedtagging/releases/download/v1.11.0/files_automatedtagging-1.11.0.tar.gz'
+    'https://github.com/nextcloud-releases/files_downloadactivity/releases/download/v1.12.0/files_downloadactivity-v1.12.0.tar.gz'
     'https://github.com/nextcloud/files_rightclick/releases/download/v0.15.1/files_rightclick.tar.gz'
     'https://github.com/gino0631/nextcloud-metadata/releases/latest/download/metadata.tar.gz'
-    'https://github.com/owncloud/music/releases/download/v1.3.3/music_1.3.3_for_nextcloud.tar.gz'
-    'https://github.com/pbek/nextbackup/releases/download/21.1.0/nextbackup-nc.tar.gz'
-    'https://github.com/nextcloud/previewgenerator/archive/refs/tags/v3.1.1.tar.gz'
-    'https://github.com/nextcloud/user_external/releases/download/v1.0.0/user_external-1.0.0.tar.gz'
-    'https://github.com/nextcloud/user_saml/releases/download/v3.3.5/user_saml-3.3.5.tar.gz'
+    'https://github.com/owncloud/music/releases/download/v1.5.1/music_1.5.1_for_nextcloud.tar.gz'
+    'https://github.com/nextcloud-releases/previewgenerator/releases/download/v4.0.0/previewgenerator.tar.gz'
+    'https://github.com/nextcloud/user_external/releases/download/v2.1.0/user_external-2.1.0.tar.gz'
+    'https://github.com/nextcloud/user_saml/releases/download/v4.1.1/user_saml-4.1.1.tar.gz'
 )
 
 ################################################################################

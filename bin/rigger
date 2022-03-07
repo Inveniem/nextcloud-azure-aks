@@ -615,13 +615,15 @@ sub_show_manifests() {
         -i k=PersistentVolume \
         -i k=PersistentVolumeClaim \
         -i "k=Deployment,n=${deployment}" \
+        -i "k=CronJob,n=${deployment}" \
         -i k=Issuer \
         -i k=Ingress
   else
     # Filter configs to just the deployment requested.
     kustomize build --enable-alpha-plugins . | \
       docker run --rm -i "ryane/kfilt:${kfilt_version_tag}" \
-        -i "k=Deployment,n=${deployment}"
+        -i "k=Deployment,n=${deployment}" \
+        -i "k=CronJob,n=${deployment}"
   fi
 }
 
