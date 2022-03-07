@@ -40,7 +40,7 @@ CONTAINER_ENGINE="docker"
 NEXTCLOUD_CUSTOM_APPS=(
     'https://github.com/westberliner/checksum/releases/download/v1.1.3/checksum.tar.gz'
     'https://github.com/nextcloud/files_antivirus/releases/download/v3.2.2/files_antivirus.tar.gz'
-    'https://github.com/nextcloud-releases/files_automatedtagging/releases/download/v1.12.0/files_automatedtagging-1.12.0.tar.gz'
+    'https://github.com/nextcloud-releases/files_automatedtagging/releases/download/v1.13.0/files_automatedtagging-v1.13.0.tar.gz'
     'https://github.com/nextcloud-releases/files_downloadactivity/releases/download/v1.12.0/files_downloadactivity-v1.12.0.tar.gz'
     'https://github.com/nextcloud/files_rightclick/releases/download/v0.15.1/files_rightclick.tar.gz'
     'https://github.com/gino0631/nextcloud-metadata/releases/latest/download/metadata.tar.gz'

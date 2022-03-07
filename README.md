@@ -41,6 +41,7 @@ this kit:
 | 7.x                 | 1.16-1.22+                        | 20.x              | Kustomize and Rigger        |
 | 8.x                 | 1.16-1.22+                        | 21.x              | Kustomize and Rigger        |
 | 9.x                 | 1.16-1.22+                        | 22.x              | Kustomize and Rigger        |
+| 10.x                | 1.16-1.22+                        | 23.x              | Kustomize and Rigger        |
 
 ### Switching from "Shell Script" Deployment to "Kustomize" Deployment
 If you are running version 1.x through 6.x of this kit and are now upgrading to
