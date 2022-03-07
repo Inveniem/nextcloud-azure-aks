@@ -1,0 +1,21 @@
+##
+# Kustomization component for using "Let's Encrypt" for issuing SSL certs.
+#
+# @author Guy Elsmore-Paddock (guy@inveniem.com)
+# @copyright Copyright (c) 2022, Inveniem
+# @license GNU AGPL version 3 or any later version
+#
+apiVersion: kustomize.config.k8s.io/v1alpha1
+kind: Component
+
+resources:
+  - manifests/cert-manager-lets-encrypt-prod.yaml
+
+patches:
+  - patch: |-
+      apiVersion: networking.k8s.io/v1
+      kind: Ingress
+      metadata:
+        name: frontend-nextcloud-ingress
+        annotations:
+          cert-manager.io/issuer: letsencrypt-production

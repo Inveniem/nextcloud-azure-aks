@@ -1,0 +1,18 @@
+##
+# Kustomization component to add an SFTP server to the Nextcloud deployment.
+#
+# See README.md in this folder for more information.
+#
+# @author Guy Elsmore-Paddock (guy@inveniem.com)
+# @copyright Copyright (c) 2022, Inveniem
+# @license GNU AGPL version 3 or any later version
+#
+apiVersion: kustomize.config.k8s.io/v1alpha1
+kind: Component
+
+resources:
+  - manifests/app-sftp-server.yaml
+
+images:
+  - name: atmoz/sftp:alpine
+    digest: 'sha256:be741144dd09b74cae78854fc06b7b616bc61e3328b1981f83ce10d9bef59329'

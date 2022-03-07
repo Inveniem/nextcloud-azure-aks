@@ -1,0 +1,29 @@
+##
+# @file
+# Kubernetes deployment manifest that specifies pod disruption budgets.
+#
+# This budget applies to all apps in this project.
+#
+# @author Guy Elsmore-Paddock (guy@inveniem.com)
+# @copyright Copyright (c) 2019-2022, Inveniem
+# @license GNU AGPL version 3 or any later version
+#
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: pdb-nextcloud-backends
+spec:
+  selector:
+    matchLabels:
+      role: backend
+  minAvailable: "50%"
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: pdb-redis
+spec:
+  selector:
+    matchLabels:
+      app: db-redis
+  minAvailable: 1

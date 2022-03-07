@@ -9,14 +9,22 @@
 # startup version check functions as required.
 #
 # @author Guy Elsmore-Paddock (guy@inveniem.com)
-# @copyright Copyright (c) 2019, Inveniem
+# @copyright Copyright (c) 2019-2022, Inveniem
 # @license GNU AGPL version 3 or any later version
 #
 
 set -eu
 
+initialize_environment_vars() {
+  if ! touch "/var/www/html/config/.writable" 1>/dev/null 2>&1; then
+    # Force environment variable to `true` whenever the config folder is mounted
+    # read-only, even if the var was not explicitly set as such.
+    export NEXTCLOUD_CONFIG_READ_ONLY="true"
+  fi
+}
+
 initialize_container() {
-    local container_type="${1}"
+    container_type="${1}"
 
     if expr "${container_type}" : "apache" 1>/dev/null \
         || [ "${container_type}" = "php-fpm" ] \
@@ -54,8 +62,8 @@ initialize_container() {
 }
 
 ensure_compatible_image() {
-    local installed_version="${1}"
-    local image_version="${2}"
+    installed_version="${1}"
+    image_version="${2}"
 
     if version_greater "$installed_version" "$image_version"; then
         echo "This image of Nextcloud cannot be used because the data was last used with version ($installed_version)," >&2
@@ -120,7 +128,7 @@ deploy_nextcloud_release() {
     echo "Deploying Nextcloud ${image_version}..."
 
     if [ "$(id -u)" = 0 ]; then
-        rsync_options="-rlDog --chown www-data:root"
+        rsync_options="-rlDog --chown root:www-data"
     else
         rsync_options="-rlD"
     fi
@@ -140,8 +148,7 @@ deploy_nextcloud_release() {
     # Explicitly sync 'custom_apps' in this Docker image
     rsync $rsync_options --delete /usr/src/nextcloud/custom_apps/ /var/www/html/custom_apps/
 
-    if [ -w "/var/www/html/config" ] && \
-       [ "${NEXTCLOUD_CONFIG_READ_ONLY:-false}" = "false" ]; then
+    if [ "${NEXTCLOUD_CONFIG_READ_ONLY:-false}" = "false" ]; then
         echo "'config' directory is writable."
         echo "Sync-ing configuration snippets:"
         cp -v /usr/src/nextcloud/config/*.config.php /var/www/html/config/
@@ -152,12 +159,16 @@ deploy_nextcloud_release() {
         echo ""
     fi
 
+    mkdir -p /var/www/html/themes/
+    chmod 0750 /var/www/html/themes/
+    chown root:www-data /var/www/html/themes/
+
     echo "Deployment finished."
     echo ""
 }
 
 capture_existing_app_list() {
-    local installed_version="${1}"
+    installed_version="${1}"
 
     if [ "$installed_version" != "0.0.0.0" ]; then
         run_as 'php /var/www/html/occ app:list' | sed -n "/Enabled:/,/Disabled:/p" > /tmp/list_before
@@ -179,7 +190,7 @@ capture_instance_state() {
 }
 
 install_nextcloud() {
-    local image_version="${1}"
+    image_version="${1}"
 
     echo "This is a new installation of Nextcloud."
     echo ""
@@ -221,8 +232,8 @@ install_nextcloud() {
 }
 
 upgrade_nextcloud() {
-    local installed_version="${1}"
-    local image_version="${2}"
+    installed_version="${1}"
+    image_version="${2}"
 
     echo "Nextcloud will be upgraded from $installed_version to $image_version."
     echo ""
@@ -248,13 +259,6 @@ capture_install_options() {
     # shellcheck disable=SC2016
     install_options='-n --admin-user "$NEXTCLOUD_ADMIN_USER" --admin-pass "$NEXTCLOUD_ADMIN_PASSWORD"'
 
-    if [ -n "${NEXTCLOUD_TABLE_PREFIX+x}" ]; then
-        # shellcheck disable=SC2016
-        install_options=$install_options' --database-table-prefix "$NEXTCLOUD_TABLE_PREFIX"'
-    else
-        install_options=$install_options' --database-table-prefix ""'
-    fi
-
     if [ -n "${NEXTCLOUD_DATA_DIR+x}" ]; then
         # shellcheck disable=SC2016
         install_options=$install_options' --data-dir "$NEXTCLOUD_DATA_DIR"'
@@ -267,10 +271,20 @@ capture_install_options() {
         install_options=$install_options' --database-name "$SQLITE_DATABASE"'
         install_type="SQLite"
     elif [ -n "${MYSQL_DATABASE+x}" ] && [ -n "${MYSQL_USER+x}" ] && [ -n "${MYSQL_PASSWORD+x}" ] && [ -n "${MYSQL_HOST+x}" ]; then
+        if [ -n "${MYSQL_PORT+x}" ]; then
+          # Nextcloud bakes the port into the host for some reason.
+          MYSQL_HOST="${MYSQL_HOST}:${MYSQL_PORT}"
+        fi
+
         # shellcheck disable=SC2016
         install_options=$install_options' --database mysql --database-name "$MYSQL_DATABASE" --database-user "$MYSQL_USER" --database-pass "$MYSQL_PASSWORD" --database-host "$MYSQL_HOST"'
         install_type="MySQL"
     elif [ -n "${POSTGRES_DB+x}" ] && [ -n "${POSTGRES_USER+x}" ] && [ -n "${POSTGRES_PASSWORD+x}" ] && [ -n "${POSTGRES_HOST+x}" ]; then
+        if [ -n "${POSTGRES_PORT+x}" ]; then
+          # Nextcloud bakes the port into the host for some reason.
+          POSTGRES_HOST="${POSTGRES_HOST}:${POSTGRES_PORT}"
+        fi
+
         # shellcheck disable=SC2016
         install_options=$install_options' --database pgsql --database-name "$POSTGRES_DB" --database-user "$POSTGRES_USER" --database-pass "$POSTGRES_PASSWORD" --database-host "$POSTGRES_HOST"'
         install_type="PostgreSQL"
@@ -284,7 +298,7 @@ capture_install_options() {
 }
 
 run_installer() {
-    local install_options="${1}"
+    install_options="${1}"
 
     run_as "php /var/www/html/occ maintenance:install ${install_options}" \
     && configure_trusted_domains
@@ -308,14 +322,18 @@ configure_trusted_domains() {
 }
 
 update_htaccess() {
+    chown www-data /var/www/html/.htaccess
+
     # From https://help.nextcloud.com/t/apache-rewrite-to-remove-index-php/658
     echo "Updating .htaccess for proper rewrites..."
     run_as "php /var/www/html/occ maintenance:update:htaccess"
+
+    chown root /var/www/html/.htaccess
 }
 
 start_log_capture() {
-    local app_log="/var/log/nextcloud.log"
-    local audit_log="/var/log/nextcloud-audit.log"
+    app_log="/var/log/nextcloud.log"
+    audit_log="/var/log/nextcloud-audit.log"
 
     # Application log
     touch "${app_log}"
@@ -368,6 +386,8 @@ run_as() {
 }
 
 container_type="${1:-none}"
+
+initialize_environment_vars
 initialize_container "${container_type}"
 start_log_capture
 

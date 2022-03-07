@@ -1,0 +1,86 @@
+##
+# Kubernetes deployment configuration for running SFTP alongside Nextcloud for
+# one or more shares.
+#
+# @author Guy Elsmore-Paddock (guy@inveniem.com)
+# @copyright Copyright (c) 2019-2022, Inveniem
+# @license GNU AGPL version 3 or any later version
+#
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sftp-server
+spec:
+  replicas: 1
+  revisionHistoryLimit: 2
+  selector:
+    matchLabels:
+      app: frontend-sftp-server
+  template:
+    metadata:
+      labels:
+        app: frontend-sftp-server
+        role: frontend
+    spec:
+      containers:
+        # Container: The SFTP server.
+        - name: frontend-sftp-server
+          image: "atmoz/sftp:alpine"
+          ports:
+            - containerPort: 22
+          resources:
+            requests:
+              cpu: 100m
+              memory: 64Mi
+            limits:
+              cpu: 1000m
+              memory: 128Mi
+          readinessProbe:
+            tcpSocket:
+              port: 22
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: 22
+            initialDelaySeconds: 10
+            periodSeconds: 30
+
+          volumeMounts:
+            - name: vol-secret-ssh-host-keys
+              mountPath: /etc/ssh/ssh_host_ed25519_key
+              subPath: ssh_host_ed25519_key
+              readOnly: true
+
+            - name: vol-secret-ssh-host-keys
+              mountPath: /etc/ssh/ssh_host_rsa_key
+              subPath: ssh_host_rsa_key
+              readOnly: true
+
+            - name: vol-users-config
+              mountPath: /etc/sftp/users.conf
+              subPath: users.conf
+
+      volumes:
+        - name: vol-secret-ssh-host-keys
+          secret:
+            secretName: "sftp-host-keys"
+            defaultMode: 0400
+
+        - name: vol-users-config
+          configMap:
+            name: sftp
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: external-sftp
+  labels:
+    role: external-service
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 22889
+      targetPort: 22
+  selector:
+    app: frontend-sftp-server

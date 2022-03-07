@@ -1,0 +1,99 @@
+##
+# Kubernetes deployment configuration for running an SFTP-WS server alongside
+# Nextcloud for one or more shares.
+#
+# @author Guy Elsmore-Paddock (guy@inveniem.com)
+# @copyright Copyright (c) 2019-2022, Inveniem
+# @license GNU AGPL version 3 or any later version
+#
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sftp-ws-server
+spec:
+  replicas: 1
+  revisionHistoryLimit: 2
+  selector:
+    matchLabels:
+      app: backend-sftp-ws-server
+  template:
+    metadata:
+      labels:
+        app: backend-sftp-ws-server
+        role: backend
+    spec:
+      containers:
+        # Container: The SFTP-WS server.
+        - name: backend-sftp-ws-server
+          image: "inveniem/sftp-ws-server:latest"
+          ports:
+            - containerPort: 4002
+          resources:
+            requests:
+              cpu: 100m
+              memory: 64Mi
+            limits:
+              cpu: 500m
+              memory: 128Mi
+          env:
+            - name: SFTP_WS_LOG_LEVEL
+              value: "info"
+            - name: SFTP_WS_HOST
+              value: "0.0.0.0"
+            - name: SFTP_WS_PORT
+              value: "4002"
+            - name: SFTP_WS_APP_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: environment
+                  key:  primaryHostname
+            - name: SFTP_WS_ORIGIN_RESTRICTIONS
+              valueFrom:
+                configMapKeyRef:
+                  name: sftp-ws
+                  key: originRestrictions
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: internal-sftp-ws-server
+  labels:
+    role: internal-service
+spec:
+  type: ClusterIP
+  ports:
+    - port: 4002
+  selector:
+    app: backend-sftp-ws-server
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: frontend-sftp-ws-server-ingress
+  labels:
+    owning-app: "nextcloud"
+  annotations:
+    certmanager.k8s.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/rewrite-target: "/sftp"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "1800"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "1800"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "1800"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        # This host gets overwritten by components/ingress-dns/kustomization.yaml
+        - "nextcloud.local"
+      secretName: nextcloud-tls-certificate
+  rules:
+    # This host gets overwritten by components/ingress-dns/kustomization.yaml
+    - host: "nextcloud.local"
+      http:
+        paths:
+          - path: /sftp
+            pathType: Prefix
+            backend:
+              service:
+                name: internal-sftp-ws-server
+                port:
+                  number: 4002

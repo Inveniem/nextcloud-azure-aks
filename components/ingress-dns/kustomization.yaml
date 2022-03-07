@@ -1,0 +1,34 @@
+##
+# Kustomization component to adjust the ingress hostname for each environment.
+#
+# The hostnames come from a config-environment.yaml file provided by the overlay
+# for the environment. This is a component so that it can take advantage of a
+# config map loaded by the overlay to modify the ingress hostnames.
+#
+# @author Guy Elsmore-Paddock (guy@inveniem.com)
+# @copyright Copyright (c) 2022, Inveniem
+# @license GNU AGPL version 3 or any later version
+#
+apiVersion: kustomize.config.k8s.io/v1alpha1
+kind: Component
+
+replacements:
+  - source:
+      kind: ConfigMap
+      name: environment
+      fieldPath: data.primaryHostname
+    targets:
+      - select:
+          kind: Ingress
+          labelSelector: "owning-app=nextcloud"
+        fieldPaths:
+          - spec.tls.0.hosts.0
+          - spec.rules.0.host
+
+      - select:
+          kind: Deployment
+          name: nextcloud
+        fieldPaths:
+          - spec.template.spec.containers.1.startupProbe.httpGet.httpHeaders.0.value
+          - spec.template.spec.containers.1.livenessProbe.httpGet.httpHeaders.0.value
+          - spec.template.spec.containers.1.readinessProbe.httpGet.httpHeaders.0.value

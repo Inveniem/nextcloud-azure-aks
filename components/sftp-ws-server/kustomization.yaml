@@ -1,0 +1,14 @@
+##
+# Kustomization component to add an SFTP-WS server to the Nextcloud deployment.
+#
+# See README.md in this folder for more information.
+#
+# @author Guy Elsmore-Paddock (guy@inveniem.com)
+# @copyright Copyright (c) 2022, Inveniem
+# @license GNU AGPL version 3 or any later version
+#
+apiVersion: kustomize.config.k8s.io/v1alpha1
+kind: Component
+
+resources:
+  - manifests/app-sftp-ws-server.yaml

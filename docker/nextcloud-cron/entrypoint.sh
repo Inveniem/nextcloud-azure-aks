@@ -63,14 +63,14 @@ setup_redis() {
         echo 'session.lazy_write = 0'
         echo ''
 
-        # Locks are only allowed for up to 60 seconds.
-        echo 'redis.session.locking_enabled = 0'
-        echo 'redis.session.lock_expire = 60'
+        # From:
+        # https://github.com/nextcloud/docker/commit/9b057aafb0c41bab63870277c53307d3d6dc572b
+        echo 'redis.session.locking_enabled = 1'
+        echo 'redis.session.lock_retries = -1'
 
-        # Wait up to 5 seconds for a lock before giving up.
-        # NOTE: lock_wait_time is in usecs, not msecs.
-        echo 'redis.session.lock_wait_time = 100000'
-        echo 'redis.session.lock_retries = 50'
+        # redis.session.lock_wait_time is specified in microseconds.
+        # Wait 10ms before retrying the lock rather than the default 2ms.
+        echo "redis.session.lock_wait_time = 10000"
     } > /usr/local/etc/php/conf.d/redis-sessions.ini
 }
 
@@ -78,7 +78,7 @@ deploy_nextcloud_release() {
     echo "Deploying Nextcloud ${image_version}..."
 
     if [ "$(id -u)" = 0 ]; then
-        rsync_options="-rlDog --chown www-data:root"
+        rsync_options="-rlDog --chown root:www-data"
     else
         rsync_options="-rlD"
     fi
@@ -98,6 +98,10 @@ deploy_nextcloud_release() {
     # Explicitly sync 'custom_apps' in this Docker image
     rsync $rsync_options --delete /usr/src/nextcloud/custom_apps/ /var/www/html/custom_apps/
 
+    mkdir -p /var/www/html/themes/
+    chmod 0750 /var/www/html/themes/
+    chown root:www-data /var/www/html/themes/
+
     echo "Deployment finished."
     echo ""
 }
@@ -109,4 +113,4 @@ uri_encode() {
 initialize_container
 
 set -x
-su -p www-data -s /var/www/html/occ -- "$@"
+su -p www-data "$@"

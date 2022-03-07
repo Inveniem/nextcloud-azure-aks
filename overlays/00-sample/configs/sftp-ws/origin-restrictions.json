@@ -1,0 +1,15 @@
+{
+  "\\Ahttps?://some.remote.client.example.com\\z": {
+    "public_key": "-----BEGIN PUBLIC KEY-----\nTHE PUBLIC KEY FOR THE PRIVATE KEY some.remote.client.example.com uses GOES HERE\n-----END PUBLIC KEY-----",
+    "allowed_paths": [
+      "client1",
+      "client2"
+    ]
+  },
+  "\\Ahttps?://other.remote.client.example.com\\z": {
+    "public_key": "-----BEGIN PUBLIC KEY-----\nTHE PUBLIC KEY FOR THE PRIVATE KEY other.remote.client.example.com uses GOES HERE\n-----END PUBLIC KEY-----",
+    "allowed_paths": [
+      "client3"
+    ]
+  }
+}
