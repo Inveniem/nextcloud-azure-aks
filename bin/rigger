@@ -99,8 +99,8 @@ sub_help() {
   echo ""
   echo "Subcommands:"
   echo ""
-  echo "    publish                            Publishes Docker images for the checked-out version."
-  echo "    version-stamp                      Updates the version that this overlay will pull down to match the checked-out"
+  echo "    publish [options]                  Publishes Docker images for the checked-out version."
+  echo "    version-stamp [options]            Updates the version that this overlay will pull down to match the checked-out"
   echo "                                       version."
   echo ""
   echo "    generate-storage-secrets           Generates secrets files containing the access keys for storage accounts."
@@ -153,7 +153,21 @@ sub_publish() {
   declare -g script_dir
   declare -g publish_bin_path
 
-  local version_from_git
+  local publish_version
+
+  publish_version=$(echo "${1:-}" | sed -E 's/^v//')
+
+  if should_show_help "$@"; then
+    echo "Usage: ${program_name} publish [version]"
+    echo ""
+    echo "Where [version] is an optional argument that specifies the version"
+    echo "of the image that is being published. If omitted, the version is"
+    echo "inferred from the tag on the checked-out commit; if there is no tag,"
+    echo "the inferred version is 'latest'."
+    echo ""
+
+    exit 0
+  fi
 
   if [[ ! -f "${publish_env_path}" ]]; then
     echo "[ERROR] Publishing environment file '${publish_env_path}' was not found. Has this overlay been configured?"
@@ -172,9 +186,11 @@ sub_publish() {
     exit "${error_setup_required}"
   fi
 
-  version_from_git=$(detect_checked_out_version)
+  if [[ -z "${publish_version}" ]]; then
+    publish_version=$(detect_checked_out_version)
+  fi
 
-  echo "Building and publishing Nextcloud image '${version_from_git}'..."
+  echo "Building and publishing Nextcloud image '${publish_version}'..."
   echo ""
 
   export REGISTRY_NAME
@@ -189,11 +205,11 @@ sub_publish() {
   unset NEXTCLOUD_CUSTOM_APPS
   export NEXTCLOUD_CUSTOM_APPS="${app_list}"
 
-  "${script_dir}/${publish_bin_path}" "${REGISTRY_HOST}" "${version_from_git}"
+  "${script_dir}/${publish_bin_path}" "${REGISTRY_HOST}" "${publish_version}"
 
   echo ""
 
-  sub_version_stamp
+  sub_version_stamp "${publish_version}"
 }
 
 ##
@@ -207,7 +223,21 @@ sub_version_stamp() {
   declare -g publish_bin_path
   declare -g docker_image_names
 
-  local version_from_git
+  local publish_version
+
+  publish_version=$(echo "${1:-}" | sed -E 's/^v//')
+
+  if should_show_help "$@"; then
+    echo "Usage: ${program_name} version-stamp [version]"
+    echo ""
+    echo "Where [version] is an optional argument that specifies the version"
+    echo "of the image to reference for deployment. If omitted, the version is"
+    echo "inferred from the tag on the checked-out commit; if there is no tag,"
+    echo "the inferred version is 'latest'."
+    echo ""
+
+    exit 0
+  fi
 
   if [[ ! -f "${publish_env_path}" ]]; then
     echo "[ERROR] Publishing environment file '${publish_env_path}' was not found. Has this overlay been configured?"
@@ -226,13 +256,15 @@ sub_version_stamp() {
     exit "${error_setup_required}"
   fi
 
-  version_from_git=$(detect_checked_out_version)
+  if [[ -z "${publish_version}" ]]; then
+    publish_version=$(detect_checked_out_version)
+  fi
 
   for docker_image in "${docker_image_names[@]}"; do
-    echo "Updating '${docker_image}' version to '${version_from_git}'..."
+    echo "Updating '${docker_image}' version to '${publish_version}'..."
     echo ""
 
-    kustomize edit set image "${REGISTRY_HOST}/${docker_image}:${version_from_git}"
+    kustomize edit set image "${REGISTRY_HOST}/${docker_image}:${publish_version}"
   done
 }
 
