@@ -10,7 +10,7 @@
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: nextcloud-tmp-cleanup
+  name: nextcloud-failed-upload-cleanup
 spec:
   schedule: "0 * * * *"
   jobTemplate:
