@@ -12,5 +12,6 @@ resources:
   - manifests/app-clamav.yaml
   - manifests/app-redis.yaml
   - manifests/cronjob-nextcloud-cron.yaml
+  - manifests/cronjob-nextcloud-failed-upload-cleanup.yaml
   - manifests/cronjob-nextcloud-file-scan.yaml
   - manifests/pod-disruption-budgets.yaml
