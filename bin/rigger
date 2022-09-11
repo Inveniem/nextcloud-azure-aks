@@ -766,8 +766,11 @@ sub_launch_shell() {
   declare -g error_bad_environment
 
   pod_name=$(
-    kubectl get pods -n "${namespace}" --selector="app=${nextcloud_backend_pod_label}" -o name |
-      grep -m1 "${nextcloud_deployment_name}" || echo ""
+    (kubectl get pods -n "${namespace}" \
+      --selector="app=${nextcloud_backend_pod_label}" \
+      --field-selector=status.phase=Running \
+      -o name |
+        grep -m1 "${nextcloud_deployment_name}") || echo ""
   )
 
   if [[ -z "${pod_name}" ]]; then
