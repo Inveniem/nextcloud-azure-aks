@@ -1,11 +1,21 @@
 <?php
-	$read_only_str = getenv('NEXTCLOUD_CONFIG_READ_ONLY');
+/**
+ * @file
+ * Force Nextcloud to run with a read-only config whenever the environment
+ * variable is `true` or the config folder is mounted read-only.
+ */
+$read_only_str = getenv('NEXTCLOUD_CONFIG_READ_ONLY');
 
-	$read_only_bool =
-		!empty('NEXTCLOUD_CONFIG_READ_ONLY')
-		&& strtolower($read_only_str) === 'true';
+$is_read_only =
+	!empty('NEXTCLOUD_CONFIG_READ_ONLY')
+	&& strtolower($read_only_str) === 'true';
 
-	# Allow config to be made read-only after setup.
-	$CONFIG = array(
-		'config_is_read_only' => $read_only_bool,
-	);
+// If our own config file isn't writable, we know we're running in a read-only
+// FS.
+if (!is_writable(__FILE__)) {
+	$is_read_only = TRUE;
+}
+
+$CONFIG = array(
+	'config_is_read_only' => $is_read_only,
+);
