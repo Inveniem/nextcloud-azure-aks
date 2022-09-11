@@ -57,9 +57,10 @@ RUN set -eux;\
 ################################################################################
 # This is the container that actually gets pushed.
 #
-FROM nextcloud:23.0.2-fpm-alpine
+FROM nextcloud:23.0.9-fpm-alpine
 
 ENV NEXTCLOUD_CONFIG_READ_ONLY "false"
+ENV NEXTCLOUD_INIT_LOCK "true"
 
 # Fix-up www-data UID from 82 to 33.
 #
