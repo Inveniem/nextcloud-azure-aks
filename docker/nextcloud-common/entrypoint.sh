@@ -50,7 +50,11 @@ release_lock() {
 }
 
 initialize_environment_vars() {
-    if ! touch "/var/www/html/config/.writable" 1>/dev/null 2>&1; then
+    touch_file="/var/www/html/config/.writable"
+
+    if touch "${touch_file}" 1>/dev/null 2>&1; then
+        rm "${touch_file}"
+    else
         # Force environment variable to `true` whenever the config folder is mounted
         # read-only, even if the var was not explicitly set as such.
         export NEXTCLOUD_CONFIG_READ_ONLY="true"
