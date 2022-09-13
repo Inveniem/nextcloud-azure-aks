@@ -24,7 +24,7 @@ spec:
               image: "inveniem/nextcloud-cron:latest"
               args:
                 - '-s'
-                - 'bash'
+                - '/bin/sh'
                 - '/cleanup_uploads.sh'
               resources:
                 requests:
