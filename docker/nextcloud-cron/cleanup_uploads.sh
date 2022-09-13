@@ -11,6 +11,8 @@
 
 set -eu
 
-cd /var/www/html/
-
-find . -wholename "*uploads/web-file-upload*" -type d ! -mtime 7 -exec rm -rvf "{}" ";"
+find /var/www/html/ \
+  -wholename "*uploads/web-file-upload*" \
+  -type d \
+  ! -mtime 7 \
+  -exec rm -rvf "{}" ";"
