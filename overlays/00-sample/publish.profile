@@ -47,6 +47,7 @@ NEXTCLOUD_CUSTOM_APPS=(
     'https://github.com/gino0631/nextcloud-metadata/releases/download/v0.16.0/metadata.tar.gz'
     'https://github.com/owncloud/music/releases/download/v1.6.0/music_1.6.0_for_nextcloud.tar.gz'
     'https://github.com/nextcloud-releases/previewgenerator/releases/download/v5.1.0/previewgenerator-v5.1.0.tar.gz'
+    'https://github.com/pulsejet/nextcloud-oidc-login/releases/download/v2.3.3/oidc_login.tar.gz'
     'https://github.com/nextcloud-releases/user_external/releases/download/v3.0.0/user_external-v3.0.0.tar.gz'
     'https://github.com/nextcloud-releases/user_saml/releases/download/v5.0.3/user_saml-v5.0.3.tar.gz'
 )
