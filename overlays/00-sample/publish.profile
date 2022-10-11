@@ -42,7 +42,7 @@ NEXTCLOUD_CUSTOM_APPS=(
     'https://github.com/nextcloud/files_antivirus/releases/download/v3.3.1/files_antivirus.tar.gz'
     'https://github.com/nextcloud-releases/files_automatedtagging/releases/download/v1.14.0/files_automatedtagging-v1.14.0.tar.gz'
     'https://github.com/nextcloud-releases/files_downloadactivity/releases/download/v1.13.0/files_downloadactivity-v1.13.0.tar.gz'
-    'https://github.com/Inveniem/nextcloud-files-excludedirs/releases/download/v1.0.0-beta/nextcloud_files_excludedirs-v1.0.0-beta.tar.gz'
+    'https://github.com/Inveniem/nextcloud-files-excludedirs/releases/download/v1.0.1-beta/nextcloud_files_excludedirs-v1.0.1-beta.tar.gz'
     'https://github.com/nextcloud/files_rightclick/releases/download/v0.15.1/files_rightclick.tar.gz'
     'https://github.com/gino0631/nextcloud-metadata/releases/download/v0.16.0/metadata.tar.gz'
     'https://github.com/owncloud/music/releases/download/v1.6.0/music_1.6.0_for_nextcloud.tar.gz'
