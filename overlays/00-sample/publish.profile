@@ -38,16 +38,18 @@ CONTAINER_ENGINE="docker"
 # available in the deployed image.
 #
 NEXTCLOUD_CUSTOM_APPS=(
-    'https://github.com/westberliner/checksum/releases/download/v1.1.3/checksum.tar.gz'
-    'https://github.com/nextcloud/files_antivirus/releases/download/v3.2.2/files_antivirus.tar.gz'
+    'https://github.com/westberliner/checksum/releases/download/v1.1.4/checksum.tar.gz'
+    'https://github.com/nextcloud/files_antivirus/releases/download/v3.3.1/files_antivirus.tar.gz'
     'https://github.com/nextcloud-releases/files_automatedtagging/releases/download/v1.13.0/files_automatedtagging-v1.13.0.tar.gz'
-    'https://github.com/nextcloud-releases/files_downloadactivity/releases/download/v1.12.0/files_downloadactivity-v1.12.0.tar.gz'
+    'https://github.com/nextcloud-releases/files_downloadactivity/releases/download/v1.15.0/files_downloadactivity-v1.15.0.tar.gz'
+    'https://github.com/Inveniem/nextcloud-files-excludedirs/releases/download/v1.0.1-beta/nextcloud_files_excludedirs-v1.0.1-beta.tar.gz'
     'https://github.com/nextcloud/files_rightclick/releases/download/v0.15.1/files_rightclick.tar.gz'
-    'https://github.com/gino0631/nextcloud-metadata/releases/latest/download/metadata.tar.gz'
-    'https://github.com/owncloud/music/releases/download/v1.5.1/music_1.5.1_for_nextcloud.tar.gz'
-    'https://github.com/nextcloud-releases/previewgenerator/releases/download/v4.0.0/previewgenerator.tar.gz'
-    'https://github.com/nextcloud/user_external/releases/download/v2.1.0/user_external-2.1.0.tar.gz'
-    'https://github.com/nextcloud/user_saml/releases/download/v4.1.1/user_saml-4.1.1.tar.gz'
+    'https://github.com/gino0631/nextcloud-metadata/releases/download/v0.16.0/metadata.tar.gz'
+    'https://github.com/owncloud/music/releases/download/v1.6.0/music_1.6.0_for_nextcloud.tar.gz'
+    'https://github.com/nextcloud-releases/previewgenerator/releases/download/v5.1.0/previewgenerator-v5.1.0.tar.gz'
+    'https://github.com/pulsejet/nextcloud-oidc-login/releases/download/v2.3.3/oidc_login.tar.gz'
+    'https://github.com/nextcloud-releases/user_external/releases/download/v3.0.0/user_external-v3.0.0.tar.gz'
+    'https://github.com/nextcloud-releases/user_saml/releases/download/v5.0.3/user_saml-v5.0.3.tar.gz'
 )
 
 ################################################################################
@@ -69,7 +71,7 @@ NEW_RELIC_KEY=""
 #
 # Leave blank if you do not use New Relic monitoring.
 #
-NEW_RELIC_AGENT_URL="https://download.newrelic.com/php_agent/release/newrelic-php5-9.19.0.309-linux.tar.gz"
+NEW_RELIC_AGENT_URL="https://download.newrelic.com/php_agent/release/newrelic-php5-10.2.0.314-linux.tar.gz"
 
 ##
 # The name by which you would like Nextcloud to identify itself in New Relic.

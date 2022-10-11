@@ -1,16 +1,18 @@
 ##
-# Kubernetes deployment manifest for refreshing files in Nextcloud twice a day.
+# Kubernetes deployment manifest for clearing failed uploads older than 7 days
+# every hour.
 #
 # @author Guy Elsmore-Paddock (guy@inveniem.com)
+# @author Brandon McWhirter (brandon.mcwhirter@inveniem.com)
 # @copyright Copyright (c) 2022, Inveniem
 # @license GNU AGPL version 3 or any later version
 #
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: nextcloud-file-scan
+  name: nextcloud-failed-upload-cleanup
 spec:
-  schedule: "0 12,20 * * *"
+  schedule: "0 * * * *"
   concurrencyPolicy: Forbid
   jobTemplate:
     spec:
@@ -22,10 +24,8 @@ spec:
               image: "inveniem/nextcloud-cron:latest"
               args:
                 - '-s'
-                - '/var/www/html/occ'
-                - '--'
-                - 'files:scan'
-                - '--all'
+                - '/bin/sh'
+                - '/cleanup_uploads.sh'
               resources:
                 requests:
                   cpu: 25m

@@ -53,6 +53,7 @@ docker_image_names=(
 )
 
 nextcloud_deployment_name="nextcloud"
+nextcloud_backend_pod_label="backend-nextcloud"
 
 environment_config_path="manifests/config-environment.yaml"
 
@@ -761,11 +762,15 @@ sub_scale() {
 #
 sub_launch_shell() {
   declare -g nextcloud_deployment_name
+  declare -g nextcloud_backend_pod_label
   declare -g error_bad_environment
 
   pod_name=$(
-    kubectl get pods -n "${namespace}" -o name |
-      grep -m1 "${nextcloud_deployment_name}" || echo ""
+    (kubectl get pods -n "${namespace}" \
+      --selector="app=${nextcloud_backend_pod_label}" \
+      --field-selector=status.phase=Running \
+      -o name |
+        grep -m1 "${nextcloud_deployment_name}") || echo ""
   )
 
   if [[ -z "${pod_name}" ]]; then

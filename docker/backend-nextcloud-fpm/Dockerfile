@@ -17,7 +17,9 @@
 # Patch Alpine musl to work around this issue:
 # https://gitlab.alpinelinux.org/alpine/aports/issues/10960
 #
-FROM alpine:3.10 as musl_compile
+FROM alpine:3.16 as musl_compile
+
+ENV MUSL_VERSION="1.2.3"
 
 RUN set -eux;\
     apk add --update \
@@ -39,13 +41,13 @@ RUN set -eux;\
         gpg --batch --keyserver hkp://pgp.mit.edu:80 --recv-keys "$key" ; \
     done; \
     \
-    curl -O https://www.musl-libc.org/releases/musl-1.1.24.tar.gz; \
-    curl -O https://www.musl-libc.org/releases/musl-1.1.24.tar.gz.asc; \
+    curl -O https://www.musl-libc.org/releases/musl-${MUSL_VERSION}.tar.gz; \
+    curl -O https://www.musl-libc.org/releases/musl-${MUSL_VERSION}.tar.gz.asc; \
     \
-    gpg --batch --verify musl-1.1.24.tar.gz.asc musl-1.1.24.tar.gz; \
+    gpg --batch --verify musl-${MUSL_VERSION}.tar.gz.asc musl-${MUSL_VERSION}.tar.gz; \
     \
-    tar -xvzf musl-1.1.24.tar.gz; \
-    cd ./musl-1.1.24; \
+    tar -xvzf musl-${MUSL_VERSION}.tar.gz; \
+    cd ./musl-${MUSL_VERSION}; \
     sed -i 's/char buf\[2048\]/char buf\[8192\]/' ./src/dirent/__dirent.h; \
     \
     ./configure; \
@@ -57,9 +59,10 @@ RUN set -eux;\
 ################################################################################
 # This is the container that actually gets pushed.
 #
-FROM nextcloud:23.0.2-fpm-alpine
+FROM nextcloud:23.0.10-fpm-alpine
 
 ENV NEXTCLOUD_CONFIG_READ_ONLY "false"
+ENV NEXTCLOUD_INIT_LOCK "true"
 
 # Fix-up www-data UID from 82 to 33.
 #

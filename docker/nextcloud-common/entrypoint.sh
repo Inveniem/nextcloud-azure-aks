@@ -15,12 +15,50 @@
 
 set -eu
 
+acquire_lock() {
+    # If another process is syncing the html folder, wait for it to be done,
+    # then escape initialization.
+    #
+    # You need to define the NEXTCLOUD_INIT_LOCK environment variable
+    lock=/var/www/html/nextcloud-init-sync.lock
+    count=0
+    limit=10
+
+    if [ -f "${lock}" ] && [ "${NEXTCLOUD_INIT_LOCK:-}" = "true" ]; then
+        until [ ! -f "${lock}" ] || [ "$count" -gt "${limit}" ]; do
+            count=$((count+1))
+            wait=$((count*10))
+
+            echo "Another process is initializing Nextcloud. Waiting ${wait} seconds..."
+            sleep $wait
+        done
+
+        if [ "${count}" -gt "${limit}" ]; then
+            echo "Timeout while waiting for an ongoing initialization"
+            exit 1
+        fi
+
+        echo "The other process is done, assuming complete initialization"
+    else
+        # Prevent multiple images syncing simultaneously
+        touch "${lock}"
+    fi
+}
+
+release_lock() {
+    rm "${lock}"
+}
+
 initialize_environment_vars() {
-  if ! touch "/var/www/html/config/.writable" 1>/dev/null 2>&1; then
-    # Force environment variable to `true` whenever the config folder is mounted
-    # read-only, even if the var was not explicitly set as such.
-    export NEXTCLOUD_CONFIG_READ_ONLY="true"
-  fi
+    touch_file="/var/www/html/config/.writable"
+
+    if touch "${touch_file}" 1>/dev/null 2>&1; then
+        rm "${touch_file}"
+    else
+        # Force environment variable to `true` whenever the config folder is mounted
+        # read-only, even if the var was not explicitly set as such.
+        export NEXTCLOUD_CONFIG_READ_ONLY="true"
+    fi
 }
 
 initialize_container() {
@@ -40,6 +78,7 @@ initialize_container() {
         image_version="$(php -r 'require "/usr/src/nextcloud/version.php"; echo implode(".", $OC_Version);')"
 
         ensure_compatible_image "${installed_version}" "${image_version}"
+        acquire_lock
         deploy_nextcloud_release
         setup_redis
         tune_php
@@ -58,6 +97,7 @@ initialize_container() {
         fi
 
         update_htaccess
+        release_lock
     fi
 }
 
@@ -264,6 +304,13 @@ capture_install_options() {
         install_options=$install_options' --data-dir "$NEXTCLOUD_DATA_DIR"'
     fi
 
+    file_env MYSQL_DATABASE
+    file_env MYSQL_PASSWORD
+    file_env MYSQL_USER
+    file_env POSTGRES_DB
+    file_env POSTGRES_PASSWORD
+    file_env POSTGRES_USER
+
     install_type="None"
 
     if [ -n "${SQLITE_DATABASE+x}" ]; then
@@ -384,6 +431,34 @@ run_as() {
         return $?
     fi
 }
+
+# usage: file_env VAR [DEFAULT]
+#    ie: file_env 'XYZ_DB_PASSWORD' 'example'
+# (will allow for "$XYZ_DB_PASSWORD_FILE" to fill in the value of
+#  "$XYZ_DB_PASSWORD" from a file, especially for Docker's secrets feature)
+file_env() {
+    var="$1"
+    fileVar="${var}_FILE"
+    def="${2:-}"
+    varValue=$(env | grep -E "^${var}=" | sed -E -e "s/^${var}=//")
+    fileVarValue=$(env | grep -E "^${fileVar}=" | sed -E -e "s/^${fileVar}=//")
+
+    if [ -n "${varValue}" ] && [ -n "${fileVarValue}" ]; then
+        echo >&2 "error: both $var and $fileVar are set (but are exclusive)"
+        exit 1
+    fi
+
+    if [ -n "${varValue}" ]; then
+        export "$var"="${varValue}"
+    elif [ -n "${fileVarValue}" ]; then
+        export "$var"="$(cat "${fileVarValue}")"
+    elif [ -n "${def}" ]; then
+        export "$var"="$def"
+    fi
+
+    unset "$fileVar"
+}
+
 
 container_type="${1:-none}"
 

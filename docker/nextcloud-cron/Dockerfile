@@ -7,7 +7,7 @@
 # @copyright Copyright (c) 2019-2020, Inveniem
 # @license GNU AGPL version 3 or any later version
 #
-FROM nextcloud:23.0.2-fpm
+FROM nextcloud:23.0.10-apache
 
 ENV NEXTCLOUD_CONFIG_READ_ONLY "true"
 
@@ -18,6 +18,8 @@ RUN rm -f /usr/src/nextcloud/config/redis.config.php
 
 COPY nextcloud-cron/entrypoint.sh /
 COPY nextcloud-common/config/* /usr/src/nextcloud/config/
+
+COPY nextcloud-cron/cleanup_uploads.sh /
 
 # Ensure custom apps are available during cron runs.
 # We supply all custom apps via Docker image; app store is disabled

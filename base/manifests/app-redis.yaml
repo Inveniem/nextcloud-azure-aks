@@ -24,7 +24,7 @@ spec:
     metadata:
       labels:
         app: db-redis
-        role: backend
+        role: database
     spec:
       initContainers:
         # This is needed to address this warning from Redis:
