@@ -96,20 +96,20 @@ images:
 
   - name: inveniem/nextcloud-cron
     newName: your-acr-instance.azurecr.io/inveniem/nextcloud-cron
-    newTag: "10.1.0"
+    newTag: 10.1.1
 
   - name: inveniem/nextcloud-apache
     newName: your-acr-instance.azurecr.io/inveniem/nextcloud-apache
-    newTag: "10.1.0"
+    newTag: 10.1.1
 
   - name: inveniem/nextcloud-fpm
     newName: your-acr-instance.azurecr.io/inveniem/nextcloud-fpm
-    newTag: "10.1.0"
+    newTag: 10.1.1
 
   - name: inveniem/nextcloud-nginx-middleware
     newName: your-acr-instance.azurecr.io/inveniem/nextcloud-nginx-middleware
-    newTag: "10.1.0"
+    newTag: 10.1.1
 
   - name: inveniem/sftp-ws-server
     newName: your-acr-instance.azurecr.io/inveniem/sftp-ws-server
-    newTag: "10.1.0"
+    newTag: 10.1.1

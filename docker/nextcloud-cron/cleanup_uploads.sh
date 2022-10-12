@@ -11,8 +11,11 @@
 
 set -eu
 
-find /var/www/html/ \
-  -wholename "*uploads/web-file-upload*" \
+find /var/www/html/data/ \
+  -mindepth 3 \
+  -maxdepth 3 \
   -type d \
-  ! -mtime 7 \
-  -exec rm -rvf "{}" ";"
+  -wholename '/var/www/html/data/*/uploads/web-file-upload*' \
+  -mtime +7 \
+  '(' ! -wholename '*/.snapshot/*' ')' \
+  -exec rm -rvf '{}' ';'

@@ -66,8 +66,7 @@ NEW_RELIC_KEY=""
 ##
 # The URL to the New Relic PHP agent (optional).
 #
-# The default downloads NR PHP agent 9.19.0.309 for PHP 5+. Use the latest shown
-# here: https://download.newrelic.com/php_agent/release/
+# Use the latest shown here: https://download.newrelic.com/php_agent/release/
 #
 # Leave blank if you do not use New Relic monitoring.
 #
