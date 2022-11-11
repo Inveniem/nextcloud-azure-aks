@@ -17,6 +17,28 @@ spec:
       template:
         spec:
           restartPolicy: Never
+          affinity:
+            nodeAffinity:
+              preferredDuringSchedulingIgnoredDuringExecution:
+              # Prefer to be scheduled on a burstable node.
+              #
+              # NOTE: "inveniem.com/workload-type" is a *label* that has the same
+              # name and value as the *taint* on the same nodes. Kubernetes
+              # doesn't have a way to use the taint for affinity, so we duplicate
+              # it as a label.
+              - weight: 100
+                preference:
+                  matchExpressions:
+                    - key: inveniem.com/workload-type
+                      operator: In
+                      values:
+                        - burstable
+          tolerations:
+            # Allow scheduling this job on burstable nodes.
+            - key: inveniem.com/workload-type
+              operator: Equal
+              value: burstable
+              effect: NoSchedule
           containers:
             - name: cron-nextcloud
               image: "inveniem/nextcloud-cron:latest"
