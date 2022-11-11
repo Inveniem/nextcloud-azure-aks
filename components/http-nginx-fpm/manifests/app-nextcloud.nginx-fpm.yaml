@@ -23,6 +23,21 @@ spec:
         role: backend
     spec:
       affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            # Prefer to be scheduled on a burstable node.
+            #
+            # NOTE: "inveniem.com/workload-type" is a *label* that has the same
+            # name and value as the *taint* on the same nodes. Kubernetes
+            # doesn't have a way to use the taint for affinity, so we duplicate
+            # it as a label.
+            - weight: 100
+              preference:
+                matchExpressions:
+                  - key: inveniem.com/workload-type
+                    operator: In
+                    values:
+                      - burstable
         podAntiAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
             # Prevent multiple replicas from being on the same node.
