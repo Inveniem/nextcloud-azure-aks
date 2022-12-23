@@ -6,7 +6,7 @@
     "@inveniem/sftp-ws": "^0.8.1",
     "bunyan": "^1.8.14",
     "express": "^4.10",
-    "jsonwebtoken": "^8.1.0"
+    "jsonwebtoken": "^9.0.0"
   },
   "author": "Inveniem",
   "license": "UNLICENSED"
