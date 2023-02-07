@@ -194,8 +194,6 @@ sub_publish() {
   echo "Building and publishing Nextcloud image '${publish_version}'..."
   echo ""
 
-  export REGISTRY_NAME
-  export REGISTRY_HOST
   export NEW_RELIC_KEY
   export NEW_RELIC_AGENT_URL
   export NEW_RELIC_APP
