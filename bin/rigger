@@ -281,8 +281,6 @@ sub_add_sftp_user() {
   local is_arg_missing=0
   local username="${1:-}"
 
-  require_command "cut"
-
   if [[ -z "${username}" ]]; then
     is_arg_missing=1
   fi
