@@ -70,7 +70,7 @@ NEW_RELIC_KEY=""
 #
 # Leave blank if you do not use New Relic monitoring.
 #
-NEW_RELIC_AGENT_URL="https://download.newrelic.com/php_agent/release/newrelic-php5-10.3.0.315-linux.tar.gz"
+NEW_RELIC_AGENT_URL="https://download.newrelic.com/php_agent/release/newrelic-php5-10.8.0.323-linux.tar.gz"
 
 ##
 # The name by which you would like Nextcloud to identify itself in New Relic.
