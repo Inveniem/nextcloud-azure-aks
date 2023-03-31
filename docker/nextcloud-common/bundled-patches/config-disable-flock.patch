@@ -1,0 +1,90 @@
+From c2ac41b7911a75c7b46eddad48e083a31d176281 Mon Sep 17 00:00:00 2001
+From: Guy Elsmore-Paddock <guy.paddock@gmail.com>
+Date: Thu, 30 Mar 2023 11:01:59 -0400
+Subject: [PATCH] [IT-91] QF: Disable `flock()` on Config Files
+
+After upgrading to K8s from `1.23.9` to `1.25.5` and the SMB CSI driver
+from `1.9.0` to `1.10.0`, `flock()` appears to be causing this error on
+cron runs and on any Nextcloud pod other than the first one that
+launches:
+
+```
+Uncaught Error: Call to a member function getLogger() on null in /var/www/html/index.php:71
+```
+
+Caused by:
+```
+Exception: Could not acquire a shared lock on the config file /var/www/html/config/apcu.config.php in /var/www/html/lib/private/Config.php:216
+```
+
+File locking on config files was added in 2014 and was recently removed
+and then re-added in Nextcloud so I doubt a change in Nextcloud caused
+this issue to appear.
+---
+ lib/private/Config.php | 28 ++++++++++++++++++++--------
+ 1 file changed, 20 insertions(+), 8 deletions(-)
+
+diff --git a/lib/private/Config.php b/lib/private/Config.php
+index 0e3a9b22a7..e1420d55b5 100644
+--- a/lib/private/Config.php
++++ b/lib/private/Config.php
+@@ -224,10 +224,13 @@ class Config {
+ 				continue;
+ 			}
+ 
++			// GAP on 2023-03-30: File locking does not appear to work reliably on
++			// SMB-mounted volumes in AKS.
++			//
+ 			// Try to acquire a file lock
+-			if (!flock($filePointer, LOCK_SH)) {
+-				throw new \Exception(sprintf('Could not acquire a shared lock on the config file %s', $file));
+-			}
++			//if (!flock($filePointer, LOCK_SH)) {
++			//	throw new \Exception(sprintf('Could not acquire a shared lock on the config file %s', $file));
++			//}
+ 
+ 			unset($CONFIG);
+ 			include $file;
+@@ -235,8 +238,11 @@ class Config {
+ 				$this->cache = array_merge($this->cache, $CONFIG);
+ 			}
+ 
++			// GAP on 2023-03-30: File locking does not appear to work reliably on
++			// SMB-mounted volumes in AKS.
++			//
+ 			// Close the file pointer and release the lock
+-			flock($filePointer, LOCK_UN);
++			//flock($filePointer, LOCK_UN);
+ 			fclose($filePointer);
+ 		}
+ 
+@@ -277,16 +283,22 @@ class Config {
+ 				'This can usually be fixed by giving the webserver write access to the config directory.');
+ 		}
+ 
++		// GAP on 2023-03-30: File locking does not appear to work reliably on
++		// SMB-mounted volumes in AKS.
++		//
+ 		// Try to acquire a file lock
+-		if (!flock($filePointer, LOCK_EX)) {
+-			throw new \Exception(sprintf('Could not acquire an exclusive lock on the config file %s', $this->configFilePath));
+-		}
++		//if (!flock($filePointer, LOCK_EX)) {
++		//	throw new \Exception(sprintf('Could not acquire an exclusive lock on the config file %s', $this->configFilePath));
++		//}
+ 
++		// GAP on 2023-03-30: File locking does not appear to work reliably on
++		// SMB-mounted volumes in AKS.
++		//
+ 		// Write the config and release the lock
+ 		ftruncate($filePointer, 0);
+ 		fwrite($filePointer, $content);
+ 		fflush($filePointer);
+-		flock($filePointer, LOCK_UN);
++		//flock($filePointer, LOCK_UN);
+ 		fclose($filePointer);
+ 
+ 		if (function_exists('opcache_invalidate')) {
+-- 
+2.40.0.windows.1
+

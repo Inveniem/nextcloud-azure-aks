@@ -51,8 +51,10 @@ spec:
           - uid=33
           - gid=33
           - dir_mode=0770
-          - file_mode=0770
-          - actimeo=2
+          - file_mode=0660
+          - vers=3.1.1
+          - nosharesock
+          - cache=strict
       name:
         prefix: "pv-nextcloud-sample-"
         suffix: ~
@@ -124,8 +126,10 @@ spec:
           - uid=33
           - gid=33
           - dir_mode=0770
-          - file_mode=0770
-          - actimeo=2
+          - file_mode=0660
+          - vers=3.1.1
+          - nosharesock
+          - cache=strict
       name:
         prefix: "pv-nextcloud-sample-"
         suffix: ~
@@ -201,8 +205,10 @@ spec:
           - uid=33
           - gid=33
           - dir_mode=0770
-          - file_mode=0770
-          - actimeo=2
+          - file_mode=0660
+          - vers=3.1.1
+          - nosharesock
+          - cache=strict
       name:
         prefix: "pv-nextcloud-sample-"
         suffix: ~
