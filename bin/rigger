@@ -61,6 +61,7 @@ storage_secrets_generator_bin_path="generate_secrets_azure_files_storage.php"
 generated_storage_secrets_path="manifests/generated/secrets-azure_files.yaml"
 
 mysql_secrets_path="manifests/secrets-mysql.yaml"
+mysql_secret_name="nextcloud-mysql-creds"
 
 generated_sftp_host_keys_secrets_path="manifests/generated/secrets-sftp-host-keys.yaml"
 sftp_host_keys_secret_name="sftp-host-keys"
@@ -808,7 +809,7 @@ sub_launch_db_shell() {
   db_credentials=$(
     sops --decrypt "${mysql_secrets_encrypted_path}" | \
     yq eval \
-      '. | select(.metadata.name == "nextcloud-mysql-creds") | .stringData' -
+      ". | select(.metadata.name == \"${mysql_secret_name}\") | .stringData" -
   )
 
   db_hostname=$(echo "${db_credentials}" | yq eval '.hostname' -)
@@ -853,7 +854,7 @@ sub_dump_db() {
   db_credentials=$(
     sops --decrypt "${mysql_secrets_encrypted_path}" | \
     yq eval \
-      '. | select(.metadata.name == "nextcloud-mysql-creds") | .stringData' -
+      ". | select(.metadata.name == \"${mysql_secret_name}\") | .stringData" -
   )
 
   db_hostname=$(echo "${db_credentials}" | yq eval '.hostname' -)
