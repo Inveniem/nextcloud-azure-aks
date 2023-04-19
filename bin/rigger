@@ -126,7 +126,7 @@ sub_help() {
   echo "    launch-shell                       Launches an sh shell on a Nextcloud pod."
   echo "    launch-db-shell                    Launches a MySQL interactive shell connected to the Nextcloud database."
   echo ""
-  echo "    dump-db                            Dumps the contents of the Nextcloud MySQL database to standard output."
+  echo "    dump-db [options]                  Dumps the contents of the Nextcloud MySQL database to a file or standard out."
   echo ""
 
   if [[ "${have_addon_commands}" -ne 0 ]]; then
@@ -844,11 +844,32 @@ sub_dump_db() {
   local db_username
   local db_password
 
+  local write_to_stdout=0
+
+  for arg in "$@"; do
+    case "${arg}" in
+      '--to-stdout')
+        write_to_stdout=1
+      ;;
+      *)
+        echo "Usage: ${program_name} dump-db [--to-stdout]"
+        echo ""
+        echo "When '--to-stdout' is specified, the backup is written to standard"
+        echo "out. Otherwise, a new file is created on disk with the date and time"
+        echo "that the backup started."
+        echo ""
+
+        exit 0
+      ;;
+    esac
+  done
+
+  require_command "mysqldump"
+
   mysql_secrets_encrypted_path=$(
     get_encrypted_secret_path "${mysql_secrets_path}"
   )
 
-  require_command "mysql"
   require_encrypted_secrets_file "${mysql_secrets_encrypted_path}"
 
   db_credentials=$(
@@ -863,15 +884,32 @@ sub_dump_db() {
   db_username=$(echo "${db_credentials}" | yq eval '.username' -)
   db_password=$(echo "${db_credentials}" | yq eval '.password' -)
 
-  mysqldump \
-    --no-tablespaces \
-    --skip-extended-insert \
-    --order-by-primary \
-    --host="${db_hostname}" \
-    --databases "${db_schema}" \
-    --port="${db_port}" \
-    --user="${db_username}" \
+  options=(
+    --host="${db_hostname}"
+    --port="${db_port}"
+    --user="${db_username}"
     --password="${db_password}"
+    --no-tablespaces
+    --skip-extended-insert
+    --order-by-primary
+    --disable-keys
+    --single-transaction
+    --databases "${db_schema}"
+  )
+
+  if [[ "${write_to_stdout}" -eq 1 ]]; then
+    mysqldump "${options[@]}"
+  else
+    require_command "pv"
+
+    dump_filename="$(date +"%Y-%m-%d")-${db_hostname}-${db_schema}.sql"
+
+    echo "Exporting database to '${dump_filename}'."
+    echo ""
+
+    mysqldump "${options[@]}" | pv >"${dump_filename}"
+  fi
+
   echo ""
 }
 
