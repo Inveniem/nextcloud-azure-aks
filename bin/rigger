@@ -845,18 +845,26 @@ sub_dump_db() {
   local db_password
 
   local write_to_stdout=0
+  local ordered_dump=0
 
   for arg in "$@"; do
     case "${arg}" in
       '--to-stdout')
         write_to_stdout=1
       ;;
+      '--ordered-dump')
+        ordered_dump=1
+      ;;
       *)
-        echo "Usage: ${program_name} dump-db [--to-stdout]"
+        echo "Usage: ${program_name} dump-db [--to-stdout] [--ordered-dump]"
         echo ""
         echo "When '--to-stdout' is specified, the backup is written to standard"
         echo "out. Otherwise, a new file is created on disk with the date and time"
         echo "that the backup started."
+        echo ""
+        echo "When '--ordered-dump' is specified, the export is written out in"
+        echo "descending primary key order, and the export contains one insert"
+        echo "statement per record rather than using extended inserts."
         echo ""
 
         exit 0
@@ -890,12 +898,17 @@ sub_dump_db() {
     --user="${db_username}"
     --password="${db_password}"
     --no-tablespaces
-    --skip-extended-insert
-    --order-by-primary
     --disable-keys
     --single-transaction
     --databases "${db_schema}"
   )
+
+  if [[ "${ordered_dump}" -eq 1 ]]; then
+    options+=(
+      --skip-extended-insert
+      --order-by-primary
+    )
+  fi
 
   if [[ "${write_to_stdout}" -eq 1 ]]; then
     mysqldump "${options[@]}"
