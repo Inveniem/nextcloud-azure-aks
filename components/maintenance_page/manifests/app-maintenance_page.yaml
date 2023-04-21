@@ -1,0 +1,105 @@
+##
+# Kubernetes deployment manifest for running a simple maintenance page during
+# scheduled/planned downtime.
+#
+# The messages displayed are configured in the config-environment.yaml file
+# provided by the overlay for the environment.
+#
+# @author Guy Elsmore-Paddock (guy@inveniem.com)
+# @copyright Copyright (c) 2023-2024, Inveniem
+# @license GNU AGPL version 3 or any later version
+#
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: maintenance-page
+spec:
+  replicas: 1
+  revisionHistoryLimit: 2
+  selector:
+    matchLabels:
+      app: frontend-maintenance-page
+      role: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend-maintenance-page
+        role: frontend
+    spec:
+      tolerations:
+        # Allow scheduling this job on burstable nodes.
+        - key: inveniem.com/workload-type
+          operator: Equal
+          value: burstable
+          effect: NoSchedule
+      containers:
+        - name: frontend-maintenance-page
+          image: "wickerlabs/maintenance:latest"
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              cpu: 100m
+              memory: 64Mi
+            limits:
+              cpu: 100m
+              memory: 128Mi
+          env:
+            - name: TITLE
+              valueFrom:
+                configMapKeyRef:
+                  name: environment
+                  key: maintenanceTitle
+            - name: HEADLINE
+              valueFrom:
+                configMapKeyRef:
+                  name: environment
+                  key: maintenanceHeadline
+            - name: MESSAGE
+              valueFrom:
+                configMapKeyRef:
+                  name: environment
+                  key: maintenanceMessage
+            - name: CONTACT_LINK
+              valueFrom:
+                configMapKeyRef:
+                  name: environment
+                  key: maintenanceContactLink
+            - name: MAIL_ADDRESS
+              valueFrom:
+                configMapKeyRef:
+                  name: environment
+                  key: maintenanceMailAddress
+            - name: TEAM_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: environment
+                  key: maintenanceTeamName
+            - name: LINK_COLOR
+              valueFrom:
+                configMapKeyRef:
+                  name: environment
+                  key: maintenanceLinkColor
+            - name: THEME
+              valueFrom:
+                configMapKeyRef:
+                  name: environment
+                  key: maintenanceTheme
+            - name: RESPONSE_CODE
+              valueFrom:
+                configMapKeyRef:
+                  name: environment
+                  key: maintenanceResponseCode
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: internal-maintenance-page
+  labels:
+    role: internal-service
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8080
+  selector:
+    app: frontend-maintenance-page

@@ -1,0 +1,51 @@
+##
+# Kustomization component to serve up a maintenance page instead of Nextcloud.
+#
+# The configuration for the maintenance page comes from a
+# config-environment.yaml file provided by the overlay for the environment. This
+# functionality has been provided as a component so that it only needs to be
+# referenced by an overlay when traffic served by that overlay should be routed
+# away from Nextcloud, such as during scheduled downtime. The component
+# accomplishes this by rewriting the ingress routes for Nextcloud to route
+# traffic to the maintenance page service instead of Nextcloud itself.
+#
+# To enable the maintenance page for the environment of an overlay:
+# 1. Customize the appropriate settings in the config-environment.yaml of the
+#    overlay.
+# 2. Uncomment the reference to this component in the `kustomization.yaml` file.
+# 3. Re-deploy the overlay.
+#
+# To disable the maintenance page for the environment of an overlay:
+# 1. Comment out the reference to this component in the `kustomization.yaml`
+#    file.
+# 2. Re-deploy the overlay.
+#
+# @author Guy Elsmore-Paddock (guy@inveniem.com)
+# @copyright Copyright (c) 2023-2024, Inveniem
+# @license GNU AGPL version 3 or any later version
+#
+apiVersion: kustomize.config.k8s.io/v1alpha1
+kind: Component
+
+resources:
+  - manifests/app-maintenance_page.yaml
+
+patches:
+  - target:
+      kind: Ingress
+      name: "frontend-nextcloud-ingress"
+      labelSelector: "owning-app=nextcloud"
+    patch: |
+      [
+        {
+          "op": "replace",
+          "path": "/spec/rules/0/http/paths/0/backend/service/name",
+          "value": "internal-maintenance-page"
+        },
+        {
+          "op": "replace",
+          "path": "/spec/rules/0/http/paths/0/backend/service/port/number",
+          "value": 8080
+        }
+      ]
+      
