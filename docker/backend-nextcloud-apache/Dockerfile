@@ -53,6 +53,11 @@ RUN /setup_newrelic.sh && rm /setup_newrelic.sh
 COPY nextcloud-common/entrypoint.sh /
 COPY nextcloud-common/config/* /usr/src/nextcloud/config/
 
+# Create combined CA file, per:
+# https://learn.microsoft.com/en-us/azure/mariadb/concepts-certificate-rotation
+COPY nextcloud-common/ssl/azure_ca/ /tmp/azure_ca
+RUN cat /tmp/azure_ca/*.pem >/usr/src/nextcloud/config/azure_ca.pem
+
 # We supply all custom apps via Docker image; app store is disabled
 COPY nextcloud-common/custom_apps/. /usr/src/nextcloud/custom_apps/
 
