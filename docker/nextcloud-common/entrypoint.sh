@@ -192,6 +192,7 @@ deploy_nextcloud_release() {
         echo "'config' directory is writable."
         echo "Sync-ing configuration snippets:"
         cp -v /usr/src/nextcloud/config/*.config.php /var/www/html/config/
+        cp -v /usr/src/nextcloud/config/*.pem /var/www/html/config/
         echo ""
     else
         echo "'config' directory is not writable."
