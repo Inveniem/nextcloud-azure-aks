@@ -32,6 +32,16 @@ components:
   - ../../components/cert-manager-lets-encrypt
   - ../../components/ingress-dns
 
+# Uncomment the line after this comment and re-deploy this overlay to serve up a
+# maintenance page for end users, rather than the normal Nextcloud application.
+# To reverse this and restore access, comment out the component and re-deploy
+# the overlay.
+#
+# This does not prevent deployment of Nextcloud, but does block access to it by
+# end users. No other components have to be commented out for this to work.
+#
+# - ../../components/maintenance_page
+
 generators:
   - decrypt-secrets.nextcloud.yaml
 #### Uncomment this if using the "sftp-server" component:
