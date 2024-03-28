@@ -132,6 +132,16 @@ spec:
                 secretKeyRef:
                   name: "nextcloud-redis-creds"
                   key: password
+            - name: NEW_RELIC_KEY
+              valueFrom:
+                configMapKeyRef:
+                  name: environment
+                  key: newRelicSubscriptionKey
+            - name: NEW_RELIC_APP
+              valueFrom:
+                configMapKeyRef:
+                  name: environment
+                  key: newRelicApplicationName
           startupProbe:
             # After pod creation, allow Nextcloud to take up to 10 minutes
             # (5 seconds x 120 attempts) before concluding the container

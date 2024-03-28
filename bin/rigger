@@ -61,6 +61,7 @@ storage_secrets_generator_bin_path="generate_secrets_azure_files_storage.php"
 generated_storage_secrets_path="manifests/generated/secrets-azure_files.yaml"
 
 mysql_secrets_path="manifests/secrets-mysql.yaml"
+mysql_secret_name="nextcloud-mysql-creds"
 
 generated_sftp_host_keys_secrets_path="manifests/generated/secrets-sftp-host-keys.yaml"
 sftp_host_keys_secret_name="sftp-host-keys"
@@ -125,7 +126,7 @@ sub_help() {
   echo "    launch-shell                       Launches an sh shell on a Nextcloud pod."
   echo "    launch-db-shell                    Launches a MySQL interactive shell connected to the Nextcloud database."
   echo ""
-  echo "    dump-db                            Dumps the contents of the Nextcloud MySQL database to standard output."
+  echo "    dump-db [options]                  Dumps the contents of the Nextcloud MySQL database to a file or standard out."
   echo ""
 
   if [[ "${have_addon_commands}" -ne 0 ]]; then
@@ -194,8 +195,6 @@ sub_publish() {
   echo "Building and publishing Nextcloud image '${publish_version}'..."
   echo ""
 
-  export REGISTRY_NAME
-  export REGISTRY_HOST
   export NEW_RELIC_KEY
   export NEW_RELIC_AGENT_URL
   export NEW_RELIC_APP
@@ -282,8 +281,6 @@ sub_add_sftp_user() {
 
   local is_arg_missing=0
   local username="${1:-}"
-
-  require_command "cut"
 
   if [[ -z "${username}" ]]; then
     is_arg_missing=1
@@ -812,7 +809,7 @@ sub_launch_db_shell() {
   db_credentials=$(
     sops --decrypt "${mysql_secrets_encrypted_path}" | \
     yq eval \
-      '. | select(.metadata.name == "nextcloud-mysql-creds") | .stringData' -
+      ". | select(.metadata.name == \"${mysql_secret_name}\") | .stringData" -
   )
 
   db_hostname=$(echo "${db_credentials}" | yq eval '.hostname' -)
@@ -847,17 +844,46 @@ sub_dump_db() {
   local db_username
   local db_password
 
+  local write_to_stdout=0
+  local ordered_dump=0
+
+  for arg in "$@"; do
+    case "${arg}" in
+      '--to-stdout')
+        write_to_stdout=1
+      ;;
+      '--ordered-dump')
+        ordered_dump=1
+      ;;
+      *)
+        echo "Usage: ${program_name} dump-db [--to-stdout] [--ordered-dump]"
+        echo ""
+        echo "When '--to-stdout' is specified, the backup is written to standard"
+        echo "out. Otherwise, a new file is created on disk with the date and time"
+        echo "that the backup started."
+        echo ""
+        echo "When '--ordered-dump' is specified, the export is written out in"
+        echo "descending primary key order, and the export contains one insert"
+        echo "statement per record rather than using extended inserts."
+        echo ""
+
+        exit 0
+      ;;
+    esac
+  done
+
+  require_command "mysqldump"
+
   mysql_secrets_encrypted_path=$(
     get_encrypted_secret_path "${mysql_secrets_path}"
   )
 
-  require_command "mysql"
   require_encrypted_secrets_file "${mysql_secrets_encrypted_path}"
 
   db_credentials=$(
     sops --decrypt "${mysql_secrets_encrypted_path}" | \
     yq eval \
-      '. | select(.metadata.name == "nextcloud-mysql-creds") | .stringData' -
+      ". | select(.metadata.name == \"${mysql_secret_name}\") | .stringData" -
   )
 
   db_hostname=$(echo "${db_credentials}" | yq eval '.hostname' -)
@@ -866,15 +892,37 @@ sub_dump_db() {
   db_username=$(echo "${db_credentials}" | yq eval '.username' -)
   db_password=$(echo "${db_credentials}" | yq eval '.password' -)
 
-  mysqldump \
-    --no-tablespaces \
-    --skip-extended-insert \
-    --order-by-primary \
-    --host="${db_hostname}" \
-    --databases "${db_schema}" \
-    --port="${db_port}" \
-    --user="${db_username}" \
+  options=(
+    --host="${db_hostname}"
+    --port="${db_port}"
+    --user="${db_username}"
     --password="${db_password}"
+    --no-tablespaces
+    --disable-keys
+    --single-transaction
+    --databases "${db_schema}"
+  )
+
+  if [[ "${ordered_dump}" -eq 1 ]]; then
+    options+=(
+      --skip-extended-insert
+      --order-by-primary
+    )
+  fi
+
+  if [[ "${write_to_stdout}" -eq 1 ]]; then
+    mysqldump "${options[@]}"
+  else
+    require_command "pv"
+
+    dump_filename="$(date +"%Y-%m-%d")-${db_hostname}-${db_schema}.sql"
+
+    echo "Exporting database to '${dump_filename}'."
+    echo ""
+
+    mysqldump "${options[@]}" | pv >"${dump_filename}"
+  fi
+
   echo ""
 }
 

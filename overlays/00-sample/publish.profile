@@ -6,7 +6,7 @@
 # folder and customize manifests in each one to match your environments.
 #
 # @author Guy Elsmore-Paddock (guy@inveniem.com)
-# @copyright Copyright (c) 2019-2021, Inveniem
+# @copyright Copyright (c) 2019-2024, Inveniem
 # @license GNU AGPL version 3 or any later version
 #
 
@@ -38,18 +38,17 @@ CONTAINER_ENGINE="docker"
 # available in the deployed image.
 #
 NEXTCLOUD_CUSTOM_APPS=(
-    'https://github.com/westberliner/checksum/releases/download/v1.1.4/checksum.tar.gz'
-    'https://github.com/nextcloud/files_antivirus/releases/download/v3.3.1/files_antivirus.tar.gz'
-    'https://github.com/nextcloud-releases/files_automatedtagging/releases/download/v1.13.0/files_automatedtagging-v1.13.0.tar.gz'
-    'https://github.com/nextcloud-releases/files_downloadactivity/releases/download/v1.15.0/files_downloadactivity-v1.15.0.tar.gz'
+    'https://github.com/westberliner/checksum/releases/download/v1.2.3/checksum.tar.gz'
+    'https://github.com/nextcloud-releases/files_antivirus/releases/download/v5.3.1/files_antivirus-v5.3.1.tar.gz'
+    'https://github.com/nextcloud-releases/files_automatedtagging/releases/download/v1.14.2/files_automatedtagging-v1.14.2.tar.gz'
+    'https://github.com/nextcloud-releases/files_downloadactivity/releases/download/v1.16.0/files_downloadactivity-v1.16.0.tar.gz'
     'https://github.com/Inveniem/nextcloud-files-excludedirs/releases/download/v1.0.1-beta/nextcloud_files_excludedirs-v1.0.1-beta.tar.gz'
     'https://github.com/nextcloud/files_rightclick/releases/download/v0.15.1/files_rightclick.tar.gz'
-    'https://github.com/gino0631/nextcloud-metadata/releases/download/v0.16.0/metadata.tar.gz'
-    'https://github.com/owncloud/music/releases/download/v1.6.0/music_1.6.0_for_nextcloud.tar.gz'
-    'https://github.com/nextcloud-releases/previewgenerator/releases/download/v5.1.0/previewgenerator-v5.1.0.tar.gz'
-    'https://github.com/pulsejet/nextcloud-oidc-login/releases/download/v2.3.3/oidc_login.tar.gz'
-    'https://github.com/nextcloud-releases/user_external/releases/download/v3.0.0/user_external-v3.0.0.tar.gz'
-    'https://github.com/nextcloud-releases/user_saml/releases/download/v5.0.3/user_saml-v5.0.3.tar.gz'
+    'https://github.com/gino0631/nextcloud-metadata/releases/download/v0.19.0/metadata.tar.gz'
+    'https://github.com/owncloud/music/releases/download/v1.10.0/music_1.10.0_for_nextcloud.tar.gz'
+    'https://github.com/nextcloud-releases/previewgenerator/releases/download/v5.2.4/previewgenerator-v5.2.4.tar.gz'
+    'https://github.com/nextcloud-releases/user_external/releases/download/v3.1.0/user_external-v3.1.0.tar.gz'
+    'https://github.com/nextcloud-releases/user_saml/releases/download/v5.1.5/user_saml-v5.1.5.tar.gz'
 )
 
 ################################################################################
@@ -57,27 +56,20 @@ NEXTCLOUD_CUSTOM_APPS=(
 ################################################################################
 
 ##
-# Your New Relic subscription key.
-#
-# Leave blank if you do not use New Relic monitoring.
-#
-NEW_RELIC_KEY=""
-
-##
 # The URL to the New Relic PHP agent (optional).
 #
 # Use the latest shown here: https://download.newrelic.com/php_agent/release/
 #
-# Leave blank if you do not use New Relic monitoring.
+# Leave this blank if you do not want New Relic support in your image. The
+# subscription key and application name are specified through run-time
+# environment variables that are controlled by "config-environment.yaml" in the
+# Kustomization overlay.
 #
-NEW_RELIC_AGENT_URL="https://download.newrelic.com/php_agent/release/newrelic-php5-10.8.0.323-linux.tar.gz"
-
-##
-# The name by which you would like Nextcloud to identify itself in New Relic.
+# The image MUST have New Relic support baked in if you specify a New Relic
+# subscription key in the "config-environment.yaml" file, or Nextcloud will fail
+# to start.
 #
-# Leave blank if you do not use New Relic monitoring.
-#
-NEW_RELIC_APP="Nextcloud"
+NEW_RELIC_AGENT_URL="https://download.newrelic.com/php_agent/release/newrelic-php5-10.19.0.9-linux.tar.gz"
 
 ################################################################################
 # Deployment Macros

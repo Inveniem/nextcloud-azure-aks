@@ -131,6 +131,16 @@ spec:
                 secretKeyRef:
                   name: "nextcloud-redis-creds"
                   key: password
+            - name: NEW_RELIC_KEY
+              valueFrom:
+                configMapKeyRef:
+                  name: environment
+                  key: newRelicSubscriptionKey
+            - name: NEW_RELIC_APP
+              valueFrom:
+                configMapKeyRef:
+                  name: environment
+                  key: newRelicApplicationName
 
         # Container: Nginx Server Middleware
         - name: middle-nextcloud-nginx

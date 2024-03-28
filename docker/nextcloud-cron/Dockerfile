@@ -4,10 +4,10 @@
 # NOTE: All COPY paths are relative to the parent folder (../docker).
 #
 # @author Guy Elsmore-Paddock (guy@inveniem.com)
-# @copyright Copyright (c) 2019-2020, Inveniem
+# @copyright Copyright (c) 2019-2024, Inveniem
 # @license GNU AGPL version 3 or any later version
 #
-FROM nextcloud:23.0.10-apache
+FROM nextcloud:24.0.12-apache
 
 ENV NEXTCLOUD_CONFIG_READ_ONLY "true"
 
