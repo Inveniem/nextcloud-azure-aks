@@ -6,7 +6,7 @@
 # folder and customize manifests in each one to match your environments.
 #
 # @author Guy Elsmore-Paddock (guy@inveniem.com)
-# @copyright Copyright (c) 2019-2021, Inveniem
+# @copyright Copyright (c) 2019-2024, Inveniem
 # @license GNU AGPL version 3 or any later version
 #
 
@@ -57,27 +57,20 @@ NEXTCLOUD_CUSTOM_APPS=(
 ################################################################################
 
 ##
-# Your New Relic subscription key.
-#
-# Leave blank if you do not use New Relic monitoring.
-#
-NEW_RELIC_KEY=""
-
-##
 # The URL to the New Relic PHP agent (optional).
 #
 # Use the latest shown here: https://download.newrelic.com/php_agent/release/
 #
-# Leave blank if you do not use New Relic monitoring.
+# Leave this blank if you do not want New Relic support in your image. The
+# subscription key and application name are specified through run-time
+# environment variables that are controlled by "config-environment.yaml" in the
+# Kustomization overlay.
+#
+# The image MUST have New Relic support baked in if you specify a New Relic
+# subscription key in the "config-environment.yaml" file, or Nextcloud will fail
+# to start.
 #
 NEW_RELIC_AGENT_URL="https://download.newrelic.com/php_agent/release/newrelic-php5-10.8.0.323-linux.tar.gz"
-
-##
-# The name by which you would like Nextcloud to identify itself in New Relic.
-#
-# Leave blank if you do not use New Relic monitoring.
-#
-NEW_RELIC_APP="Nextcloud"
 
 ################################################################################
 # Deployment Macros

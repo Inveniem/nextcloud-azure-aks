@@ -44,6 +44,7 @@ initialize_container() {
         ensure_compatible_image "${installed_version}" "${image_version}"
         acquire_initialization_lock
         identify_run_as_user_and_group "${container_type}"
+        configure_new_relic
         deploy_nextcloud_release
         configure_redis
         tune_php
@@ -120,6 +121,28 @@ release_initialization_lock() {
     if [ -n "${initialization_lock_file:-}" ] &&
        [ -f "${initialization_lock_file}" ]; then
         rm "${initialization_lock_file}"
+    fi
+}
+
+##
+# Configures New Relic, if installed and configured by the environment.
+#
+configure_new_relic() {
+    if [ -n "${NEW_RELIC_KEY}" ]; then
+        NEW_RELIC_APP="${NEW_RELIC_APP:-Nextcloud}"
+        new_relic_config_file="/usr/local/etc/php/conf.d/newrelic.ini"
+
+        if [ ! -f "${new_relic_config_file}" ]; then
+            {
+                echo "A New Relic subscription key was provided but New Relic"
+                echo "was not included in this image at publishing time."
+            } >&2
+            exit 1
+        fi
+
+        sed -i -e "s/\"REPLACE_WITH_REAL_KEY\"/\"${NEW_RELIC_KEY}\"/" \
+            -e "s/newrelic.appname = \"PHP Application\"/newrelic.appname = \"${NEW_RELIC_APP}\"/" \
+            "${new_relic_config_file}"
     fi
 }
 
