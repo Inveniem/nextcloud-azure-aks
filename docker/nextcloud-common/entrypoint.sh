@@ -211,7 +211,7 @@ invoke_hooks_for_stage() {
     echo "=> Searching for scripts (*.sh) to run, located in the folder: ${hook_folder_path}"
 
     (
-        find "${hook_folder_path}" -type f -maxdepth 1 -iname '*.sh' -print | \
+        find "${hook_folder_path}" -type f -maxdepth 1 -iname '*.sh' '(' -type f -o -type l ')' -print | \
           sort | \
           while read -r script_file_path; do
             if ! [ -x "${script_file_path}" ]; then

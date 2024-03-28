@@ -39,14 +39,14 @@ CONTAINER_ENGINE="docker"
 #
 NEXTCLOUD_CUSTOM_APPS=(
     'https://github.com/westberliner/checksum/releases/download/v1.2.3/checksum.tar.gz'
-    'https://github.com/nextcloud-releases/files_antivirus/releases/download/v5.4.2/files_antivirus-v5.4.2.tar.gz'
-    'https://github.com/nextcloud-releases/files_automatedtagging/releases/download/v1.15.3/files_automatedtagging-v1.15.3.tar.gz'
+    'https://github.com/nextcloud-releases/files_antivirus/releases/download/v5.5.0/files_antivirus-v5.5.0.tar.gz'
+    'https://github.com/nextcloud-releases/files_automatedtagging/releases/download/v1.16.1/files_automatedtagging-v1.16.1.tar.gz'
     'https://github.com/nextcloud-releases/files_downloadactivity/releases/download/v1.16.0/files_downloadactivity-v1.16.0.tar.gz'
     'https://github.com/Inveniem/nextcloud-files-excludedirs/releases/download/v1.0.1-beta/nextcloud_files_excludedirs-v1.0.1-beta.tar.gz'
     'https://github.com/nextcloud/files_rightclick/releases/download/v0.15.1/files_rightclick.tar.gz'
     'https://github.com/gino0631/nextcloud-metadata/releases/download/v0.19.0/metadata.tar.gz'
     'https://github.com/owncloud/music/releases/download/v1.10.0/music_1.10.0_for_nextcloud.tar.gz'
-    'https://github.com/nextcloud-releases/previewgenerator/releases/download/v5.3.0/previewgenerator-v5.3.0.tar.gz'
+    'https://github.com/nextcloud-releases/previewgenerator/releases/download/v5.4.0/previewgenerator-v5.4.0.tar.gz'
     'https://github.com/nextcloud-releases/user_external/releases/download/v3.2.0/user_external-v3.2.0.tar.gz'
     'https://github.com/nextcloud-releases/user_saml/releases/download/v5.2.7/user_saml-v5.2.7.tar.gz'
 )

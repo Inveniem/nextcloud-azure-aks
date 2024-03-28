@@ -17,9 +17,9 @@
 # Patch Alpine musl to work around this issue:
 # https://gitlab.alpinelinux.org/alpine/aports/issues/10960
 #
-FROM alpine:3.16 as musl_compile
+FROM alpine:3.19 as musl_compile
 
-ENV MUSL_VERSION="1.2.3"
+ENV MUSL_VERSION="1.2.4"
 
 RUN set -eux;\
     apk add --update \
@@ -59,7 +59,7 @@ RUN set -eux;\
 ################################################################################
 # This is the container that actually gets pushed.
 #
-FROM nextcloud:25.0.13-fpm-alpine
+FROM nextcloud:26.0.12-fpm-alpine
 
 ENV NEXTCLOUD_CONFIG_READ_ONLY "false"
 ENV NEXTCLOUD_INIT_LOCK "true"
