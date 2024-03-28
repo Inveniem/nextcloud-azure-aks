@@ -45,6 +45,62 @@ this kit:
 | 2.x                 | 1.15-1.21                         | 16.x              | Shell scripts and templates |
 | 1.x                 | 1.15-1.21                         | 15.x              | Shell scripts and templates |
 
+### Turning the Maintenance Page On and Off
+1. See instructions in `config-environment.yaml` for what settings to add to
+   your overlay configuration.
+2. Uncomment the maintenance page component in the `kustomization.yaml` file
+   of the overlay.
+3. Deploy just the maintenance page and shared dependencies using the following
+   command while you are in an overlay:
+   ```
+   ./rigger deploy maintenance-page --with-dependencies
+   ```
+4. Perform maintenance.
+5. Comment out the maintenance page component in the `kustomization.yaml` file
+   of the overlay.
+6. Re-deploy just the maintenance page and shared dependencies using the
+   following command while you are in an overlay:
+   ```
+   ./rigger deploy maintenance-page --with-dependencies
+   ```
+
+### Performing the Upgrade
+Follow these steps to upgrade:
+1.  Backup your database (as mentioned earlier in this document).
+2.  Enable the ingress maintenance page (if desired), as described above.
+3.  Change the version number of the docker images in the `kustomization.yaml`
+    file of your overlay to the new version you wish to deploy.
+4.  Change the replica count for the `nextcloud` pod in the `kustomization.yaml`
+    file to `1`.
+5.  Ensure that the storage configuration for the overlay is set to mount the
+    Nextcloud configuration volume as read-write.
+6.  Deploy the overlay with `./rigger deploy`.
+7.  Wait for deployment to finish and pods to start.
+8.  Observe the status of the upgrade using 
+    `kubectl logs -n <NAMESPACE> <NAME OF POD>` (e.g., you can get the names of
+    the pods with `kubectl get pods -n <NAMESPACE>`).
+9.  **If the upgrade failed:** You will need to troubleshoot your installation.
+    Some tips:
+    - You can modify the 
+      `components/http-nginx-fpm/app-nextcloud.nginx-fpm.yaml` and
+      `components/http-apache/app-nextcloud.apache.yaml` manifests, overriding
+      the `command` of the `backend-nextcloud-fpm` and
+      `backend-nextcloud-apache` containers, respectively, to be
+      `['sleep', 'inf']` or `['sleep', '86400']`. You can also change the 
+      `periodSeconds` values for the health checks to `86400` as well. Then,
+      re-deploy. These changes will prevent the pod from failing on startup 
+      from a bad upgrade, and will disable automatic restart of the pods from a
+      failing health checks, allowing you up to 24 hours to enter the pod with
+      `kubectl exec -it` to troubleshoot it.
+    - While in a Nextcloud pod, you can run the entrypoint script yourself to
+      see the output. The command is `/entrypoint.sh php-fpm` or
+      `/entrypoint.sh apache2-foreground`, for the nginx and Apache images,
+      respectively. You can run the entrypoint multiple times if you are
+      iterating on solving a problem.
+10. **If the upgrade succeeded:** rollback the changes you made to your 
+    `kustomization.yaml` file in steps 3, 4, and 5, and re-deploy the overlay to
+    restore full functionality.
+
 ### Switching from "Shell Script" Deployment to "Kustomize" Deployment
 If you are running version 1.x through 6.x of this kit and are now upgrading to
 version 7.x, we recommend taking the following steps:
@@ -423,4 +479,4 @@ credentials that Nextcloud uses to connect.
 All scripts and documentation provided in this repository are licensed under the
 GNU Affero GPL version 3, or any later version.
 
-© 2019-2022 Inveniem. All rights reserved.
+© 2019-2024 Inveniem. All rights reserved.
