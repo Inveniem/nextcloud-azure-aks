@@ -7,7 +7,7 @@
 # This is a multi-stage build.
 #
 # @author Guy Elsmore-Paddock (guy@inveniem.com)
-# @copyright Copyright (c) 2019-2022, Inveniem
+# @copyright Copyright (c) 2019-2024, Inveniem
 # @license GNU AGPL version 3 or any later version
 #
 
@@ -59,7 +59,7 @@ RUN set -eux;\
 ################################################################################
 # This is the container that actually gets pushed.
 #
-FROM nextcloud:23.0.10-fpm-alpine
+FROM nextcloud:24.0.12-fpm-alpine
 
 ENV NEXTCLOUD_CONFIG_READ_ONLY "false"
 ENV NEXTCLOUD_INIT_LOCK "true"

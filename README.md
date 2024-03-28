@@ -32,16 +32,17 @@ this kit:
 
 | nextcloud-azure-aks | Kubernetes Version Compatibility* | Nextcloud Version | Deployment Mechanism        |
 |---------------------|-----------------------------------|-------------------|-----------------------------|
-| 1.x                 | 1.15-1.21                         | 15.x              | Shell scripts and templates |
-| 2.x                 | 1.15-1.21                         | 16.x              | Shell scripts and templates |
-| 3.x                 | 1.15-1.21                         | 17.x              | Shell scripts and templates |
-| 4.x                 | 1.15-1.21                         | 18.x              | Shell scripts and templates |
-| 5.x                 | 1.15-1.21                         | 19.x              | Shell scripts and templates |
+| 11.x                | Only tested on 1.25+              | 24.x              | Kustomize and Rigger CLI    |
+| 10.x                | 1.16-1.22+                        | 23.x              | Kustomize and Rigger CLI    |
+| 9.x                 | 1.16-1.22+                        | 22.x              | Kustomize and Rigger CLI    |
+| 8.x                 | 1.16-1.22+                        | 21.x              | Kustomize and Rigger CLI    |
+| 7.x                 | 1.16-1.22+                        | 20.x              | Kustomize and Rigger CLI    |
 | 6.x                 | 1.16-1.22+                        | 19.x              | Shell scripts and templates |
-| 7.x                 | 1.16-1.22+                        | 20.x              | Kustomize and Rigger        |
-| 8.x                 | 1.16-1.22+                        | 21.x              | Kustomize and Rigger        |
-| 9.x                 | 1.16-1.22+                        | 22.x              | Kustomize and Rigger        |
-| 10.x                | 1.16-1.22+                        | 23.x              | Kustomize and Rigger        |
+| 5.x                 | 1.15-1.21                         | 19.x              | Shell scripts and templates |
+| 4.x                 | 1.15-1.21                         | 18.x              | Shell scripts and templates |
+| 3.x                 | 1.15-1.21                         | 17.x              | Shell scripts and templates |
+| 2.x                 | 1.15-1.21                         | 16.x              | Shell scripts and templates |
+| 1.x                 | 1.15-1.21                         | 15.x              | Shell scripts and templates |
 
 ### Switching from "Shell Script" Deployment to "Kustomize" Deployment
 If you are running version 1.x through 6.x of this kit and are now upgrading to

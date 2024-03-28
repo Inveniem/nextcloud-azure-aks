@@ -1,21 +1,18 @@
 #!/usr/bin/env bash
 
 ##
-# Generates the commands necessary to download and configure New Relic
-# monitoring.
+# Generates the commands necessary to download and install New Relic monitoring.
 #
 # This is optional. This script only downloads and configures New Relic if the
-# following environment variables are set:
+# NEW_RELIC_AGENT_URL environment variable is set.
 #
-# - NEW_RELIC_AGENT_URL
-# - NEW_RELIC_KEY
-# - NEW_RELIC_APP
-#
-# These variables are typically set via publish.profile in an overlay, and then this
-# script is invoked automatically by `./rigger publish` within the overlay.
+# This variable is typically set via publish.profile in an overlay, and then
+# this script is invoked automatically by `./rigger publish` within the overlay.
+# The New Relic application name and license key are provided via environment
+# variables modified in `kustomization.yaml` of the overlay.
 #
 # @author Guy Elsmore-Paddock (guy@inveniem.com)
-# @copyright Copyright (c) 2019-2022, Inveniem
+# @copyright Copyright (c) 2019-2024, Inveniem
 # @license GNU AGPL version 3 or any later version
 #
 set -e
@@ -30,16 +27,6 @@ outfile="./generated/setup_newrelic.sh"
 script_path="${BASH_SOURCE[0]}"
 script_name=$(basename "${script_path}")
 script_dir="$( cd "$( dirname "${script_path}" )" >/dev/null 2>&1 && pwd )"
-
-################################################################################
-# Overridable Environment Variables
-################################################################################
-# All of the variables below can be specified on the command line to override
-# them at run-time.
-
-NEW_RELIC_AGENT_URL="${NEW_RELIC_AGENT_URL}"
-NEW_RELIC_KEY="${NEW_RELIC_KEY}"
-NEW_RELIC_APP="${NEW_RELIC_APP:-Nextcloud}"
 
 ################################################################################
 # Main Script Body
@@ -63,9 +50,7 @@ set -u
 
 END
 
-  if [[ "${NEW_RELIC_AGENT_URL:-}" != "" && \
-        "${NEW_RELIC_KEY:-}" != "" && \
-        "${NEW_RELIC_APP:-}" != "" ]]; then
+  if [[ -n "${NEW_RELIC_AGENT_URL:-}" ]]; then
     cat <<END
 NEW_RELIC_AGENT_URL=\$(
     if [ -f "/etc/alpine-release" ]; then
@@ -84,10 +69,6 @@ export NR_INSTALL_SILENT=1
 
 /tmp/newrelic-php5-*/newrelic-install install
 rm -rf /tmp/newrelic-php5-* /tmp/nrinstall*
-
-sed -i -e 's/\"REPLACE_WITH_REAL_KEY\"/\"${NEW_RELIC_KEY}\"/' \\
-    -e 's/newrelic.appname = \"PHP Application\"/newrelic.appname = \"${NEW_RELIC_APP}\"/' \\
-    /usr/local/etc/php/conf.d/newrelic.ini
 END
     else
         echo "# New Relic Monitoring disabled in publish.profile of overlay."

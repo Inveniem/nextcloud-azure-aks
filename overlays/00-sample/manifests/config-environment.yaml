@@ -6,7 +6,7 @@
 # folder and customize manifests in each one to match your environments.
 #
 # @author Guy Elsmore-Paddock (guy@inveniem.com)
-# @copyright Copyright (c) 2022, Inveniem
+# @copyright Copyright (c) 2022-2024, Inveniem
 # @license GNU AGPL version 3 or any later version
 #
 apiVersion: v1
@@ -29,6 +29,16 @@ data:
         "mynextcloudstorageaccount": "nextcloud-azure-files-creds"
       }
     }
+
+  # Your New Relic subscription key.
+  #
+  # Leave this blank if you do not use New Relic monitoring. If this is not
+  # blank, the image MUST have New Relic support baked in (see
+  # "publish.profile").
+  newRelicSubscriptionKey: ""
+
+  # The name by which you would like Nextcloud to identify itself in New Relic.
+  newRelicApplicationName: "Nextcloud"
 
   # Settings when in maintenance mode (toggle this mode on by including the
   # maintenance_page component in your overlay).
