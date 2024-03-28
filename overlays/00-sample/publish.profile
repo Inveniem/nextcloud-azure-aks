@@ -70,7 +70,7 @@ NEXTCLOUD_CUSTOM_APPS=(
 # subscription key in the "config-environment.yaml" file, or Nextcloud will fail
 # to start.
 #
-NEW_RELIC_AGENT_URL="https://download.newrelic.com/php_agent/release/newrelic-php5-10.8.0.323-linux.tar.gz"
+NEW_RELIC_AGENT_URL="https://download.newrelic.com/php_agent/release/newrelic-php5-10.19.0.9-linux.tar.gz"
 
 ################################################################################
 # Deployment Macros
