@@ -72,6 +72,8 @@ initialize_container() {
 
         configure_web_server "${container_type}"
         release_initialization_lock
+
+        invoke_hooks_for_stage "before-starting"
     fi
 }
 
@@ -183,6 +185,52 @@ sanitize_environment_vars() {
         # read-only, even if the var was not explicitly set as such.
         export NEXTCLOUD_CONFIG_READ_ONLY="true"
     fi
+}
+
+##
+# Execute any scripts included in the Docker image for a given stage of startup.
+#
+# @param $1
+#   The stage of Nextcloud initialization. Must be one of:
+#     - "pre-installation"
+#     - "post-installation"
+#     - "pre-upgrade"
+#     - "post-upgrade"
+#     - "before-starting"
+#
+invoke_hooks_for_stage() {
+    stage="${1}"
+    hook_folder_path="/docker-entrypoint-hooks.d/${stage}"
+    return_code=0
+
+    if ! [ -d "${hook_folder_path}" ]; then
+        echo "=> Skipping the folder \"${hook_folder_path}\", because it doesn't exist"
+        return 0
+    fi
+
+    echo "=> Searching for scripts (*.sh) to run, located in the folder: ${hook_folder_path}"
+
+    (
+        find "${hook_folder_path}" -type f -maxdepth 1 -iname '*.sh' -print | \
+          sort | \
+          while read -r script_file_path; do
+            if ! [ -x "${script_file_path}" ]; then
+                echo "==> The script \"${script_file_path}\" was skipped, because it didn't have the executable flag"
+                continue
+            fi
+
+            echo "==> Running the script (cwd: $(pwd)): \"${script_file_path}\""
+
+            run_as "${script_file_path}" || return_code="$?"
+
+            if [ "${return_code}" -ne "0" ]; then
+                echo "==> Failed at executing \"${script_file_path}\". Exit code: ${return_code}"
+                exit 1
+            fi
+
+            echo "==> Finished the script: \"${script_file_path}\""
+        done
+    )
 }
 
 ##
@@ -393,6 +441,8 @@ capture_existing_app_list() {
 install_nextcloud() {
     image_version="${1}"
 
+    invoke_hooks_for_stage "pre-installation"
+
     echo "This is a new installation of Nextcloud."
     echo ""
 
@@ -421,6 +471,8 @@ install_nextcloud() {
     fi
 
     echo ""
+
+    invoke_hooks_for_stage "post-installation"
 }
 
 
@@ -443,6 +495,16 @@ ensure_compatible_image() {
             echo "Are you sure you have pulled the newest image version?"
         } >&2
     fi
+
+    if [ "${image_version%%.*}" -gt "$((${installed_version%%.*} + 1))" ]; then
+        {
+            echo "Nextcloud cannot be upgraded from ${installed_version} directly to ${image_version}."
+            echo "It is only possible to upgrade one major version at a time."
+            echo "For example, if you want to upgrade from version 24 to 26, you"
+            echo "will have to upgrade from version 24 to 25, then from 25 to 26."
+        } >&2
+        exit 1
+    fi
 }
 
 ##
@@ -456,6 +518,8 @@ ensure_compatible_image() {
 upgrade_nextcloud() {
     installed_version="${1}"
     image_version="${2}"
+
+    invoke_hooks_for_stage "pre-upgrade"
 
     echo "Nextcloud will be upgraded from ${installed_version} to ${image_version}."
     echo ""
@@ -471,6 +535,8 @@ upgrade_nextcloud() {
     diff /tmp/list_before /tmp/list_after | grep '<' | cut -d- -f2 | cut -d: -f1
 
     rm -f /tmp/list_before /tmp/list_after
+
+    invoke_hooks_for_stage "post-upgrade"
 }
 
 ##
