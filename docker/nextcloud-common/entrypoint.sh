@@ -211,7 +211,7 @@ invoke_hooks_for_stage() {
     echo "=> Searching for scripts (*.sh) to run, located in the folder: ${hook_folder_path}"
 
     (
-        find "${hook_folder_path}" -type f -maxdepth 1 -iname '*.sh' -print | \
+        find "${hook_folder_path}" -type f -maxdepth 1 -iname '*.sh' '(' -type f -o -type l ')' -print | \
           sort | \
           while read -r script_file_path; do
             if ! [ -x "${script_file_path}" ]; then
@@ -318,10 +318,10 @@ deploy_nextcloud_release() {
         # We explicitly force updates to custom apps and themes from this Docker
         # image.
         if [ ! -d "${dir_path}" ] || directory_empty "${dir_path}" ||
-           [ "${dir_path}" = "custom_apps" ] || [ "${dir_path}" = "themes" ]; then
+           [ "${dir}" = "custom_apps" ] || [ "${dir}" = "themes" ]; then
             mkdir -p "${dir_path}"
-            chmod 0750 "${dir_path}"
-            chown "root:${group}" "${dir_path}"
+            chmod 0755 -R "${dir_path}"
+            chown "root:${group}" -R "${dir_path}"
 
             # Avoid accidentally bashing data in the data folder.
             if [ "${dir}" = "data" ]; then

@@ -3,8 +3,8 @@
 ## Supported Versions
 | Version | Supported          |
 |---------| ------------------ |
-| 11.x    | :white_check_mark: |
-| < 11.0  | :x:                |
+| 13.x    | :white_check_mark: |
+| < 13.0  | :x:                |
 
 ## Reporting a Vulnerability
 Please do not report vulnerabilities using the issue queue. Instead, please 
