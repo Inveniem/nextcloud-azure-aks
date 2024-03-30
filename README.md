@@ -32,6 +32,7 @@ this kit:
 
 | nextcloud-azure-aks | Kubernetes Version Compatibility* | Nextcloud Version | Deployment Mechanism        |
 |---------------------|-----------------------------------|-------------------|-----------------------------|
+| 13.x                | Only tested on 1.25+              | 26.x              | Kustomize and Rigger CLI    |
 | 12.x                | Only tested on 1.25+              | 25.x              | Kustomize and Rigger CLI    |
 | 11.x                | Only tested on 1.25+              | 24.x              | Kustomize and Rigger CLI    |
 | 10.x                | 1.16-1.22+                        | 23.x              | Kustomize and Rigger CLI    |
