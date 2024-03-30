@@ -318,10 +318,10 @@ deploy_nextcloud_release() {
         # We explicitly force updates to custom apps and themes from this Docker
         # image.
         if [ ! -d "${dir_path}" ] || directory_empty "${dir_path}" ||
-           [ "${dir_path}" = "custom_apps" ] || [ "${dir_path}" = "themes" ]; then
+           [ "${dir}" = "custom_apps" ] || [ "${dir}" = "themes" ]; then
             mkdir -p "${dir_path}"
-            chmod 0750 "${dir_path}"
-            chown "root:${group}" "${dir_path}"
+            chmod 0755 -R "${dir_path}"
+            chown "root:${group}" -R "${dir_path}"
 
             # Avoid accidentally bashing data in the data folder.
             if [ "${dir}" = "data" ]; then
