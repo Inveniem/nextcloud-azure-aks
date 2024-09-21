@@ -5,7 +5,7 @@
   "dependencies": {
     "@inveniem/sftp-ws": "^0.8.1",
     "bunyan": "^1.8.14",
-    "express": "^4.19",
+    "express": "^4.20",
     "jsonwebtoken": "^9.0.0"
   },
   "author": "Inveniem",
